@@ -1,6 +1,6 @@
 # 01 · Visão e público
 
-> Estado: **rascunho para o autor revisar**. Tudo aqui é proposta, não decisão fechada. Itens marcados com **(?)** precisam de resposta do autor.
+> Estado: **rascunho com decisões iniciais do autor (2026-11-21)**. As decisões estão na seção "Decisões do autor" no fim. Itens marcados com **(?)** ainda precisam de resposta.
 
 ## Em uma frase
 
@@ -15,7 +15,7 @@ Um site para quem quer aprender inglês **do zero ao avançado**, com trilha cla
 | Intermediário travado | Entende, mas não avança | Volume de leitura e escuta no nível certo, vocabulário em contexto |
 | Avançado | Quer precisão, naturalidade, textos reais | Leitura de textos próprios, escrita, nuances |
 
-Público-base: falante de **português brasileiro**. **(?)** Há interesse em outros idiomas de origem no futuro?
+Público-base: falante de **português brasileiro**. **(?)** Há interesse em outros idiomas de origem no futuro? (não decidido; não é prioridade agora)
 
 ## Promessa
 
@@ -23,9 +23,11 @@ Público-base: falante de **português brasileiro**. **(?)** Há interesse em ou
 2. **Cada sessão cabe na sua vida**: blocos curtos, retomada fácil depois de dias parado.
 3. **Você pratica as quatro habilidades**: ler, ouvir, falar, escrever.
 4. **Seu progresso é seu**: fica no seu aparelho, sem conta obrigatória e sem rastreamento.
+5. **É gratuito e sem estresse**: sem cobrança, sem pressão, sem ranking, sem gastar horrores para aprender.
 
 ## O que o site NÃO será (por ora)
 
+- **Não é pago.** Sem assinatura, sem paywall, sem anúncios que dependam de rastrear o aluno.
 - Não é curso com certificado oficial nem promete "fluência em X dias".
 - Não é rede social nem ranking competitivo.
 - Não exige cadastro para estudar.
@@ -55,9 +57,15 @@ Público-base: falante de **português brasileiro**. **(?)** Há interesse em ou
 - Interface em português; o inglês aparece como conteúdo, não como ruído na interface.
 - Celular em pé como tela principal; desktop como conforto.
 
-## Perguntas em aberto para o autor
+## Decisões do autor (2026-11-21)
 
-1. Modelo de negócio: gratuito, doação, pago? Isso muda arquitetura (contas, pagamento) e privacidade.
-2. Quem cria o conteúdo das lições: o autor, IA com revisão, material de domínio público? Isso exige regra de verificação, como no livro.
-3. Haverá conteúdo em áudio gravado por humanos ou só voz sintética?
-4. Nome do projeto e do futuro domínio (o repositório provisório é `ingles-do-zero`).
+1. **Modelo: gratuito.** O objetivo é ensinar de forma que as pessoas aprendam **sem estresse e sem gastar horrores**. Consequências para o projeto: nada de contas, pagamento ou backend pago; hospedagem estática gratuita; tudo que roda no aparelho do aluno; recursos pesados (voz neural, modelos) sempre opcionais. Como não há receita, **custo operacional deve ficar perto de zero**.
+2. **Conteúdo: a IA produz, o autor pode revisar.** A IA é usada para ganhar tempo, agilidade e profundidade de pesquisa; os materiais **podem ser revisados** pelo autor. Regras que continuam valendo: conteúdo com apoio de IA é **declarado** no site, e fato sem fonte conferida entra com ressalva. **(?)** Definir o nível de revisão: toda lição, ou por amostragem com validação automática em todas (ver `03-arquitetura-roadmap.md`, seção 4).
+3. **Níveis: os seis (A1 a C2)** serão feitos, com Pré-A1 como degrau de entrada (ver `02-niveis.md`).
+4. **Visual: manter** o visual do livro (estética terminal/papel, temas Papel/Terminal/Claro/Sépia). A suavidade "sem estresse" vem do **tom dos textos, do ritmo e das cores de feedback**, não de trocar a identidade (ver `04-telas.md`).
+
+## Perguntas ainda em aberto
+
+1. Haverá conteúdo em áudio gravado por humanos ou só voz sintética? (impacta custo: gravação não é gratuita)
+2. Nome do projeto e do futuro domínio (o repositório provisório é `ingles-do-zero`; domínio só quando o projeto estiver pronto).
+3. Como o projeto se sustenta no longo prazo sendo gratuito (tempo do autor, doação voluntária, apoio institucional)? Não precisa ser decidido agora, mas afeta a manutenção.

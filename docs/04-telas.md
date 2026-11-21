@@ -149,7 +149,7 @@ Exportar e importar são essenciais porque o armazenamento do navegador pode ser
 
 ## Decisões de design a tomar com o autor
 
-1. **Identidade visual**: manter a estética "terminal/papel" do livro ou criar uma identidade nova, mais acolhedora para iniciantes? O livro é sombrio e técnico; o público de "inglês do zero" pode pedir outro tom.
+1. **Identidade visual: decidido (2026-11-21), manter o visual do livro** (terminal/papel; temas Papel, Terminal, Claro, Sépia; fontes Literata, Legível, Mono). Para o aluno iniciante não se assustar, o "sem estresse" vem de: textos curtos e gentis, **tema Papel como padrão** (mais claro e calmo que o Terminal), feedback de erro neutro (sem vermelho agressivo nem som de falha), ritmo sem cronômetro e linguagem de convite ("quando quiser") em vez de cobrança. **(?)** Confirmar se o tema padrão do novo site deve ser Papel.
 2. **Tom da interface**: formal, amigável, bem-humorado?
 3. **Gamificação**: só sequência de dias, ou também metas e conquistas? Recomendação: **mínimo**, sem ranking.
 4. **Próximo passo sugerido**: transformar este esboço em um **protótipo HTML navegável no celular** (fase F1), sem conteúdo real, para validar o fluxo antes de construir o núcleo.

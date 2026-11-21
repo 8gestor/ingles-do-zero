@@ -14,7 +14,7 @@
 | **C1** | Avançado | Usar o idioma com flexibilidade para estudo e trabalho, entender textos longos e implícitos, expressar-se com fluência |
 | **C2** | Domínio | Entender praticamente tudo, resumir e argumentar com nuance e precisão |
 
-**(?)** Decisão do autor: oferecer os seis níveis desde o lançamento ou lançar A1–B1 primeiro e crescer depois? Recomendação inicial: **A1 a B1 primeiro**, porque é onde está a maior parte de quem "começa do zero", e deixar B2–C2 apoiados no leitor de textos próprios (que o legado já faz).
+**Decisão do autor (2026-11-21): serão feitos os seis níveis (A1 a C2)**, com Pré-A1 como degrau de entrada. Como o novo site só será publicado quando estiver pronto, a ordem de **produção** segue de baixo para cima (Pré-A1 a C2), mas o **lançamento** só ocorre com a trilha completa. B2 a C2 se apoiam também no leitor de textos próprios.
 
 ## Habilidades por nível
 
@@ -33,7 +33,7 @@ Cada nível trabalha as mesmas cinco frentes, com profundidade crescente:
 O aluno **não avança por tempo**, avança por **evidência**:
 
 1. Concluiu a maior parte das lições do nível.
-2. Acertou acima de um limiar em um **teste de saída** curto do nível **(?)** limiar sugerido: 80%.
+2. Acertou acima de um limiar em um **teste de saída** curto do nível (limiar inicial sugerido: 80%, a calibrar com uso real).
 3. Tem vocabulário do nível com revisão em dia.
 
 Sempre é possível **avançar por conta própria** depois de ver o aviso do que provavelmente vai faltar. O site orienta, não tranca.
@@ -66,5 +66,8 @@ Duração-alvo: **10 a 15 minutos**.
 | A1 | 40–60 | Núcleo do "do zero" |
 | A2 | 50–70 | |
 | B1 | 60–80 | Mais leitura e escuta longa |
+| B2 | 60–80 | Textos autênticos, argumentação |
+| C1 | 50–70 | Nuance, registro formal e informal, textos longos |
+| C2 | 40–60 | Precisão, humor, ambiguidade; muito apoio no leitor próprio |
 
-Isso dimensiona o esforço de produção: **mais de 150 lições só até B1**. Daí a importância de um formato de lição simples e de um fluxo de produção e revisão (ver arquitetura).
+Isso dimensiona o esforço de produção: **mais de 150 lições só até B1 e algo entre 350 e 450 nos seis níveis** (estimativa grosseira). Com a IA produzindo e o autor revisando, o gargalo passa a ser **revisão e validação**, não escrita. Daí a importância de um formato de lição simples e de um fluxo de produção e revisão (ver arquitetura).

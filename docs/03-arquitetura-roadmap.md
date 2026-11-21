@@ -57,21 +57,25 @@ ingles-do-zero/
 | **F1 · Protótipo de telas** | Telas navegáveis sem conteúdo real (HTML estático) | Autor navega o fluxo no celular e aprova |
 | **F2 · Núcleo** | Shell próprio, armazenamento, cartões, progresso rodando sozinhos | Testes automatizados passando |
 | **F3 · Primeiro nível** | Pré-A1 + A1 completos, com diagnóstico simples | Uma pessoa real completa A1 e dá retorno |
-| **F4 · Prática** | Treino de fala/escuta, ditado, revisão diária | Retenção medida de forma local e anônima **(?)** |
+| **F4 · Prática** | Treino de fala/escuta, ditado, revisão diária | Retenção medida só localmente, no aparelho do aluno (sem enviar nada) |
 | **F5 · Leitor próprio** | Leitor de PDF/EPUB/texto integrado à trilha | Importar e estudar um texto de ponta a ponta |
-| **F6 · A2 e B1** | Conteúdo seguinte | |
-| **F7 · Lançamento** | Domínio próprio, publicação | Só depois do projeto "pronto", como decidido |
+| **F6 · A2 a C2** | Conteúdo dos demais níveis (decisão: os seis níveis serão feitos) | Cada nível passa pela validação automática e pela revisão definida |
+| **F7 · Lançamento** | Domínio próprio, publicação | Só com a trilha dos seis níveis pronta, como decidido |
 
 Publicação nas fases iniciais: **nenhuma**. O repositório é privado e não há site no ar. Quando for útil testar no celular, usar um **preview temporário** e avisar antes.
 
 ## 4. Fluxo de produção de conteúdo (proposta)
 
-1. Rascunho da lição (autor ou apoio de IA, **declarado**).
-2. Revisão do autor.
+1. Rascunho da lição **produzido pela IA** (decisão do autor: ganhar tempo, agilidade e profundidade de pesquisa), sempre **declarado** no site.
+2. Revisão do autor, que **pode** ser feita lição a lição ou por amostragem **(?)**. Quanto menos revisão humana, mais forte deve ser a validação automática do passo 3.
 3. Validação automática (estrutura, tamanho, palavras do nível, paridade de frases PT/EN).
 4. Teste no aparelho.
 
 Regra herdada do livro: **conteúdo gerado com apoio de IA é declarado**, e fato sem fonte entra com ressalva.
+
+**Efeito do modelo gratuito:** sem receita, o projeto precisa de **custo operacional próximo de zero**. Isso favorece o que já foi escolhido (site estático, tudo local, sem backend, sem contas) e desfavorece áudio gravado profissional e qualquer serviço pago de voz ou de IA em tempo de uso. A IA entra **na produção do conteúdo**, não como serviço rodando para cada aluno.
+
+**Qualidade de conteúdo gerado por IA (riscos específicos):** erros de gramática e de uso, exemplos pouco naturais, vocabulário fora do nível, e fatos errados em textos de leitura. Mitigações propostas: lista de vocabulário por nível como checagem automática, textos de leitura baseados em fontes citadas ou de domínio público, revisão humana priorizando níveis iniciais (onde o erro mais prejudica quem não tem como perceber), e canal para o aluno reportar erro **(?)**.
 
 ## 5. Riscos
 
