@@ -1,0 +1,531 @@
+<title>Inglês do Zero</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Literata:ital,opsz,wght@0,7..72,400;0,7..72,600;0,7..72,700;1,7..72,400&display=swap">
+<style>
+/* Conceito: o visual do livro "Data Double" levado para o estudo. Papel como padrão (calmo), quatro temas como no livro.
+   Moldura de 1.5px, rótulos em mono caixa-alta, texto em serifa. Celular em pé é a tela principal; no desktop vira uma coluna central. */
+:root{
+  --serif:'Literata',Georgia,'Times New Roman',serif;
+  --mono:'JetBrains Mono','Cascadia Mono',Consolas,monospace;
+  --bg:#fbfaf6; --panel:#f3f0e8; --ink:#151515; --mute:#6d695f; --line:#151515; --faint:#dcd7ca;
+  --ok:#2f6b4f; --okbg:#e3efe8; --soft:#8a5a00; --softbg:#f6ecd6; --mark:#ffe58a; --on:#151515; --onink:#fbfaf6;
+  color-scheme:light;
+}
+html[data-t="dark"]{--bg:#0f100d;--panel:#181a15;--ink:#e9e7d9;--mute:#9a9887;--line:#e9e7d9;--faint:#2b2e26;--ok:#7fd1a4;--okbg:#17261e;--soft:#e2b660;--softbg:#2a2214;--mark:#5b4a10;--on:#e9e7d9;--onink:#0f100d;color-scheme:dark}
+html[data-t="light"]{--bg:#ffffff;--panel:#f2f2f2;--ink:#111111;--mute:#666666;--line:#111111;--faint:#dddddd;--ok:#1d6b45;--okbg:#e2f1e8;--soft:#7a5200;--softbg:#f8edd2;--mark:#ffe58a;--on:#111111;--onink:#ffffff;color-scheme:light}
+html[data-t="sepia"]{--bg:#f1e6cf;--panel:#e8dbbd;--ink:#3a2e1d;--mute:#7b6a4c;--line:#3a2e1d;--faint:#d6c6a0;--ok:#3b6a45;--okbg:#dfe6cc;--soft:#80520f;--softbg:#ecd9a8;--mark:#f2cf6b;--on:#3a2e1d;--onink:#f1e6cf;color-scheme:light}
+
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--serif);font-size:17px;line-height:1.55;-webkit-text-size-adjust:100%}
+button,select,input{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+.app{max-width:520px;margin:0 auto;min-height:100vh;display:flex;flex-direction:column;border-inline:1px solid var(--faint)}
+@media(max-width:560px){.app{border-inline:0}}
+.pad{padding-left:max(18px,env(safe-area-inset-left,0px));padding-right:max(18px,env(safe-area-inset-right,0px))}
+
+/* topo */
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--bg);border-bottom:1.5px solid var(--line)}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:30;background:var(--bg)}
+.top-in{display:flex;align-items:center;gap:8px;height:52px}
+.brand{font-family:var(--mono);font-size:.7rem;letter-spacing:.12em;font-weight:700;text-transform:uppercase;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tag{font-family:var(--mono);font-size:.62rem;letter-spacing:.08em;background:var(--on);color:var(--onink);padding:3px 7px;white-space:nowrap}
+.ib{min-width:40px;height:40px;border:1.5px solid var(--line);background:transparent;font-family:var(--mono);font-size:.78rem;padding:0 8px}
+.ib:hover{background:var(--on);color:var(--onink)}
+.statusbar{font-family:var(--mono);font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;color:var(--mute);padding-block:5px;border-bottom:1px solid var(--faint)}
+
+/* menu do protótipo */
+.drawer{display:none;position:fixed;inset:0;z-index:50;background:rgba(0,0,0,.45)}
+.drawer.open{display:block}
+.sheet{position:absolute;right:0;top:0;bottom:0;width:min(340px,92%);background:var(--bg);border-left:1.5px solid var(--line);padding:calc(16px + env(safe-area-inset-top,0px)) 16px calc(16px + env(safe-area-inset-bottom,0px));overflow:auto}
+.sheet h2{font-family:var(--mono);font-size:.7rem;letter-spacing:.12em;text-transform:uppercase;margin:0 0 10px}
+.sheet a{display:flex;gap:10px;align-items:baseline;padding:11px 8px;border-bottom:1px dashed var(--faint);color:inherit;text-decoration:none;font-size:.95rem}
+.sheet a b{font-family:var(--mono);font-size:.7rem;color:var(--mute);width:1.4em}
+.sheet a:hover{background:var(--panel)}
+.sheet .themes{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:6px 0 18px}
+.sheet .themes button,.opt{border:1.5px solid var(--line);background:transparent;padding:9px 4px;font-family:var(--mono);font-size:.68rem;min-height:42px}
+.sheet .themes button[aria-pressed=true],.opt.on{background:var(--on);color:var(--onink)}
+
+/* conteúdo */
+main{flex:1;padding-block:22px 110px}
+.screen{display:none}
+.screen.on{display:block}
+.kick{display:inline-block;font-family:var(--mono);font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;background:var(--on);color:var(--onink);padding:4px 9px;margin-bottom:14px}
+h1{font-size:1.85rem;line-height:1.15;margin:0 0 6px;text-wrap:balance;font-weight:700}
+h1 + .rule{border:0;border-top:1.5px solid var(--line);margin:12px 0 16px}
+h2.h{font-family:var(--mono);font-size:.7rem;letter-spacing:.12em;text-transform:uppercase;margin:26px 0 10px;color:var(--mute);font-weight:500}
+p{margin:0 0 14px}
+.lead{color:var(--mute)}
+.note{font-family:var(--mono);font-size:.7rem;color:var(--mute);line-height:1.6}
+.box{border:1.5px solid var(--line);background:var(--panel);padding:16px 16px 14px;margin-bottom:14px}
+.box.plain{background:transparent}
+.label{font-family:var(--mono);font-size:.64rem;letter-spacing:.1em;text-transform:uppercase;color:var(--mute);display:block;margin-bottom:6px}
+.btn{display:block;width:100%;text-align:left;border:1.5px solid var(--line);background:transparent;padding:14px 16px;min-height:52px;font-family:var(--mono);font-size:.82rem;margin-bottom:10px}
+.btn small{display:block;font-family:var(--serif);font-size:.88rem;color:var(--mute);margin-top:2px;text-transform:none;letter-spacing:0}
+a.btn{text-decoration:none;color:var(--ink)}
+a.btn.primary{color:var(--onink)}
+.btn:hover,a.btn:hover{background:var(--on);color:var(--onink)}
+.btn:hover small{color:inherit;opacity:.8}
+.btn.primary{background:var(--on);color:var(--onink)}
+.btn.primary small{color:inherit;opacity:.8}
+.btn.center{text-align:center}
+.row{display:flex;gap:8px;flex-wrap:wrap}
+.row > *{flex:1 1 0;min-width:0}
+.pill{display:inline-block;font-family:var(--mono);font-size:.64rem;padding:2px 7px;border:1px solid var(--line);letter-spacing:.06em}
+
+/* trilha */
+.lvl{border:1.5px solid var(--line);margin-bottom:12px;background:var(--bg)}
+.lvl-h{display:flex;align-items:center;gap:10px;padding:12px 14px;background:var(--panel);border-bottom:1.5px solid var(--line)}
+.lvl-h b{font-family:var(--mono);font-size:.9rem;min-width:3.2em}
+.lvl-h span{flex:1;font-size:.92rem;min-width:0}
+.bar{height:6px;background:var(--faint);margin:0}
+.bar i{display:block;height:100%;background:var(--ink)}
+.lessons{padding:4px 14px 8px}
+.ls{display:flex;gap:10px;align-items:baseline;padding:9px 0;border-bottom:1px dashed var(--faint);font-size:.95rem;text-decoration:none;color:inherit}
+.ls:last-child{border-bottom:0}
+.ls .n{font-family:var(--mono);font-size:.7rem;color:var(--mute);width:2em}
+.ls .s{margin-left:auto;font-family:var(--mono);font-size:.72rem}
+.ls.cur{font-weight:700}
+.lvl.closed .lessons{display:none}
+.lvl.closed .lvl-h{border-bottom:0}
+.lvl-h .more{font-family:var(--mono);font-size:.64rem;color:var(--mute)}
+
+/* lição */
+.steps{display:flex;gap:4px;margin:0 0 18px}
+.steps i{flex:1;height:5px;background:var(--faint)}
+.steps i.d{background:var(--ink)}
+.dlg{border:1.5px solid var(--line);margin-bottom:14px}
+.ln{padding:13px 14px;border-bottom:1px dashed var(--faint)}
+.ln:last-child{border-bottom:0}
+.who{font-family:var(--mono);font-size:.62rem;letter-spacing:.1em;color:var(--mute);text-transform:uppercase}
+.en{font-size:1.15rem;font-weight:600;line-height:1.4;margin:2px 0}
+.pt{color:var(--mute);font-size:.95rem}
+.w{border-bottom:2px dotted var(--mute);cursor:pointer}
+.w.hl{background:var(--mark)}
+.ls-act{display:flex;gap:8px;margin-top:8px}
+.ls-act button{border:1.5px solid var(--line);background:transparent;font-family:var(--mono);font-size:.68rem;padding:7px 10px;min-height:36px}
+.ls-act button:hover{background:var(--on);color:var(--onink)}
+.pop{border:1.5px solid var(--line);background:var(--panel);padding:12px 14px;margin:-4px 0 14px}
+.pop[hidden]{display:none}
+.pop .big{font-size:1.25rem;font-weight:700}
+.focus{display:grid;gap:10px}
+.fc{border:1.5px solid var(--line);padding:12px 14px;display:flex;gap:12px;align-items:baseline}
+.fc b{font-size:1.1rem;min-width:5.2em}
+.fc span{color:var(--mute);font-size:.92rem}
+
+/* prática */
+.tabs{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:16px}
+.tabs .opt{font-size:.6rem;padding:8px 2px;line-height:1.25}
+.choice{display:grid;gap:8px;margin:12px 0}
+.choice button{text-align:left;border:1.5px solid var(--line);background:transparent;padding:13px 14px;min-height:50px;font-size:1rem}
+.choice button.ok{background:var(--okbg);border-color:var(--ok)}
+.choice button.try{background:var(--softbg);border-color:var(--soft)}
+.fb{font-family:var(--mono);font-size:.74rem;padding:10px 12px;margin:10px 0;border-left:4px solid var(--ok);background:var(--okbg)}
+.fb.soft{border-color:var(--soft);background:var(--softbg)}
+.fb[hidden]{display:none}
+.field{width:100%;border:1.5px solid var(--line);background:var(--bg);padding:13px 14px;font-size:1.05rem}
+.bank{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0;min-height:48px}
+.chip{border:1.5px solid var(--line);background:transparent;padding:9px 12px;font-size:1rem;min-height:44px}
+.chip.used{opacity:.25;pointer-events:none}
+.built{border:1.5px dashed var(--line);min-height:56px;padding:8px;display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px}
+.diff span{padding:1px 2px}
+.diff .ok{background:var(--okbg)}
+.diff .miss{background:var(--softbg);text-decoration:underline dotted}
+
+/* revisão */
+.card{border:1.5px solid var(--line);padding:26px 18px;text-align:center;margin-bottom:14px;background:var(--panel)}
+.card .big{font-size:2.1rem;font-weight:700;margin:6px 0}
+.card .ctx{font-size:1.02rem;color:var(--mute)}
+.card .ctx mark{background:var(--mark);color:var(--ink);padding:0 3px}
+.grades{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.grades button{border:1.5px solid var(--line);background:transparent;padding:10px 2px;font-family:var(--mono);font-size:.68rem;min-height:56px;line-height:1.3}
+.grades button small{display:block;color:var(--mute);font-size:.6rem}
+.grades button:hover{background:var(--on);color:var(--onink)}
+.grades button:hover small{color:inherit}
+
+/* leitor */
+.drop{border:1.5px dashed var(--line);padding:22px 16px;text-align:center;margin-bottom:14px}
+.read .lb-s{cursor:pointer}
+.read .lb-s.now{background:var(--panel);box-shadow:-4px 0 0 var(--ink)}
+.study{display:flex;flex-wrap:wrap;gap:8px;align-items:center;border:1px solid var(--line);padding:6px 8px 6px 10px;margin:0 0 14px}
+.study .label{margin:0}
+.study button{border:1.5px solid var(--line);background:transparent;font-family:var(--mono);font-size:.66rem;padding:7px 9px;min-height:36px}
+.study button[aria-pressed=true]{background:var(--on);color:var(--onink)}
+.unc.on{background:var(--mark);text-decoration:underline dotted;text-underline-offset:3px}
+
+/* progresso */
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+.stat{border:1.5px solid var(--line);padding:12px 14px}
+.stat b{display:block;font-size:1.7rem;font-family:var(--serif);line-height:1.1}
+.week{display:flex;align-items:flex-end;gap:8px;height:90px;border:1.5px solid var(--line);padding:10px 12px;margin-bottom:6px}
+.week div{flex:1;background:var(--ink);min-height:3px}
+.wlab{display:flex;gap:8px;padding:0 12px;font-family:var(--mono);font-size:.6rem;color:var(--mute);margin-bottom:14px}
+.wlab span{flex:1;text-align:center}
+
+/* barra inferior */
+.nav{position:fixed;left:0;right:0;bottom:0;z-index:20;background:var(--bg);border-top:1.5px solid var(--line);padding-bottom:env(safe-area-inset-bottom,0px)}
+.nav-in{max-width:520px;margin:0 auto;display:grid;grid-template-columns:repeat(4,1fr)}
+.nav a{display:flex;flex-direction:column;align-items:center;gap:2px;padding:10px 4px;font-family:var(--mono);font-size:.64rem;letter-spacing:.06em;text-transform:uppercase;color:var(--mute);text-decoration:none;min-height:56px;justify-content:center}
+.nav a svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.6}
+.nav a[aria-current=page]{color:var(--ink);font-weight:700;box-shadow:inset 0 3px 0 var(--ink)}
+.nav[hidden]{display:none}
+@media(prefers-reduced-motion:no-preference){.screen.on{animation:in .18s ease-out}@keyframes in{from{opacity:.4;transform:translateY(4px)}to{opacity:1;transform:none}}}
+</style>
+
+<div class="app" id="app">
+  <header class="top">
+    <div class="top-in pad">
+      <span class="brand">Inglês do Zero · protótipo</span>
+      <span class="tag">EXEMPLO</span>
+      <button class="ib" id="menuBtn" aria-label="Mapa do protótipo e aparência" aria-expanded="false">☰</button>
+    </div>
+    <div class="statusbar pad">Conteúdo de exemplo · progresso fica só neste aparelho</div>
+  </header>
+
+  <main class="pad">
+
+    <!-- 1 · Boas-vindas e diagnóstico -->
+    <section class="screen" id="s-boas-vindas">
+      <span class="kick">Tela 1 · Boas-vindas</span>
+      <h1>Inglês do zero ao avançado</h1>
+      <hr class="rule">
+      <p class="lead">Estude no seu ritmo, sem cobrança. Quanto você já sabe?</p>
+      <a class="btn" href="#hoje" data-lv="pre">Nunca estudei<small>Começamos pelo Pré-A1, com sons e primeiras frases.</small></a>
+      <a class="btn" href="#diagnostico" >Sei um pouco<small>Mini-teste de uns 5 minutos para achar seu ponto de partida.</small></a>
+      <a class="btn" href="#hoje" data-lv="b1">Já me viro<small>Teste completo e trilha a partir do seu nível.</small></a>
+      <p class="note" style="margin-top:18px">Seu progresso fica só neste aparelho. Não pedimos cadastro nem enviamos o que você escreve ou fala.</p>
+    </section>
+
+    <section class="screen" id="s-diagnostico">
+      <span class="kick">Tela 1 · Diagnóstico</span>
+      <h1 id="dgT">Pergunta 1 de 3</h1>
+      <hr class="rule">
+      <div class="box"><span class="label">Escolha a frase correta</span><p class="en" id="dgQ" style="margin:0"></p></div>
+      <div class="choice" id="dgC"></div>
+      <div class="fb" id="dgF" hidden></div>
+      <button class="btn center primary" id="dgN" hidden>Continuar</button>
+      <p class="note">No site real o teste sobe e desce de dificuldade conforme os acertos. Aqui são só 3 perguntas de exemplo.</p>
+    </section>
+
+    <!-- 2 · Hoje -->
+    <section class="screen" id="s-hoje">
+      <span class="kick">Tela 2 · Hoje</span>
+      <h1>Bom ver você.</h1>
+      <hr class="rule">
+      <p class="note">SEQUÊNCIA: 3 DIAS · SEM PRESSA, QUANDO QUISER</p>
+      <a class="btn primary" href="#licao">▶ Continuar<small>A1 · Lição 12 · “Pedir um café” · cerca de 12 min</small></a>
+      <a class="btn" href="#revisao">◉ Revisar 5 cartões<small>Palavras de lições anteriores, no ponto certo para lembrar.</small></a>
+      <a class="btn" href="#ler">◌ Ler um texto seu<small>Cole um texto ou envie um PDF e estude frase a frase.</small></a>
+      <h2 class="h">Seu nível</h2>
+      <div class="box plain"><span class="pill">A1</span> &nbsp; 11 de 48 lições concluídas
+        <div class="bar" style="margin-top:10px"><i style="width:23%"></i></div></div>
+    </section>
+
+    <!-- 3 · Trilha -->
+    <section class="screen" id="s-trilha">
+      <span class="kick">Tela 3 · Trilha</span>
+      <h1>Sua trilha</h1>
+      <hr class="rule">
+      <p class="lead">Seis níveis, do primeiro passo ao domínio. Todos ficam abertos: o site avisa o que costuma faltar, mas quem decide é você.</p>
+      <div id="trail"></div>
+    </section>
+
+    <!-- 4 · Lição -->
+    <section class="screen" id="s-licao">
+      <span class="kick">Tela 4 · Lição · A1 · 12</span>
+      <h1>Pedir um café</h1>
+      <hr class="rule">
+      <div class="steps" id="steps"></div>
+      <div id="lessonBody"></div>
+    </section>
+
+    <!-- 5 · Prática -->
+    <section class="screen" id="s-pratica">
+      <span class="kick">Tela 5 · Prática</span>
+      <h1>Praticar</h1>
+      <hr class="rule">
+      <div class="tabs" id="ptabs" role="tablist">
+        <button class="opt on" data-p="ouvir">Ouvir e escolher</button>
+        <button class="opt" data-p="ditado">Ditado</button>
+        <button class="opt" data-p="montar">Montar a frase</button>
+        <button class="opt" data-p="repetir">Repetir</button>
+      </div>
+      <div id="pBody"></div>
+    </section>
+
+    <!-- 6 · Revisão -->
+    <section class="screen" id="s-revisao">
+      <span class="kick">Tela 6 · Revisão</span>
+      <h1 id="rvT">5 para revisar</h1>
+      <hr class="rule">
+      <div id="rvBody"></div>
+    </section>
+
+    <!-- 7 · Leitor -->
+    <section class="screen" id="s-ler">
+      <span class="kick">Tela 7 · Leitor</span>
+      <h1>Ler um texto seu</h1>
+      <hr class="rule">
+      <div class="drop"><b>Toque ou arraste um PDF aqui</b><p class="note" style="margin:6px 0 0">PDF com texto selecionável, EPUB ou texto colado. Tudo acontece neste aparelho.</p></div>
+      <h2 class="h">Texto de exemplo</h2>
+      <div class="study" role="group" aria-label="Ferramentas de estudo">
+        <span class="label">Estudo</span>
+        <button id="rdTr" aria-pressed="false">Ver tradução</button>
+        <button id="rdUnc" aria-pressed="false">Destacar incomuns</button>
+        <button id="rdPlay">▶ Ouvir</button>
+      </div>
+      <article class="read" id="reader"></article>
+      <p class="note">No site real, o aluno controla aparência e voz em painéis próprios, separados do estudo (como já ficou no livro).</p>
+    </section>
+
+    <!-- 8 · Progresso -->
+    <section class="screen" id="s-progresso">
+      <span class="kick">Tela 8 · Progresso</span>
+      <h1>Seu progresso</h1>
+      <hr class="rule">
+      <div class="stats">
+        <div class="stat"><span class="label">Sequência</span><b>3 dias</b></div>
+        <div class="stat"><span class="label">Palavras ouvidas</span><b>1.240</b></div>
+        <div class="stat"><span class="label">Cartões salvos</span><b>86</b></div>
+        <div class="stat"><span class="label">Minutos esta semana</span><b>94</b></div>
+      </div>
+      <span class="label">Últimos 7 dias</span>
+      <div class="week" aria-label="Minutos por dia"><div style="height:30%"></div><div style="height:62%"></div><div style="height:100%"></div><div style="height:45%"></div><div style="height:4%"></div><div style="height:72%"></div><div style="height:90%"></div></div>
+      <div class="wlab"><span>Seg</span><span>Ter</span><span>Qua</span><span>Qui</span><span>Sex</span><span>Sáb</span><span>Dom</span></div>
+      <div class="box"><span class="label">Nível sugerido</span>A1 <span class="note">→</span> A2 <p class="note" style="margin:8px 0 0">Falta o teste de saída do A1 e 5 lições. Você pode abrir o A2 quando quiser.</p></div>
+      <button class="btn" id="expBtn">Exportar meu progresso<small>Gera um arquivo para guardar ou levar a outro aparelho.</small></button>
+      <button class="btn">Importar progresso<small>Restaura um arquivo exportado antes.</small></button>
+      <div class="fb soft" id="expFb" hidden>No site real, isto baixa um arquivo. Aqui é só o desenho da tela.</div>
+      <p class="note">Por que exportar: o navegador pode apagar dados do site sem aviso. O arquivo é a sua cópia de segurança.</p>
+    </section>
+  </main>
+
+  <nav class="nav" id="nav" aria-label="Principal"><div class="nav-in">
+    <a href="#hoje" data-n="hoje"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 7v5l3 2"/></svg>Hoje</a>
+    <a href="#trilha" data-n="trilha"><svg viewBox="0 0 24 24"><path d="M5 19c0-6 14-3 14-10M5 19h0M19 9h0"/><circle cx="5" cy="19" r="1.5"/><circle cx="19" cy="7" r="1.5"/></svg>Trilha</a>
+    <a href="#ler" data-n="ler"><svg viewBox="0 0 24 24"><path d="M4 5h7a2 2 0 0 1 2 2v12a2 2 0 0 0-2-2H4zM20 5h-7"/><path d="M20 5v12h-7"/></svg>Ler</a>
+    <a href="#progresso" data-n="progresso"><svg viewBox="0 0 24 24"><path d="M5 19V11M12 19V5M19 19v-6"/></svg>Progresso</a>
+  </div></nav>
+
+  <div class="drawer" id="drawer"><div class="sheet" role="dialog" aria-label="Mapa do protótipo">
+    <h2>Aparência</h2>
+    <div class="themes" id="themes">
+      <button data-t="paper">Papel</button><button data-t="dark">Terminal</button><button data-t="light">Claro</button><button data-t="sepia">Sépia</button>
+    </div>
+    <h2>Telas do protótipo</h2>
+    <a href="#boas-vindas"><b>1</b>Boas-vindas e diagnóstico</a>
+    <a href="#hoje"><b>2</b>Hoje</a>
+    <a href="#trilha"><b>3</b>Trilha</a>
+    <a href="#licao"><b>4</b>Lição</a>
+    <a href="#pratica"><b>5</b>Prática</a>
+    <a href="#revisao"><b>6</b>Revisão</a>
+    <a href="#ler"><b>7</b>Leitor</a>
+    <a href="#progresso"><b>8</b>Progresso</a>
+    <p class="note" style="margin-top:16px">Tudo aqui é exemplo para discutir fluxo e visual. Nenhuma lição é real ainda.</p>
+  </div></div>
+</div>
+
+<script>
+(function(){
+  var $=function(s,r){return (r||document).querySelector(s)}, $$=function(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s))};
+  var html=document.documentElement;
+  function sget(k,d){try{return localStorage.getItem(k)||d}catch(e){return d}}
+  function sset(k,v){try{localStorage.setItem(k,v)}catch(e){}}
+
+  /* fala (voz do navegador, só depois de um toque) */
+  function say(t,rate){try{if(!window.speechSynthesis)return;speechSynthesis.cancel();var u=new SpeechSynthesisUtterance(t);u.lang='en-US';u.rate=rate||1;speechSynthesis.speak(u)}catch(e){}}
+
+  /* tema */
+  function setTheme(t){ if(t==='paper'){html.removeAttribute('data-t')}else{html.setAttribute('data-t',t)} sset('iz-t',t); $$('#themes button').forEach(function(b){b.setAttribute('aria-pressed',String(b.dataset.t===t))}) }
+  setTheme(sget('iz-t','paper'));
+  $('#themes').addEventListener('click',function(e){var b=e.target.closest('button'); if(b) setTheme(b.dataset.t)});
+
+  /* menu */
+  var dr=$('#drawer'), mb=$('#menuBtn');
+  function menu(o){dr.classList.toggle('open',o);mb.setAttribute('aria-expanded',String(o))}
+  mb.addEventListener('click',function(){menu(!dr.classList.contains('open'))});
+  dr.addEventListener('click',function(e){if(e.target===dr||e.target.closest('a'))menu(false)});
+  document.addEventListener('keydown',function(e){if(e.key==='Escape')menu(false)});
+
+  /* roteador por hash */
+  var SCREENS=['boas-vindas','diagnostico','hoje','trilha','licao','pratica','revisao','ler','progresso'];
+  var NAVMAP={hoje:'hoje',licao:'hoje',pratica:'hoje',revisao:'hoje',trilha:'trilha',ler:'ler',progresso:'progresso'};
+  function route(){
+    var h=(location.hash||'').replace('#',''); if(SCREENS.indexOf(h)<0)h='boas-vindas';
+    $$('.screen').forEach(function(s){s.classList.toggle('on',s.id==='s-'+h)});
+    var n=NAVMAP[h]; $('#nav').hidden=!n;
+    $$('#nav a').forEach(function(a){ if(a.dataset.n===n)a.setAttribute('aria-current','page'); else a.removeAttribute('aria-current')});
+    if(h==='licao')lesson(0); if(h==='pratica')practice('ouvir'); if(h==='revisao')review(0); if(h==='diagnostico')diag(0);
+    window.scrollTo(0,0);
+  }
+  window.addEventListener('hashchange',route);
+
+  /* 3 · trilha */
+  var LV=[
+    {c:'Pré-A1',n:'Primeiros passos',t:12,d:12,l:['Sons e alfabeto','Números de 1 a 20','Cumprimentos','Eu e você']},
+    {c:'A1',n:'Iniciante',t:48,d:11,l:['Apresentar-se','Família','Pedir um café','Horas e dias'],cur:2,open:true},
+    {c:'A2',n:'Básico',t:60,d:0,l:['Rotina diária','Compras','Falar do passado','Dar direções']},
+    {c:'B1',n:'Intermediário',t:70,d:0,l:['Contar experiências','Planos e opiniões','Entender notícias curtas','Viagens']},
+    {c:'B2',n:'Intermediário avançado',t:70,d:0,l:['Argumentar','Textos autênticos','Reuniões','Nuances de tom']},
+    {c:'C1',n:'Avançado',t:60,d:0,l:['Registro formal e informal','Textos longos','Implícitos','Escrita acadêmica']},
+    {c:'C2',n:'Domínio',t:50,d:0,l:['Ambiguidade e humor','Resumir com precisão','Debate','Estilo próprio']}
+  ];
+  (function(){
+    var h='';
+    LV.forEach(function(v,i){
+      var pct=Math.round(v.d/v.t*100), done=v.d>=v.t;
+      h+='<div class="lvl'+(v.open?'':' closed')+'" data-i="'+i+'"><div class="lvl-h" role="button" tabindex="0"><b>'+v.c+'</b><span>'+v.n+'</span><em class="more" style="font-style:normal">'+(done?'✓':v.d+'/'+v.t)+'</em></div><div class="bar"><i style="width:'+pct+'%"></i></div><div class="lessons">';
+      v.l.forEach(function(x,j){
+        var cur=(v.cur===j), past=v.cur!=null?j<v.cur:done;
+        h+='<a class="ls'+(cur?' cur':'')+'" href="'+(cur?'#licao':'#licao')+'"><span class="n">'+String(j+1).padStart(2,'0')+'</span><span>'+x+'</span><span class="s">'+(past?'✓':cur?'▶':'')+'</span></a>';
+      });
+      h+='<p class="note" style="margin:8px 0 2px">'+(done?'Concluído.':(v.d===0&&i>1?'Aberto para quem quiser começar por aqui. Antes, vale ter o '+LV[i-1].c+' em dia.':'Mostrando 4 de '+v.t+' lições (exemplo).'))+'</p></div></div>';
+    });
+    $('#trail').innerHTML=h;
+    $('#trail').addEventListener('click',function(e){var hd=e.target.closest('.lvl-h'); if(hd)hd.parentNode.classList.toggle('closed')});
+    $('#trail').addEventListener('keydown',function(e){if((e.key==='Enter'||e.key===' ')&&e.target.classList.contains('lvl-h')){e.preventDefault();e.target.parentNode.classList.toggle('closed')}});
+  })();
+
+  /* diagnóstico */
+  var DG=[
+    {q:'___ a coffee, please.',o:['I want','I wants','I wanting'],a:0},
+    {q:'She ___ to work every day.',o:['go','goes','going'],a:1},
+    {q:'If it ___ tomorrow, we will stay home.',o:['rain','rains','will rain'],a:1}
+  ], dgOk=0;
+  function diag(i){
+    if(i===0)dgOk=0;
+    var d=DG[i]; $('#dgT').textContent='Pergunta '+(i+1)+' de '+DG.length; $('#dgQ').textContent=d.q;
+    var c=$('#dgC'); c.innerHTML=''; $('#dgF').hidden=true; $('#dgN').hidden=true;
+    d.o.forEach(function(t,k){var b=document.createElement('button'); b.textContent=t; b.onclick=function(){
+      if(!$('#dgN').hidden)return; if(k===d.a)dgOk++;
+      $$('button',c).forEach(function(x,j){ if(j===d.a)x.classList.add('ok'); else if(j===k)x.classList.add('try')});
+      var f=$('#dgF'); f.hidden=false; f.className='fb'+(k===d.a?'':' soft'); f.textContent=k===d.a?'Isso mesmo.':'Quase. A forma mais comum é “'+d.o[d.a]+'”.';
+      var n=$('#dgN'); n.hidden=false; n.textContent=i<DG.length-1?'Continuar':'Ver meu ponto de partida';
+      n.onclick=function(){ if(i<DG.length-1)diag(i+1); else location.hash='#hoje' };
+    }; c.appendChild(b)});
+  }
+
+  /* 4 · lição */
+  var STEPS=['Entrada','Foco','Prática','Saída','Revisão'];
+  var DIALOG=[
+    {w:'Atendente',e:'Hi! What can I get you?',p:'Oi! O que posso te servir?'},
+    {w:'Você',e:'Can I have a coffee, please?',p:'Posso tomar um café, por favor?'},
+    {w:'Atendente',e:'Sure. Anything else?',p:'Claro. Mais alguma coisa?'},
+    {w:'Você',e:'No, thanks. That is all.',p:'Não, obrigado. É só isso.'}
+  ];
+  var WORDS={coffee:'café',please:'por favor',thanks:'obrigado',anything:'qualquer coisa',else:'mais, além disso',sure:'claro',get:'pegar, servir'};
+  function lesson(s){
+    $('#steps').innerHTML=STEPS.map(function(n,i){return '<i class="'+(i<=s?'d':'')+'" title="'+n+'"></i>'}).join('');
+    var b=$('#lessonBody'), h='<p class="note">PASSO '+(s+1)+' DE 5 · '+STEPS[s].toUpperCase()+'</p>';
+    if(s===0){
+      h+='<div class="dlg">'+DIALOG.map(function(l,i){
+        var en=l.e.replace(/[A-Za-z']+/g,function(m){var k=m.toLowerCase(); return WORDS[k]?'<span class="w" data-w="'+k+'">'+m+'</span>':m});
+        return '<div class="ln"><span class="who">'+l.w+'</span><div class="en">'+en+'</div><div class="pt">'+l.p+'</div><div class="ls-act"><button data-say="'+i+'">🔊 Ouvir</button><button data-slow="'+i+'">Devagar</button></div></div>';
+      }).join('')+'</div><div class="pop" id="pop" hidden></div><p class="note">Toque numa palavra sublinhada para ver o significado e salvar.</p>'+
+      '<button class="btn center primary" data-go="1">Próximo</button>';
+    } else if(s===1){
+      h+='<div class="focus"><div class="fc"><b>Can I have…?</b><span>Pedir algo com educação. “Posso tomar…?”</span></div><div class="fc"><b>please</b><span>por favor. Vai quase sempre no fim do pedido.</span></div><div class="fc"><b>Anything else?</b><span>Mais alguma coisa? O atendente usa para fechar o pedido.</span></div><div class="fc"><b>That is all.</b><span>É só isso. Para encerrar.</span></div></div>'+
+      '<p class="note" style="margin-top:14px">Estas 4 expressões entram nos seus cartões de revisão ao final da lição.</p><button class="btn center primary" data-go="2">Ir para a prática</button>';
+    } else if(s===2){
+      h+='<div class="box"><span class="label">Prática</span>Ouvir e escolher, ditado, montar a frase e repetir em voz alta.</div><a class="btn primary" href="#pratica">Abrir a prática<small>Quando terminar, volte e siga para a saída.</small></a><button class="btn center" data-go="3">Pular para a saída</button>';
+    } else if(s===3){
+      h+='<div class="box"><span class="label">Sua vez</span><p style="margin:0 0 8px">Escreva, com suas palavras, como você pediria um café.</p><input class="field" id="out" placeholder="Digite aqui em inglês" autocomplete="off"></div><div class="fb" id="outF" hidden></div><button class="btn center primary" id="outB">Ver uma resposta possível</button><button class="btn center" data-go="4">Continuar</button>';
+    } else {
+      h+='<div class="box"><span class="label">Fim da lição</span><b>4 expressões novas</b> viraram cartões. Você vai revê-las amanhã.</div><a class="btn primary" href="#revisao">Revisar agora<small>5 cartões prontos.</small></a><a class="btn" href="#hoje">Voltar para Hoje</a>';
+    }
+    b.innerHTML=h;
+  }
+  $('#lessonBody').addEventListener('click',function(e){
+    var t=e.target;
+    if(t.dataset.go){ lesson(+t.dataset.go); window.scrollTo(0,0); return }
+    if(t.dataset.say!=null)say(DIALOG[+t.dataset.say].e,1);
+    if(t.dataset.slow!=null)say(DIALOG[+t.dataset.slow].e,.6);
+    if(t.classList.contains('w')){
+      $$('.w.hl').forEach(function(x){x.classList.remove('hl')}); t.classList.add('hl');
+      var k=t.dataset.w, p=$('#pop'); p.hidden=false;
+      p.innerHTML='<div class="big">'+k+'</div><div class="pt">'+WORDS[k]+'</div><div class="ls-act"><button id="pl">🔊 Ouvir</button><button id="sv">☆ Salvar</button></div>';
+      $('#pl').onclick=function(){say(k,.9)}; $('#sv').onclick=function(){this.textContent='★ Salva'};
+    }
+    if(t.id==='outB'){var f=$('#outF'); f.hidden=false; f.className='fb'; f.textContent='Por exemplo: “Can I have a coffee, please?” ou “A coffee, please.” Ambas funcionam.'}
+  });
+
+  /* 5 · prática */
+  var pstate=0;
+  function practice(kind){
+    $$('#ptabs .opt').forEach(function(b){b.classList.toggle('on',b.dataset.p===kind)});
+    var b=$('#pBody'), h='';
+    if(kind==='ouvir'){
+      h='<div class="box"><span class="label">Ouça e escolha o que você entendeu</span><button class="btn center" id="pl1">🔊 Ouvir a frase</button></div><div class="choice" id="ch"></div><div class="fb" id="pf" hidden></div>';
+      b.innerHTML=h; var opts=['Can I have a coffee, please?','Can I have a cookie, please?','Can you have a coffee, please?'];
+      $('#pl1').onclick=function(){say(opts[0],1)};
+      opts.forEach(function(t,k){var x=document.createElement('button'); x.textContent=t; x.onclick=function(){ var f=$('#pf'); f.hidden=false; $$('#ch button').forEach(function(y,j){y.classList.toggle('ok',j===0); if(j===k&&k!==0)y.classList.add('try')}); f.className='fb'+(k===0?'':' soft'); f.textContent=k===0?'Isso mesmo. Ouça de novo, devagar, se quiser.':'Quase. Repare em “coffee”. Ouça mais uma vez.'}; $('#ch').appendChild(x)});
+    } else if(kind==='ditado'){
+      b.innerHTML='<div class="box"><span class="label">Ouça e escreva</span><button class="btn center" id="pl2">🔊 Ouvir</button><button class="btn center" id="pl3">Ouvir devagar</button><input class="field" id="dt" placeholder="Escreva o que ouviu" autocomplete="off" autocapitalize="off"></div><button class="btn center primary" id="ck">Conferir</button><div class="box plain" id="df" hidden></div>';
+      var T='No, thanks. That is all.'; $('#pl2').onclick=function(){say(T,1)}; $('#pl3').onclick=function(){say(T,.6)};
+      $('#ck').onclick=function(){ var a=T.toLowerCase().replace(/[.,!?]/g,'').split(/\s+/), u=($('#dt').value||'').toLowerCase().replace(/[.,!?]/g,'').split(/\s+/).filter(Boolean);
+        var out=a.map(function(w,i){return '<span class="'+(u[i]===w?'ok':'miss')+'">'+w+'</span>'}).join(' ');
+        var ok=a.filter(function(w,i){return u[i]===w}).length; var f=$('#df'); f.hidden=false;
+        f.innerHTML='<span class="label">Frase certa</span><div class="diff en">'+out+'</div><p class="note" style="margin:8px 0 0">'+ok+' de '+a.length+' palavras no lugar. Sem nota, só para você ver onde ajustar.</p>'};
+    } else if(kind==='montar'){
+      var words=['coffee','a','have','I','Can','please','?'], right='Can I have a coffee please ?'; var got=[];
+      b.innerHTML='<div class="box"><span class="label">Monte: “Posso tomar um café, por favor?”</span></div><div class="built" id="bt"></div><div class="bank" id="bk"></div><div class="fb" id="mf" hidden></div><div class="row"><button class="btn center" id="rs">Limpar</button><button class="btn center primary" id="mk">Conferir</button></div>';
+      function draw(){ $('#bt').innerHTML=got.map(function(w){return '<span class="chip">'+w+'</span>'}).join(''); $$('#bk .chip').forEach(function(c){c.classList.toggle('used',got.indexOf(c.textContent)>=0)}) }
+      words.forEach(function(w){var c=document.createElement('button'); c.className='chip'; c.textContent=w; c.onclick=function(){got.push(w); draw()}; $('#bk').appendChild(c)});
+      $('#rs').onclick=function(){got=[];$('#mf').hidden=true;draw()};
+      $('#mk').onclick=function(){var f=$('#mf'); f.hidden=false; var ok=got.join(' ')===right; f.className='fb'+(ok?'':' soft'); f.textContent=ok?'Isso mesmo. Frase completa.':'Ainda não. Tente começar por “Can”.'; };
+    } else {
+      b.innerHTML='<div class="box"><span class="label">Repita em voz alta</span><p class="en" style="margin:0 0 6px">Can I have a coffee, please?</p><p class="pt" style="margin:0">Posso tomar um café, por favor?</p></div><div class="row"><button class="btn center" id="r1">🔊 Ouvir</button><button class="btn center" id="r2">Devagar</button></div><div class="fb soft">O site não avalia a sua voz: ele guia o ritmo. Ouça, repita, ouça de novo. Quantas vezes quiser.</div>';
+      $('#r1').onclick=function(){say('Can I have a coffee, please?',1)}; $('#r2').onclick=function(){say('Can I have a coffee, please?',.6)};
+    }
+  }
+  $('#ptabs').addEventListener('click',function(e){var b=e.target.closest('.opt'); if(b)practice(b.dataset.p)});
+
+  /* 6 · revisão */
+  var CARDS=[
+    {w:'coffee',pt:'café',c:'Can I have a <mark>coffee</mark>, please?'},
+    {w:'please',pt:'por favor',c:'Can I have a coffee, <mark>please</mark>?'},
+    {w:'anything',pt:'qualquer coisa',c:'Sure. <mark>Anything</mark> else?'},
+    {w:'thanks',pt:'obrigado',c:'No, <mark>thanks</mark>. That is all.'},
+    {w:'else',pt:'mais, além disso',c:'Anything <mark>else</mark>?'}
+  ];
+  function review(i){
+    var b=$('#rvBody');
+    if(i>=CARDS.length){ $('#rvT').textContent='Revisão concluída'; b.innerHTML='<div class="box">Muito bem. Os próximos cartões voltam quando for o momento certo para lembrar.</div><a class="btn primary" href="#hoje">Voltar para Hoje</a>'; return }
+    var c=CARDS[i]; $('#rvT').textContent=(CARDS.length-i)+' para revisar';
+    b.innerHTML='<div class="card"><span class="label">Qual o significado?</span><div class="big">'+c.w+'</div><div class="ctx en" style="font-weight:400">'+c.c+'</div><div class="ls-act" style="justify-content:center"><button id="cs">🔊 Ouvir</button></div></div><button class="btn center primary" id="sh">Mostrar resposta</button>';
+    $('#cs').onclick=function(){say(c.w,.9)};
+    $('#sh').onclick=function(){
+      b.innerHTML='<div class="card"><span class="label">Significado</span><div class="big">'+c.pt+'</div><div class="ctx">'+c.c+'</div></div><div class="grades"><button data-g="0">Errei<small>logo</small></button><button data-g="1">Difícil<small>1 dia</small></button><button data-g="2">Bom<small>3 dias</small></button><button data-g="3">Fácil<small>7 dias</small></button></div><p class="note" style="margin-top:12px">Intervalos de exemplo. O site calcula pelo seu histórico.</p>';
+      $('.grades',b).onclick=function(e){if(e.target.closest('button'))review(i+1)};
+    };
+  }
+
+  /* 7 · leitor */
+  var TXT=[
+    ['Algorithms decide what we read every day.','Algoritmos decidem o que lemos todos os dias.'],
+    ['They shape our choices, but nobody explains how they work.','Eles moldam nossas escolhas, mas ninguém explica como funcionam.'],
+    ['Learning to notice this is the first step.','Aprender a perceber isso é o primeiro passo.']
+  ];
+  var COMMON='algorithms decide what we read every day they our choices but nobody how work learning to this is the first step and a of in it that for you with are as be at have not or by from an can all'.split(' ');
+  var showTr=false, showUnc=false;
+  function paintReader(){
+    $('#reader').innerHTML=TXT.map(function(s,i){
+      var en=s[0].replace(/[A-Za-z']+/g,function(m){return COMMON.indexOf(m.toLowerCase())<0?'<span class="unc'+(showUnc?' on':'')+'">'+m+'</span>':m});
+      return '<p class="lb-s" data-i="'+i+'">'+en+(showTr?'<br><span class="pt">'+s[1]+'</span>':'')+'</p>';
+    }).join('');
+  }
+  paintReader();
+  $('#rdTr').onclick=function(){showTr=!showTr;this.setAttribute('aria-pressed',String(showTr));paintReader()};
+  $('#rdUnc').onclick=function(){showUnc=!showUnc;this.setAttribute('aria-pressed',String(showUnc));paintReader()};
+  $('#rdPlay').onclick=function(){say(TXT.map(function(s){return s[0]}).join(' '),1)};
+  $('#reader').addEventListener('click',function(e){var p=e.target.closest('.lb-s'); if(!p)return; $$('.lb-s.now').forEach(function(x){x.classList.remove('now')}); p.classList.add('now'); say(TXT[+p.dataset.i][0],1)});
+
+  /* 8 · progresso */
+  $('#expBtn').onclick=function(){$('#expFb').hidden=false};
+
+  /* tela 1: escolha de ponto de partida (só demonstrativo) */
+  route();
+})();
+</script>
