@@ -157,7 +157,7 @@
     bar.append(bRev, bList, bCsv);
     const listEl = el('div', 'lb-vocab-list'); listEl.hidden = true;
     sec.append(h2, sum, bar, listEl);
-    const anchorEl = $('lb-h-engine');
+    const anchorEl = $('lb-a-vocab') || $('lb-h-engine');
     if (anchorEl && anchorEl.parentNode) anchorEl.parentNode.insertBefore(sec, anchorEl);
 
     async function renderVocab() {

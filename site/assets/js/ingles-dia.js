@@ -18,7 +18,7 @@
     const L = {
         pt: {
             h: 'SESSÃO DO DIA', total: (n) => TOTAL + ' minutos em 4 blocos · hoje você estudou ' + n + ' min',
-            noPlan: 'A sessão do dia nasce do plano da semana. Comece uma semana acima para montar a sua.',
+            noPlan: 'A sessão do dia nasce do plano da semana. Comece uma semana na seção Biblioteca para montar a sua.',
             read: 'Leitura densa', vocab: 'Vocabulário em contexto', shadow: 'Shadowing', write: 'Escrita',
             readGoal: (a, b) => 'Cota de hoje: ' + a + ' de ' + b + ' palavras', vocabGoal: (a, b) => 'Revisões: ' + a + ' de ' + b, vocabNone: 'Nenhuma palavra vence hoje. Bloco feito.',
             shadowGoal: (a) => 'Palavras ouvidas e repetidas hoje: ' + a + ' de ' + HEARD_GOAL, writeGoal: 'Resuma o trecho em 2 frases e acrescente uma objeção sua, em inglês.',
@@ -29,7 +29,7 @@
         },
         en: {
             h: 'TODAY\'S SESSION', total: (n) => TOTAL + ' minutes in 4 blocks · you studied ' + n + ' min today',
-            noPlan: 'Today\'s session comes from the weekly plan. Start a week above to build yours.',
+            noPlan: 'Today\'s session comes from the weekly plan. Start a week in the Library section to build yours.',
             read: 'Close reading', vocab: 'Vocabulary in context', shadow: 'Shadowing', write: 'Writing',
             readGoal: (a, b) => 'Today\'s quota: ' + a + ' of ' + b + ' words', vocabGoal: (a, b) => 'Reviews: ' + a + ' of ' + b, vocabNone: 'No words due today. Block done.',
             shadowGoal: (a) => 'Words heard and repeated today: ' + a + ' of ' + HEARD_GOAL, writeGoal: 'Summarize the passage in 2 sentences and add an objection of your own, in English.',
@@ -57,7 +57,7 @@
     const h2 = el('h2'); h2.id = 'lb-h-sess';
     const body = el('div', 'lb-sess-body'); body.id = 'lb-sess-body';
     sec.append(h2, body);
-    const anchor = D.$('lb-drop');
+    const anchor = D.$('lb-a-sess') || D.$('lb-drop');
     if (anchor && anchor.parentNode) anchor.parentNode.insertBefore(sec, anchor);
 
     function streak(hist) {

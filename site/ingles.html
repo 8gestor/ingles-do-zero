@@ -16,40 +16,58 @@
     <main class="lab" id="lab">
         <span class="meta-tag" id="lb-meta"></span>
 
-        <!-- BIBLIOTECA -->
+        <!-- BIBLIOTECA: cinco seções, escolhidas pelo menu lateral do site -->
         <section id="lb-library">
             <h1 id="lb-title"></h1>
             <p class="lb-lead" id="lb-lead"></p>
-            <p class="lb-intro" id="lb-intro"></p>
 
-            <div class="lb-drop" id="lb-drop" tabindex="0" role="button" aria-label="Enviar documento">
-                <strong id="lb-drop-main"></strong>
-                <span id="lb-drop-sub"></span>
-                <input type="file" id="lb-file" accept=".pdf,application/pdf,.txt,text/plain" hidden>
+            <!-- 1. BIBLIOTECA -->
+            <div class="lb-pane" id="lb-pane-lib">
+                <div id="lb-a-week"></div>
+                <h2 id="lb-h-docs"></h2>
+                <div class="lb-tools" id="lb-tools" hidden>
+                    <input type="search" id="lb-search" class="lb-input" autocomplete="off">
+                    <select id="lb-sort" class="lb-input"></select>
+                </div>
+                <div class="lb-docs" id="lb-docs" aria-live="polite"></div>
+                <p class="lb-note" id="lb-storage"></p>
             </div>
 
-            <div class="lb-progress" id="lb-progress" hidden>
-                <div class="lb-progress-text" id="lb-progress-text"></div>
-                <div class="lb-bar"><div class="lb-bar-fill" id="lb-progress-fill"></div></div>
+            <!-- 2. LEITOR / SUBIR PDF -->
+            <div class="lb-pane" id="lb-pane-up" hidden>
+                <p class="lb-intro" id="lb-intro"></p>
+                <div class="lb-drop" id="lb-drop" tabindex="0" role="button" aria-label="Enviar documento">
+                    <strong id="lb-drop-main"></strong>
+                    <span id="lb-drop-sub"></span>
+                    <input type="file" id="lb-file" accept=".pdf,application/pdf,.txt,text/plain" hidden>
+                </div>
+                <div class="lb-progress" id="lb-progress" hidden>
+                    <div class="lb-progress-text" id="lb-progress-text"></div>
+                    <div class="lb-bar"><div class="lb-bar-fill" id="lb-progress-fill"></div></div>
+                </div>
+                <p class="lb-error" id="lb-error" role="alert" hidden></p>
             </div>
-            <p class="lb-error" id="lb-error" role="alert" hidden></p>
 
-            <h2 id="lb-h-docs"></h2>
-            <div class="lb-tools" id="lb-tools" hidden>
-                <input type="search" id="lb-search" class="lb-input" autocomplete="off">
-                <select id="lb-sort" class="lb-input"></select>
+            <!-- 3. SEU PROGRESSO -->
+            <div class="lb-pane" id="lb-pane-prog" hidden>
+                <div id="lb-a-sess"></div>
+                <div id="lb-a-prog"></div>
             </div>
-            <div class="lb-docs" id="lb-docs" aria-live="polite"></div>
-            <p class="lb-note" id="lb-storage"></p>
 
-            <h2 id="lb-h-engine"></h2>
-            <div class="lb-engine" id="lb-engine" aria-live="polite"></div>
-            <h2 id="lb-h-voice"></h2>
-            <div class="lb-engine" id="lb-voice" aria-live="polite"></div>
+            <!-- 4. VOCABULÁRIO -->
+            <div class="lb-pane" id="lb-pane-vocab" hidden>
+                <div id="lb-a-vocab"></div>
+            </div>
 
-            <p class="lb-note" id="lb-note"></p>
+            <!-- 5. CONFIGURAÇÕES (o que não está no menu superior) -->
+            <div class="lb-pane" id="lb-pane-cfg" hidden>
+                <h2 id="lb-h-engine"></h2>
+                <div class="lb-engine" id="lb-engine" aria-live="polite"></div>
+                <h2 id="lb-h-voice"></h2>
+                <div class="lb-engine" id="lb-voice" aria-live="polite"></div>
+                <p class="lb-note" id="lb-note"></p>
+            </div>
         </section>
-
         <!-- LEITOR DO DOCUMENTO -->
         <section id="lb-reader" hidden>
             <div class="lb-toolbar">
@@ -92,5 +110,6 @@
     <script src="assets/js/sync-config.js"></script>
     <script src="assets/js/ingles-sync.js"></script>
     <script src="assets/js/ingles-voz.js"></script>
+    <script src="assets/js/ingles-abas.js"></script>
 </body>
 </html>

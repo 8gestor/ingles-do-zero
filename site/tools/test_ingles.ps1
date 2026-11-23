@@ -47,10 +47,10 @@ $test = @'
       await wait(1200);
       // 1. menu
       var cats = Array.prototype.map.call(document.querySelectorAll('.nav-cat'), function (e) { return e.textContent; });
-      ok('1a seção ESTUDO DE INGLÊS é a última do menu', cats[cats.length - 1] === 'ESTUDO DE INGLÊS', cats.slice(-2).join(' | '));
+      ok('1a o menu tem as seções ESTUDO DE INGLÊS e AJUDA (nessa ordem, no fim)', cats.slice(-2).join('|') === 'ESTUDO DE INGLÊS|AJUDA', cats.slice(-2).join(' | '));
       var links = document.querySelectorAll('.chapter-link');
-      var libLink = links[links.length - 2];   // últimos extras: Biblioteca e Manual da Biblioteca
-      ok('1b o menu tem só a Biblioteca e o Manual (o site de inglês não tem capítulos de livro)', links.length === 2 && /^Biblioteca/.test(libLink.textContent.trim()) && /Manual/.test(links[links.length - 1].textContent), links.length + ' links');
+      var nomes = Array.prototype.map.call(links, function (a) { return a.textContent.trim(); }).join(' | ');
+      ok('1b o menu lateral tem as seções do estudo (Biblioteca, Leitor / Subir PDF, Progresso, Vocabulário, Configurações) e o Manual', links.length === 6 && nomes === 'Biblioteca | Leitor / Subir PDF | Progresso | Vocabulário | Configurações | Manual da Biblioteca', nomes);
       ok('1c a Biblioteca abre sozinha ao entrar no site', /ingles\.html/.test(ifr().src), ifr().src.slice(-12));
       await until(function () { return ifr().contentWindow.__ddLab; }, 8000);
       ok('1d abre a página no quadro', !!lab(), ifr().src.slice(-12));

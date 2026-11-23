@@ -248,12 +248,10 @@ $test = @'
       D().$('lb-back').click(); await wait(300);
       // texto colado pela interface
       var d2 = idoc();
-      d2.getElementById('lb-paste-open').click();
-      d2.querySelector('.lb-paste-form input').value = 'Meu artigo';
-      d2.querySelector('.lb-paste-form textarea').value = TEXT;
-      d2.getElementById('lb-paste-add').click();
+      ok('F5a a interface não oferece mais "colar texto" (retirado a pedido do autor, 2026-11-22)', !d2.getElementById('lb-paste-open') && !d2.querySelector('.lb-paste'));
+      await D().addText('Meu artigo', TEXT);
       await until(function () { return D().doc && D().doc.title === 'Meu artigo'; }, 30000);
-      ok('F5 texto colado vira documento com o título dado', !!D().doc && D().doc.title === 'Meu artigo' && D().doc.paras.length >= 2, D().doc && D().doc.title);
+      ok('F5 o núcleo ainda cria documento a partir de texto (addText) com o título dado', !!D().doc && D().doc.title === 'Meu artigo' && D().doc.paras.length >= 2, D().doc && D().doc.title);
       ok('F6 o seletor de arquivo aceita EPUB', /epub/.test(d2.getElementById('lb-file').accept), d2.getElementById('lb-file').accept);
 
       // ===================== G. voz neural local (biblioteca simulada) =====================
@@ -399,6 +397,33 @@ $test = @'
       ok('J17 traduz uma frase isolada sem esperar o parágrafo', typeof sq === 'string' && sq.length > 0 && Date.now() - t0s < 1500, String(sq));
       idoc().querySelector('.lg-off').click(); await wait(200);
       w.speechSynthesis.speak = oldSpeak;
+      // ===================== AB. seções da Biblioteca escolhidas pelo menu lateral (biblioteca, leitor/subir PDF, progresso, vocabulário, configurações) =====================
+      if (!D().$('lb-reader').hidden) { D().$('lb-back').click(); await wait(300); }
+      var abd = idoc(), abN = ['lib', 'up', 'prog', 'vocab', 'cfg'];
+      var abLinks = document.querySelectorAll('.chapter-link');
+      var abHas = function (pane, id) { var e = abd.getElementById(id), p2 = abd.getElementById('lb-pane-' + pane); return !!e && !!p2 && p2.contains(e); };
+      var abVis = function () { return abN.filter(function (k) { return !abd.getElementById('lb-pane-' + k).hidden; }).join(','); };
+      var abTit = function () { return abd.getElementById('lb-title').textContent; };
+      ok('AB1 o menu lateral tem as 5 seções + o manual, e a página não tem mais barra de abas', abLinks.length === 6 && !abd.getElementById('lb-tabs') && !abd.querySelector('.lb-tab'), abLinks.length + ' links');
+      ok('AB2 nomes pedidos no menu: BIBLIOTECA, LEITOR / SUBIR PDF, PROGRESSO, VOCABULÁRIO, CONFIGURAÇÕES', Array.prototype.slice.call(abLinks, 0, 5).map(function (a) { return a.textContent.trim().toUpperCase(); }).join('|') === 'BIBLIOTECA|LEITOR / SUBIR PDF|PROGRESSO|VOCABULÁRIO|CONFIGURAÇÕES');
+      ok('AB3 os blocos estão na seção certa: biblioteca (docs, livro da semana), subir (envio), progresso (sessão do dia, estatísticas), vocabulário, configurações (tradução, voz, voz neural, conta, backup)',
+        abHas('lib', 'lb-docs') && abHas('lib', 'lb-week') && abHas('up', 'lb-drop') && abHas('up', 'lb-file') && abHas('prog', 'lb-sess') && abHas('prog', 'lb-prog') && abHas('vocab', 'lb-vocab') &&
+        abHas('cfg', 'lb-engine') && abHas('cfg', 'lb-voice') && abHas('cfg', 'lb-neural') && abHas('cfg', 'lb-sync') && abHas('cfg', 'lb-backup'));
+      var abOk = true, abNomes = ['Biblioteca', 'Leitor / Subir PDF', 'Progresso', 'Vocabulário', 'Configurações'];
+      for (var abi = 0; abi < 5; abi++) { abLinks[abi].click(); await wait(200); if (abVis() !== abN[abi] || abTit() !== abNomes[abi] || !abLinks[abi].classList.contains('active')) { abOk = false; ok('AB4x falhou em ' + abN[abi], false, abVis() + ' / ' + abTit()); } }
+      ok('AB4 clicar no item do menu mostra só a seção dele, troca o título e marca o item ativo (sem recarregar a página)', abOk);
+      ok('AB5 o endereço do site acompanha a seção (#ingles-configuracoes)', /#ingles-configuracoes$/.test(location.hash), location.hash);
+      abLinks[2].click(); await wait(200);
+      ok('AB6 o selo e o subtítulo acompanham a seção', /PROGRESSO/.test(abd.getElementById('lb-meta').textContent) && /evolução/.test(abd.getElementById('lb-lead').textContent));
+      post({ type: 'readlang', value: 'en' }); await wait(300);
+      ok('AB7 em inglês o título da seção troca de idioma', abTit() === 'Progress' && /ENGLISH STUDY/.test(abd.getElementById('lb-meta').textContent), abTit());
+      post({ type: 'readlang', value: 'pt' }); await wait(300);
+      ok('AB8 o bloco "colar texto" foi retirado da seção de envio, que mantém PDF, TXT e EPUB', !abd.querySelector('.lb-paste') && /epub/.test(abd.getElementById('lb-file').accept) && /EPUB/.test(abd.getElementById('lb-pane-up').textContent));
+      await D().addText('Livro do menu', 'First paragraph of a short test book.\n\nSecond paragraph, just to have more than one.');
+      await until(function () { return D().doc && D().doc.title === 'Livro do menu'; }, 20000);
+      abLinks[0].click(); await wait(500);
+      ok('AB9 escolher outra seção no menu com um livro aberto fecha o livro e mostra a seção', !D().doc && abd.getElementById('lb-reader').hidden && abVis() === 'lib', abVis());
+      abLinks[0].click(); await wait(200);
       // ===================== L. livro da semana =====================
       post({ type: 'readlang', value: 'pt' }); await wait(300);
       var lbk = function (k) { return 'Surveillance capitalism harvests behavioural surplus from ordinary people every single day, and platforms predict what citizens will do tomorrow morning. Nobody explains how these hidden systems really work, so people rarely notice this quiet economic exchange number ' + k + '.'; };

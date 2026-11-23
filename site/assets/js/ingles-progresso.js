@@ -94,7 +94,7 @@
         actions.hidden = !any;
     }
     sec.append(h2, tiles, chart, actions);
-    const anchor = D.$('lb-vocab') || D.$('lb-h-engine');
+    const anchor = D.$('lb-a-prog') || D.$('lb-vocab') || D.$('lb-h-engine');
     if (anchor && anchor.parentNode) anchor.parentNode.insertBefore(sec, anchor);
 
     const fmt = (n) => D.nf().format(n);

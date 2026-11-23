@@ -222,8 +222,8 @@ function init() {
         const btn = document.createElement('a');
         btn.className = 'chapter-link';
         btn.innerText = item.t;
-        navItems.push({ el: btn, pt: item.t, en: TITLES_EN[item.f] });
-        btn.href = '#' + item.f.replace('.html', '');
+        navItems.push({ el: btn, pt: item.t, en: TITLES_EN[item.id || item.f] });
+        btn.href = '#' + keyOf(item);
         btn.onclick = (e) => {
             e.preventDefault();
             loadPage(k);
@@ -234,14 +234,31 @@ function init() {
 
     // abre direto na página indicada na URL (#manual-biblioteca), se houver; senão, a Biblioteca
     const wanted = location.hash.replace('#', '');
-    const start = extras.findIndex((s) => s.f.replace('.html', '') === wanted);
+    const start = extras.findIndex((s) => keyOf(s) === wanted);
     refreshControls();
     populateVoices();
     loadPage(start >= 0 ? start : 0);
 }
 
-// Abre uma página do site no quadro do leitor.
+// nome do item na URL (#ingles-progresso, #manual-biblioteca)
+const keyOf = (item) => item.id || item.f.replace('.html', '');
+let frameFile = '';      // arquivo que está no quadro (para trocar de seção da Biblioteca sem recarregar a página)
+
+// Abre uma página do site no quadro do leitor. Itens com pane são seções da mesma página (ingles.html):
+// se ela já está aberta, só troca a seção (um livro aberto é fechado), sem recarregar nem perder o estado.
 function loadPage(k) {
+    const it = extras[k];
+    if (it.pane && frameFile === it.f) {
+        closePanels();
+        sendMsg('lab-pane', it.pane);
+        try { history.replaceState(null, '', '#' + keyOf(it)); } catch (e) { /* file:// */ }
+        document.querySelectorAll('.chapter-link').forEach((el, i) => {
+            el.classList.toggle('active', i === k);
+            if (i === k) el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        });
+        return;
+    }
+    frameFile = it.f;
     setToolBtn(false);
     setLegendBtn(false, false);       // o botão Legenda só aparece quando a página (ingles-legenda.js) avisa que tem legenda
     labHud = null;
@@ -250,8 +267,8 @@ function loadPage(k) {
     btnTts.innerText = '▶';
     btnTts.classList.remove('active');
     closePanels();
-    frame.src = extras[k].f;
-    try { history.replaceState(null, '', '#' + extras[k].f.replace('.html', '')); } catch (e) { /* file:// */ }
+    frame.src = it.f + (it.pane ? '#' + it.pane : '');
+    try { history.replaceState(null, '', '#' + keyOf(it)); } catch (e) { /* file:// */ }
     document.getElementById('p-bar').style.width = '0%';
     document.getElementById('chapter-indicator').innerText = '—';
     document.querySelectorAll('.chapter-link').forEach((el, i) => {

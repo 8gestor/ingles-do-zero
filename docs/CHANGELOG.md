@@ -2,6 +2,24 @@
 
 > Uma entrada por dia de trabalho, da mais nova para a mais antiga. Escreva **o que mudou, por quê e como conferir**. Mantém o autor e o Claude sem precisar reler conversas antigas.
 
+## 2026-11-22 (noite) · Seções no menu lateral e visual organizado
+
+Pedido do autor: separar a Biblioteca em seções, sem perder nada, **escolhidas pelo menu lateral** (não por abas dentro da página), e organizar o visual (alinhado, justificado, margens).
+
+| Item do menu lateral | Conteúdo | Endereço |
+|---|---|---|
+| BIBLIOTECA | Livro da semana + Sua biblioteca (lista, busca, ordenação) | `#ingles` |
+| LEITOR / SUBIR PDF | área de envio (PDF, TXT, EPUB) | `#ingles-leitor` |
+| PROGRESSO | Sessão do dia + estatísticas (e Zerar estatísticas) | `#ingles-progresso` |
+| VOCABULÁRIO | palavras salvas, revisão, exportar TSV/Anki | `#ingles-vocabulario` |
+| CONFIGURAÇÕES | tradução no navegador, voz, voz neural, conta e nuvem, backup do progresso (o que não está no menu superior) | `#ingles-configuracoes` |
+| MANUAL DA BIBLIOTECA | (em "AJUDA") | `#manual-biblioteca` |
+
+- **Como funciona:** `sumario.js` ganhou `id` e `pane` por item; `leitor.js` (`loadPage`, `keyOf`) troca de seção sem recarregar a página (mensagem `lab-pane`; um livro aberto é fechado e a posição gravada); `ingles-abas.js` mostra a seção escolhida e troca selo, título e subtítulo. Os módulos acham a âncora da sua seção (`lb-a-week`, `lb-a-sess`, `lb-a-prog`, `lb-a-vocab`; conta e backup usam `lb-pane-cfg`). Nenhuma função foi removida.
+- **Retirado:** o bloco "Colar texto" da interface (`ingles-importar.js`). O núcleo ainda tem `DDLab.addText` (Livro da semana, testes) e o EPUB continua aceito. O "colar" do backup do progresso é outra coisa e continua.
+- **Visual (`ingles.css`, bloco final):** todos os blocos usam a largura inteira da coluna (textos sem limite de caracteres, para o justificado/esquerda do painel Aa alinhar com cartões e botões), mesmo acabamento de cartão (borda, raio, respiro), títulos no mesmo ritmo, botões e campos com 44 px e grupos de botões alinhados em linha (à esquerda; nas listas, à direita; no celular distribuídos na largura).
+- Manual da Biblioteca atualizado (PT/EN). Testes: seção AB (9 verificações) e F5 em `test_ingles_modulos.ps1`; 1a/1b em `test_ingles.ps1`. `TC5` (tempo do teleprompter) falha também sem estas mudanças; é anterior.
+- Publicado em `main` (2026-11-22), com autorização do autor.
 ## 2026-11-22 (noite) · Backup do progresso (exportar e importar)
 
 - **Decisão do autor:** migrar o progresso do livro para o site novo por **arquivo** (baixar no livro, carregar no site novo).

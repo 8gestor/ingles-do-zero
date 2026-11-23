@@ -13,7 +13,7 @@
         pt: {
             h: 'LIVRO DA SEMANA',
             pick: 'Escolha o livro em inglês da semana. A leitura é dividida em cotas diárias para você terminar em 7 dias.',
-            start: 'Começar a semana', none: 'Nenhum texto em inglês na biblioteca ainda. Envie um livro acima (PDF, EPUB ou texto colado).',
+            start: 'Começar a semana', none: 'Nenhum texto em inglês na biblioteca ainda. Envie um livro na seção Leitor / Subir PDF do menu (PDF, TXT ou EPUB).',
             day: (d) => 'Dia ' + d + ' de ' + DAYS, over: 'O prazo de 7 dias terminou',
             progress: (r, w, p) => r + ' de ' + w + ' palavras (' + p + '%)',
             quota: (n, m) => 'Cota de hoje: ' + n + ' palavras (cerca de ' + m + ' min de leitura)',
@@ -32,7 +32,7 @@
         en: {
             h: 'BOOK OF THE WEEK',
             pick: 'Pick this week\'s book in English. The reading is split into daily quotas so you finish in 7 days.',
-            start: 'Start the week', none: 'No English text in the library yet. Upload a book above (PDF, EPUB or pasted text).',
+            start: 'Start the week', none: 'No English text in the library yet. Upload a book in the Reader / Upload PDF section (PDF, TXT or EPUB).',
             day: (d) => 'Day ' + d + ' of ' + DAYS, over: 'The 7-day deadline has passed',
             progress: (r, w, p) => r + ' of ' + w + ' words (' + p + '%)',
             quota: (n, m) => 'Today\'s quota: ' + n + ' words (about ' + m + ' min of reading)',
@@ -111,7 +111,7 @@
     const h2 = el('h2'); h2.id = 'lb-h-week';
     const body = el('div', 'lb-week-body'); body.id = 'lb-week-body';
     sec.append(h2, body);
-    const anchor = D.$('lb-drop');
+    const anchor = D.$('lb-a-week') || D.$('lb-drop');
     if (anchor && anchor.parentNode) anchor.parentNode.insertBefore(sec, anchor);
 
     async function startItem(it, metas, again) {

@@ -194,7 +194,7 @@
     bSend.id = 'lb-sync-send'; bEnter.id = 'lb-sync-enter'; bNow.id = 'lb-sync-now'; bOut.id = 'lb-sync-out';
     form.append(inEmail, bSend, inCode, bEnter, bNow, bOut);
     box.append(h2, line, form, status);
-    function host() { return D.$('lb-library'); }
+    function host() { return D.$('lb-pane-cfg') || D.$('lb-library'); }
     function paint() {
         const h = host(); if (h && box.parentNode !== h) h.appendChild(box);
         h2.textContent = t('h');
