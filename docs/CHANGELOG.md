@@ -11,6 +11,13 @@
 - **Defeito meu, achado na conferência do que foi publicado:** abrindo o app direto em `#/sistema`, a tela mostrava "HÁ FALHAS" com 12 módulos prontos e nenhum com erro, porque a rota inicial abria **dentro da fábrica do módulo `inicio`**, que ainda estava "iniciando". Correção: `inicio` agora expõe `abrir()` e a rota só abre **depois** do fim do boot. Novo teste **NU1b** (abre a página direto em `#/sistema` e confere os 13 módulos prontos). O teste antigo não pegava porque navegava depois que tudo já tinha iniciado.
 - **Totais agora:** app novo = **84 testes** (30 núcleo + 41 dados + 13 narrador).
 - **Pendente:** R2.2 (`voz-navegador.js` e `narrador.js` com `speechSynthesis` falsa); estabilizar DG5, TC5, L14.
+## 2026-11-22 (madrugada) · Vocabulário com função própria e Configurações autoexplicativas
+
+- **Pedido do autor:** não entendia a função da aba Vocabulário; Configurações deveria ter só o que faz sentido e se explicar sozinha.
+- **Vocabulário** (`ingles-palavras.js`, `ingles.css`): a aba era só um contador vazio (palavras só entravam tocando num livro aberto). Agora é o **caderno de palavras**: texto "como funciona", contadores novas/aprendendo/dominadas, **Adicionar uma palavra** à mão (significado e frase opcionais; sem significado o tradutor preenche), **palavras do livro da semana** para salvar uma a uma ou todas (a frase vem do próprio livro), lista com busca, revisão e exportação como antes. IDs antigos (`lb-vocab-sum`, `lb-vocab-review`) preservados.
+- **Configurações** (`ingles-abas.js`): frase de abertura ("ajustes opcionais, o site funciona sem mexer"), explicação de "para que serve" em Tradução e Voz; o texto técnico longo foi absorvido pela explicação da tradução. Conta, backup e voz neural já tinham texto próprio. Subtítulos das abas sem jargão ("o que não está no menu superior" saiu).
+- **Testes:** A16 a A20 em `test_ingles_modulos.ps1` passam. Observação: a bateria tem falhas **intermitentes** (TC5, DG3, DG5, B7, SY7…) que também aparecem sem estas mudanças; não investigadas.
+- **Não publicado** (regra do autor).
 ## 2026-11-22 (noite) · Degrau 0: primeiras histórias (primeiro conteúdo para iniciante)
 
 - **Pedido do autor:** nível iniciante; objetivo de 3 meses = ler, escrever, falar e ouvir em inglês; ~1 h por dia; IA local do Chrome adiada. Primeira versão = Degrau 0 como seção própria da Biblioteca, uma história por dia.

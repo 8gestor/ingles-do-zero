@@ -20,7 +20,13 @@
             save: '☆ Salvar', saved: '★ Salva', listen: '🔊 Ouvir', play: '▶ Ler daqui', close: 'Fechar',
             trading: 'traduzindo…', trNone: 'Tradução indisponível: ative o tradutor (aviso no topo do documento).', sentence: 'Frase', inContext: 'No contexto',
             show: 'Mostrar resposta', again: 'Errei', hard: 'Difícil', good: 'Bom', easy: 'Fácil', due: 'a revisar',
-            done: 'Revisão concluída. Volte amanhã para as próximas.', left: 'restam', next: 'Próxima em', days: 'd', exit: 'Sair'
+            done: 'Revisão concluída. Volte amanhã para as próximas.', left: 'restam', next: 'Próxima em', days: 'd', exit: 'Sair',
+            how: 'Seu caderno de palavras. Salve palavras novas (tocando nelas durante a leitura, ou adicionando aqui). Cada palavra volta para revisão em intervalos crescentes (1, 3, 7 dias…) até você dominá-la. Revisar 5 minutos por dia vale mais do que uma hora por semana.',
+            sNew: 'novas', sLearn: 'aprendendo', sMaster: 'dominadas',
+            addH: 'Adicionar uma palavra', addWord: 'Palavra', addTr: 'Significado (opcional: se vazio, o tradutor preenche)', addSent: 'Frase de exemplo (opcional)', addBtn: 'Adicionar',
+            addNeed: 'Digite a palavra.', addDup: 'Essa palavra já está no seu vocabulário.', addOk: 'Palavra adicionada.',
+            weekH: 'Palavras do livro da semana', weekNote: 'As mais frequentes e menos comuns do livro. Salve as que quiser aprender antes de ler (a frase vem do próprio livro).', weekNone: 'Quando você começar uma semana na Biblioteca, as palavras difíceis do livro aparecem aqui.', weekAll: 'Salvar todas', weekSaved: 'salvas',
+            search: 'Buscar na lista', listEmpty: 'Nenhuma palavra encontrada.', noReview: 'Nada para revisar agora. Volte quando houver palavras vencendo.'
         },
         en: {
             hVocab: 'VOCABULARY', none: 'No saved words yet. Tap a word in the text and choose Save.',
@@ -29,7 +35,13 @@
             save: '☆ Save', saved: '★ Saved', listen: '🔊 Listen', play: '▶ Play from here', close: 'Close',
             trading: 'translating…', trNone: 'Translation unavailable: enable the translator (notice at the top of the document).', sentence: 'Sentence', inContext: 'In context',
             show: 'Show answer', again: 'Again', hard: 'Hard', good: 'Good', easy: 'Easy', due: 'due',
-            done: 'Review finished. Come back tomorrow for the next ones.', left: 'left', next: 'Next in', days: 'd', exit: 'Exit'
+            done: 'Review finished. Come back tomorrow for the next ones.', left: 'left', next: 'Next in', days: 'd', exit: 'Exit',
+            how: 'Your word notebook. Save new words (by tapping them while reading, or adding them here). Each word comes back for review at growing intervals (1, 3, 7 days…) until you master it. Five minutes a day beats an hour a week.',
+            sNew: 'new', sLearn: 'learning', sMaster: 'mastered',
+            addH: 'Add a word', addWord: 'Word', addTr: 'Meaning (optional: if empty, the translator fills it in)', addSent: 'Example sentence (optional)', addBtn: 'Add',
+            addNeed: 'Type the word.', addDup: 'That word is already in your vocabulary.', addOk: 'Word added.',
+            weekH: 'Words from the book of the week', weekNote: 'The most frequent and least common words in the book. Save the ones you want to learn before reading (the sentence comes from the book itself).', weekNone: 'When you start a week in the Library, the book\'s hard words show up here.', weekAll: 'Save all', weekSaved: 'saved',
+            search: 'Search the list', listEmpty: 'No words found.', noReview: 'Nothing to review right now. Come back when words are due.'
         }
     };
     const t = (k) => L[D.state.readLang][k];
@@ -149,38 +161,132 @@
     /* ------------------------------------------------------------------ vocabulário (biblioteca) + revisão */
     const sec = el('section', 'lb-vocab'); sec.id = 'lb-vocab';
     const h2 = el('h2'); h2.id = 'lb-h-vocab';
+    const how = el('p', 'lb-help'); how.id = 'lb-vocab-how';
     const sum = el('p', 'lb-vocab-sum'); sum.id = 'lb-vocab-sum';
+    const stats = el('div', 'lb-vstats'); stats.id = 'lb-vocab-stats';
     const bar = el('div', 'lb-doc-acts');
     const bRev = el('button', 'lb-btn lb-primary'); bRev.type = 'button'; bRev.id = 'lb-vocab-review';
     const bList = el('button', 'lb-btn'); bList.type = 'button';
     const bCsv = el('button', 'lb-btn'); bCsv.type = 'button';
     bar.append(bRev, bList, bCsv);
-    const listEl = el('div', 'lb-vocab-list'); listEl.hidden = true;
-    sec.append(h2, sum, bar, listEl);
+    const listBox = el('div', 'lb-vocab-listbox'); listBox.hidden = true;
+    const searchIn = el('input', 'lb-input'); searchIn.type = 'search'; searchIn.id = 'lb-vocab-search'; searchIn.autocomplete = 'off';
+    const listEl = el('div', 'lb-vocab-list');
+    listBox.append(searchIn, listEl);
+    // adicionar palavra à mão
+    const addBox = el('div', 'lb-vadd'); addBox.id = 'lb-vocab-add';
+    const addH = el('h3', 'lb-group');
+    const aWord = el('input', 'lb-input'), aTr = el('input', 'lb-input'), aSent = el('input', 'lb-input');
+    aWord.id = 'lb-vadd-word'; aWord.autocomplete = 'off'; aWord.autocapitalize = 'none'; aTr.id = 'lb-vadd-tr'; aTr.autocomplete = 'off'; aSent.id = 'lb-vadd-sent'; aSent.autocomplete = 'off';
+    const aLang = el('select', 'lb-input'); aLang.id = 'lb-vadd-lang';
+    ['en', 'pt'].forEach((l) => { const o = el('option', null, D.langName ? D.langName(l) : l.toUpperCase()); o.value = l; aLang.appendChild(o); });
+    const aBtn = el('button', 'lb-btn lb-primary'); aBtn.type = 'button'; aBtn.id = 'lb-vadd-go';
+    const aMsg = el('p', 'lb-sync-status'); aMsg.id = 'lb-vadd-msg';
+    const aRow = el('div', 'lb-sync-form'); aRow.append(aWord, aLang);
+    addBox.append(addH, aRow, aTr, aSent, aBtn, aMsg);
+    // palavras do livro da semana
+    const weekBox = el('div', 'lb-vweek'); weekBox.id = 'lb-vocab-week';
+    sec.append(h2, how, sum, stats, bar, listBox, addBox, weekBox);
     const anchorEl = $('lb-a-vocab') || $('lb-h-engine');
     if (anchorEl && anchorEl.parentNode) anchorEl.parentNode.insertBefore(sec, anchorEl);
 
+    const stage = (c) => (c.ivl >= 21 ? 'master' : c.reps > 0 ? 'learn' : 'new');
     async function renderVocab() {
         const list = await loadAll(), due = dueNow(list);
         h2.textContent = t('hVocab');
+        how.textContent = t('how');
         sum.textContent = list.length ? t('summary')(list.length, due.length) : t('none');
-        bRev.textContent = t('review'); bRev.disabled = !due.length;
-        bList.textContent = listEl.hidden ? t('list') : t('hideList');
+        const cnt = { new: 0, learn: 0, master: 0 };
+        list.forEach((c) => { cnt[stage(c)]++; });
+        stats.textContent = '';
+        stats.hidden = !list.length;
+        [['new', 'sNew'], ['learn', 'sLearn'], ['master', 'sMaster']].forEach(([k, lab]) => {
+            const chip = el('span', 'lb-vchip'); chip.append(el('strong', null, String(cnt[k])), ' ' + t(lab)); stats.appendChild(chip);
+        });
+        bRev.textContent = t('review'); bRev.disabled = !due.length; bRev.title = due.length ? '' : t('noReview');
+        bList.textContent = listBox.hidden ? t('list') : t('hideList');
         bCsv.textContent = t('exportCsv');
+        searchIn.placeholder = t('search');
         bar.hidden = !list.length;
         listEl.textContent = '';
-        if (!listEl.hidden) {
-            list.slice().sort((a, b) => b.added - a.added).forEach((c) => {
+        if (!listBox.hidden) {
+            const q = searchIn.value.trim().toLowerCase();
+            const rows = list.slice().sort((a, b) => b.added - a.added).filter((c) => !q || (c.word + ' ' + (c.tr || '') + ' ' + (c.sent || '')).toLowerCase().indexOf(q) >= 0);
+            if (!rows.length) listEl.appendChild(el('p', 'lb-note', t('listEmpty')));
+            rows.forEach((c) => {
                 const row = el('div', 'lb-vrow');
                 const info = el('div', 'lb-vinfo');
                 info.append(el('strong', null, c.word), el('span', null, c.tr || '—'), el('small', null, c.sent));
                 const del = el('button', 'lb-btn', '✕'); del.type = 'button'; del.title = t('del'); del.setAttribute('aria-label', t('del'));
-                del.onclick = async () => { await dropCard(c.id); renderVocab(); };
+                del.onclick = async () => { await dropCard(c.id); renderVocab(); renderWeek(); };
                 row.append(info, del); listEl.appendChild(row);
             });
         }
+        addH.textContent = t('addH');
+        aWord.placeholder = t('addWord'); aTr.placeholder = t('addTr'); aSent.placeholder = t('addSent'); aBtn.textContent = t('addBtn');
     }
-    bList.onclick = () => { listEl.hidden = !listEl.hidden; renderVocab(); };
+    searchIn.addEventListener('input', renderVocab);
+    bList.onclick = () => { listBox.hidden = !listBox.hidden; renderVocab(); };
+
+    async function addCard(word, lang, tr, sent, from) {
+        const lower = String(word || '').trim().toLowerCase();
+        if (!lower) return 'need';
+        const id = key(lang, lower);
+        if ((await loadAll()).some((c) => c.id === id)) return 'dup';
+        let meaning = String(tr || '').trim();
+        if (!meaning && D.translateText) { try { meaning = (await D.translateText(lower, lang)) || ''; } catch (e) { meaning = ''; } }
+        const card = { id, word: lower, lang, tr: meaning, sent: String(sent || '').trim(), sentTr: '', doc: from || '', added: Date.now(), due: Date.now(), ivl: 0, ease: 2.5, reps: 0, lapses: 0 };
+        (cache = cache || []).push(card); await saveCard(card); D.emit('vocab-saved', card);
+        return 'ok';
+    }
+    aBtn.onclick = async () => {
+        aBtn.disabled = true;
+        const r = await addCard(aWord.value, aLang.value, aTr.value, aSent.value, '');
+        aBtn.disabled = false;
+        aMsg.textContent = r === 'need' ? t('addNeed') : r === 'dup' ? t('addDup') : t('addOk');
+        if (r === 'ok') { aWord.value = ''; aTr.value = ''; aSent.value = ''; aWord.focus(); }
+        renderVocab(); renderWeek();
+    };
+    aWord.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); aBtn.click(); } });
+
+    // palavras do livro da semana (as mesmas de "palavras a ver antes de ler"), com a frase tirada do próprio livro
+    async function sentenceFor(docId, word) {
+        try {
+            const d = await D.db.get('docs', docId); if (!d) return '';
+            const re = new RegExp('(^|[^\\p{L}])' + word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '([^\\p{L}]|$)', 'iu');
+            for (const p of d.paras) for (const s of p.s) if (re.test(s)) return s;
+        } catch (e) { /* sem frase */ }
+        return '';
+    }
+    let weekSeq = 0;
+    async function renderWeek() {
+        const my = ++weekSeq;
+        const W = window.__ddWeek, plan = W && W.load();
+        let info = null;
+        if (plan) { try { info = await W.bookInfo(plan.docId); } catch (e) { info = null; } }
+        if (my !== weekSeq) return;
+        weekBox.textContent = '';
+        weekBox.append(el('h3', 'lb-group', t('weekH')));
+        if (!plan || !info || !info.hard.length) { weekBox.append(el('p', 'lb-note', t('weekNone'))); return; }
+        const have = new Set(((await loadAll()) || []).map((c) => c.id));
+        if (my !== weekSeq) return;
+        weekBox.append(el('p', 'lb-note', plan.title + ' — ' + t('weekNote')));
+        const chips = el('div', 'lb-week-chips'); chips.id = 'lb-vweek-chips';
+        const todo = [];
+        info.hard.forEach((w) => {
+            const saved = have.has(key('en', w));
+            const b = el('button', 'lb-btn lb-vweek-chip', (saved ? '★ ' : '☆ ') + w); b.type = 'button'; b.disabled = saved;
+            if (!saved) todo.push(w);
+            b.onclick = async () => { b.disabled = true; await addCard(w, 'en', '', await sentenceFor(plan.docId, w), plan.title); renderVocab(); renderWeek(); };
+            chips.appendChild(b);
+        });
+        weekBox.append(chips);
+        if (todo.length > 1) {
+            const all = el('button', 'lb-btn', t('weekAll') + ' (' + todo.length + ')'); all.type = 'button'; all.id = 'lb-vweek-all';
+            all.onclick = async () => { all.disabled = true; for (const w of todo) await addCard(w, 'en', '', await sentenceFor(plan.docId, w), plan.title); renderVocab(); renderWeek(); };
+            weekBox.append(all);
+        }
+    }
     bCsv.onclick = async () => {
         const rows = (await loadAll()).map((c) => [c.word, c.tr, c.sent, c.sentTr, c.lang].map((x) => String(x || '').replace(/[\t\r\n]+/g, ' ')).join('\t'));
         const url = URL.createObjectURL(new Blob(['﻿' + rows.join('\n')], { type: 'text/tab-separated-values;charset=utf-8' }));
@@ -242,8 +348,11 @@
     }
     bRev.onclick = startReview;
 
-    D.on('lang', renderVocab);
-    D.on('close', renderVocab);
+    D.on('lang', () => { renderVocab(); renderWeek(); });
+    D.on('close', () => { renderVocab(); renderWeek(); });
+    D.on('tab', (n) => { if (n === 'vocab') { renderVocab(); renderWeek(); } });
+    D.on('imported', () => { cache = null; renderVocab(); renderWeek(); });
     renderVocab();
+    renderWeek();
     window.__ddVocab = { grade, wordAtPoint, loadAll, key, startReview };
 })();

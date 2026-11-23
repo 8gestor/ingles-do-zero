@@ -452,3 +452,16 @@ html body.paper-mode .lb-rot .lb-rot-h, html body .lb-rot .lb-rot-h, html body .
     .lb-rot-act { grid-column: 1 / -1; justify-content: stretch; }
     .lb-rot-act .lb-btn { flex: 1 1 140px; white-space: normal; }
 }
+/* texto de ajuda das seções (Vocabulário e Configurações) */
+.lb-help { margin: 0 0 14px; color: var(--c-dim); font-size: 0.92rem; line-height: 1.55; max-width: none; overflow-wrap: anywhere; }
+.lb-vstats { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 14px; }
+.lb-vstats[hidden] { display: none; }
+.lb-vchip { border: 1px solid var(--lb-line); border-radius: 999px; padding: 8px 14px; font-size: 0.85rem; min-height: 44px; display: inline-flex; align-items: center; gap: 6px; }
+.lb-vchip strong { font-size: 1.05rem; }
+.lb-vocab-listbox { margin: 12px 0 0; }
+.lb-vocab-listbox .lb-input, .lb-vadd .lb-input { width: 100%; min-height: 44px; box-sizing: border-box; margin: 0 0 8px; }
+.lb-vadd, .lb-vweek { margin-top: 22px; padding-top: 4px; border-top: 1px solid var(--lb-line); }
+.lb-vadd .lb-sync-form { margin: 0 0 8px; }
+.lb-vadd .lb-sync-form .lb-input { margin: 0; }
+.lb-vweek .lb-week-chips { display: flex; flex-wrap: wrap; gap: 8px; margin: 8px 0 12px; }
+.lb-vweek-chip { min-height: 44px; }

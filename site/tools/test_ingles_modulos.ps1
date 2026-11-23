@@ -111,6 +111,25 @@ $test = @'
       await wait(300);
       ok('A15 sair da revisão fecha a tela', !idoc().querySelector('.lb-review'));
 
+      // A16-A20: aba Vocabulário com função própria (estatísticas, adicionar à mão, lista com busca) e Configurações explicadas
+      ok('A16 a aba explica como o vocabulário funciona e mostra novas/aprendendo/dominadas', idoc().getElementById('lb-vocab-how').textContent.length > 40 && idoc().querySelectorAll('#lb-vocab-stats .lb-vchip').length === 3);
+      idoc().getElementById('lb-vadd-word').value = 'Serendipity';
+      idoc().getElementById('lb-vadd-tr').value = 'acaso feliz';
+      idoc().getElementById('lb-vadd-sent').value = 'It was pure serendipity.';
+      idoc().getElementById('lb-vadd-go').click();
+      await until(function () { return /adicionada|added/i.test(idoc().getElementById('lb-vadd-msg').textContent); }, 5000);
+      cards = await W().__ddVocab.loadAll();
+      var sc = cards.find(function (c) { return c.id === 'en:serendipity'; });
+      ok('A17 adicionar palavra à mão cria o cartão (significado e frase) pronto para revisar', !!sc && sc.tr === 'acaso feliz' && sc.sent === 'It was pure serendipity.' && sc.due <= Date.now(), JSON.stringify(sc));
+      idoc().getElementById('lb-vadd-word').value = 'serendipity'; idoc().getElementById('lb-vadd-go').click();
+      await until(function () { return /já está|already/i.test(idoc().getElementById('lb-vadd-msg').textContent); }, 5000);
+      ok('A18 palavra repetida é recusada com aviso', /já está|already/i.test(idoc().getElementById('lb-vadd-msg').textContent));
+      idoc().getElementById('lb-vocab-review').parentNode.querySelectorAll('.lb-btn')[1].click();
+      idoc().getElementById('lb-vocab-search').value = 'acaso'; idoc().getElementById('lb-vocab-search').dispatchEvent(new Event('input'));
+      await wait(300);
+      ok('A19 a lista abre com busca e filtra pela palavra, significado ou frase', idoc().querySelectorAll('.lb-vrow').length === 1 && /serendipity/.test(idoc().querySelector('.lb-vrow').textContent));
+      ok('A20 Configurações: frase de abertura e explicação em tradução e voz', idoc().getElementById('lb-cfg-intro').textContent.length > 40 && idoc().getElementById('lb-engine-help').textContent.length > 40 && idoc().getElementById('lb-voice-help').textContent.length > 40 && idoc().getElementById('lb-note').hidden);
+
 
       // ===================== B. nível de dificuldade =====================
       var N = W().__ddNivel;
