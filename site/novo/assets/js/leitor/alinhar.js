@@ -7,7 +7,7 @@
  *   3. posição relativa na frase (desempata e cobre palavras funcionais: the, of, a, de);
  *   4. programação dinâmica que prefere a ordem direta, aceita a troca de duas palavras vizinhas e penaliza saltos.
  *
- *   criar({ traduzirPalavra, armazenar, palavras }) -> { mapPos(falado, ci, mostrado, idiomaFalado), preparar(texto, idioma), versao(), palavras() }
+ *   criar({ traduzirPalavra, armazenar, palavras }) -> { mapPos(falado, ci, mostrado, idiomaFalado), aquecer(falado, mostrado, idioma), preparar(texto, idioma), versao(), palavras() }
  *     traduzirPalavra(palavra, idioma) -> Promise<string | null>   (padrão: nenhuma; o alinhamento então usa só grafia e posição)
  *     armazenar   true (padrão) guarda o cache de palavras em `dd-ingles-pal-tr` (até 3000), o mesmo do app de hoje
  *   mapPos devolve o índice de caractere, no texto mostrado, do início da palavra alinhada.
@@ -56,18 +56,24 @@ App.define('alinhar', ['armazem'], function (deps) {
             if (tr) tokens(tr).forEach((t) => { const x = sim(t.w, tg.w); if (x > melhor) melhor = x; });
             return melhor;
         }
+        // Frases curtas: programação dinâmica completa. Frases longas (n*m > COMPLETO): só uma faixa em torno da diagonal (custo linear),
+        // porque a palavra certa fica perto da posição relativa; a faixa acompanha a diferença de tamanho entre os idiomas.
+        const COMPLETO = 1600, FAIXA = 16;
         function alinhar(falado, alvo, idioma) {
             const A = tokens(falado), B = tokens(alvo), n = A.length, m = B.length;
             if (!n || !m) return { A, B, map: [] };
-            const NEG = -1e9, best = [], de = [];
+            const NEG = -1e9, best = [], de = [], emFaixa = n * m > COMPLETO;
+            const lo = new Array(n), hi = new Array(n);
             for (let i = 0; i < n; i++) {
+                const c = n > 1 ? Math.round(i * (m - 1) / (n - 1)) : 0;
+                lo[i] = emFaixa ? Math.max(0, c - FAIXA) : 0; hi[i] = emFaixa ? Math.min(m - 1, c + FAIXA) : m - 1;
                 best.push(new Array(m).fill(NEG)); de.push(new Array(m).fill(-1));
-                for (let j = 0; j < m; j++) {
+                for (let j = lo[i]; j <= hi[i]; j++) {
                     const prior = 1 - Math.abs((n > 1 ? i / (n - 1) : 0) - (m > 1 ? j / (m - 1) : 0));
                     const s = 2 * pontuar(A[i], B[j], idioma) + 0.8 * prior;
                     if (i === 0) { best[i][j] = s - 0.15 * j; continue; }
                     let bv = NEG, bj = -1;
-                    for (let k = 0; k < m; k++) {
+                    for (let k = lo[i - 1]; k <= hi[i - 1]; k++) {
                         const d = j - k, pen = d === 1 ? 0 : d > 1 ? 0.25 * (d - 1) : d === 0 ? 0.5 : d === -1 ? 0.6 : 3;   // ordem direta, salto, repetir, troca de vizinhas, volta
                         const v = best[i - 1][k] - pen;
                         if (v > bv) { bv = v; bj = k; }
@@ -75,25 +81,39 @@ App.define('alinhar', ['armazem'], function (deps) {
                     best[i][j] = s + bv; de[i][j] = bj;
                 }
             }
-            let j = 0, bv = NEG; for (let k = 0; k < m; k++) if (best[n - 1][k] > bv) { bv = best[n - 1][k]; j = k; }
+            let j = lo[n - 1], bv = NEG; for (let k = lo[n - 1]; k <= hi[n - 1]; k++) if (best[n - 1][k] > bv) { bv = best[n - 1][k]; j = k; }
             const map = new Array(n);
             for (let i = n - 1; i >= 0; i--) { map[i] = j; j = de[i][j]; if (j < 0) j = 0; }
             return { A, B, map };
         }
         const cache = new Map();
+        const ocioso = (typeof window !== 'undefined' && window.requestIdleCallback) ? (fn) => window.requestIdleCallback(fn, { timeout: 400 }) : (fn) => setTimeout(fn, 30);
+        const grande = (c) => c.A.length * c.B.length > COMPLETO;
+        function construir(k, falado, alvo, idioma) {
+            const c = alinhar(falado, alvo, idioma); c.ver = ver; cache.set(k, c);
+            if (cache.size > 80) cache.delete(cache.keys().next().value);
+            return c;
+        }
+        // Aquece o alinhamento fora do momento da animação (tempo ocioso): a frase falada e a seguinte já chegam calculadas.
+        function aquecer(falado, alvo, idioma) {
+            if (!falado || !alvo) return;
+            const k = idioma + '\u0001' + falado + '\u0001' + alvo, c = cache.get(k);
+            if (c && c.ver === ver) return;
+            ocioso(() => { const x = cache.get(k); if (!x || x.ver !== ver) construir(k, falado, alvo, idioma); });
+        }
         function mapPos(falado, ci, alvo, idioma) {
             if (!falado || !alvo) return 0;
             const k = idioma + '\u0001' + falado + '\u0001' + alvo;
             let c = cache.get(k);
-            if (!c || c.ver !== ver) {
-                c = alinhar(falado, alvo, idioma); c.ver = ver; cache.set(k, c);
-                if (cache.size > 80) cache.delete(cache.keys().next().value);
+            if (!c) c = construir(k, falado, alvo, idioma);
+            else if (c.ver !== ver) {
+                // traduções novas chegaram: frase curta recalcula na hora (barato); frase longa mantém o cálculo anterior e refaz em tempo ocioso
+                if (grande(c)) aquecer(falado, alvo, idioma); else c = construir(k, falado, alvo, idioma);
             }
             if (!c.A.length || !c.B.length) return Math.min(alvo.length - 1, Math.round(ci / Math.max(1, falado.length) * alvo.length));
             let i = 0; while (i < c.A.length - 1 && c.A[i].e <= ci) i++;
             return c.B[c.map[i]].s;
-        }
-        // traduz as palavras da frase que ainda não estão no cache (até 6 ao mesmo tempo); o alinhamento melhora sozinho quando chegam
+        }        // traduz as palavras da frase que ainda não estão no cache (até 6 ao mesmo tempo); o alinhamento melhora sozinho quando chegam
         const emVoo = new Map();
         async function preparar(texto, idioma) {
             if (!texto || !o.traduzirPalavra) return;
@@ -111,7 +131,7 @@ App.define('alinhar', ['armazem'], function (deps) {
             await Promise.all([rodar(), rodar(), rodar(), rodar(), rodar(), rodar()]);
             if (obteve) { ver++; salvar(); }
         }
-        return { mapPos, preparar, versao: () => ver, palavras: () => wt };
+        return { mapPos, aquecer, preparar, versao: () => ver, palavras: () => wt };
     }
     return { criar, tokens, sim, lev };
 });
