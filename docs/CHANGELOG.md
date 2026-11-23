@@ -1,6 +1,12 @@
 # Registro de evolução (CHANGELOG)
 
 > Uma entrada por dia de trabalho, da mais nova para a mais antiga. Escreva **o que mudou, por quê e como conferir**. Mantém o autor e o Claude sem precisar reler conversas antigas.
+## 2026-11-23 · Testes sem resultado: orcamento de tempo virtual do Chrome
+
+- **Defeito do teste (nao do site):** rodadas do `test_ingles_modulos.ps1` terminavam sem a linha RESULTADO (cortadas em 173 a 250 das 259 linhas, sem nenhum FAIL). **Causa:** o Chrome sem tela encerrava ao esgotar `--virtual-time-budget=4200000` (70 min virtuais); com disco/CPU lentos o tempo virtual corre mais depressa durante as esperas por IndexedDB.
+- **Correcao:** orcamento subiu para 40000000 (so um teto; o teste termina quando acaba).
+- **Conferido:** 6 de 6 rodadas completas (259 linhas, "tudo certo"); antes, cerca de 1 em 3 vinha cortada.
+
 ## 2026-11-23 · Noites Brancas, de Dostoiévski, vira o primeiro livro da Biblioteca
 
 - **Pedido do autor:** incluir *Noites Brancas* (1848, domínio público) como primeiro livro da lista.

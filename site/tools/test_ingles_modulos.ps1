@@ -1264,7 +1264,7 @@ $testFile = "$tmp\__test.html"
 $prof = Join-Path $tmp 'profile'
 $outFile = Join-Path $tmp 'out.txt'
 Start-Process -FilePath $Chrome -ArgumentList @('--headless=new', '--disable-gpu', '--no-first-run', '--autoplay-policy=no-user-gesture-required', "--user-data-dir=`"$prof`"",
-    '--window-size=1400,900', '--virtual-time-budget=4200000', '--allow-file-access-from-files', '--dump-dom',
+    '--window-size=1400,900', '--virtual-time-budget=40000000', '--allow-file-access-from-files', '--dump-dom',
     "`"file:///$($testFile.Replace('\','/'))`"") -Wait -NoNewWindow -RedirectStandardOutput $outFile -RedirectStandardError "$tmp\err.txt"
 $dom = [IO.File]::ReadAllText($outFile)
 $m = [regex]::Match($dom, '(?s)<pre id="result"[^>]*>(.*?)</pre>')
