@@ -22,7 +22,7 @@
             onPace: 'No ritmo da semana', behind: (n) => 'Atrasado em ' + n + ' palavras', ahead: (n) => 'Adiantado em ' + n + ' palavras',
             cont: 'Continuar a leitura', end: 'Encerrar a semana', gone: 'O livro da semana não está mais na biblioteca.',
             finished: (d) => 'Livro concluído em ' + d + (d === 1 ? ' dia' : ' dias') + '. Boa leitura!', next: 'Escolher o próximo livro',
-            rotH: 'Roteiro de 8 semanas', rotNote: 'Edições de domínio público (Standard Ebooks). Cada livro cabe em uma semana com 50 minutos por dia.', week: 'Semana', words: 'mil palavras', startThis: 'Começar esta semana', preparing: 'Preparando o livro…', reading: 'em andamento', doneTag: 'lido', openBook: 'Abrir o livro', reread: 'Reler (nova semana)', other: 'Ou escolha outro livro da sua biblioteca (por exemplo, um PDF que você enviou):', rotFail: 'Não consegui carregar o livro: ',
+            rotCount: (d, n) => d + ' de ' + n + ' semanas concluídas', rotH: 'Roteiro de 8 semanas', rotNote: 'Edições de domínio público (Standard Ebooks). Cada livro cabe em uma semana com 50 minutos por dia.', week: 'Semana', words: 'mil palavras', startThis: 'Começar esta semana', preparing: 'Preparando o livro…', reading: 'em andamento', doneTag: 'lido', openBook: 'Abrir o livro', reread: 'Reler (nova semana)', other: 'Ou escolha outro livro da sua biblioteca (por exemplo, um PDF que você enviou):', rotFail: 'Não consegui carregar o livro: ',
             closeH: 'Fechamento da semana', cDays: 'dias de leitura', cWords: 'palavras lidas', cMin: 'min estudados', cRdLs: 'min lendo / ouvindo', cSaved: 'palavras salvas', cRev: 'revisões feitas', cSess: 'sessões do dia completas', cTexts: 'textos escritos',
             closeAsk: 'Escreva, em inglês, um resumo de cerca de 150 palavras: o argumento central do livro e uma objeção sua.', counter: (n) => n + ' / 150 palavras', closeSave: 'Salvar o fechamento', saveAnyway: 'Salvar assim mesmo',
             needWords: (n) => 'Escreva pelo menos ' + n + ' palavras.', needBook: (n) => 'Use pelo menos ' + n + ' palavras do livro (veja a lista da semana).', needObj: 'Inclua uma objeção sua (however, but, although, I disagree…).',
@@ -41,7 +41,7 @@
             onPace: 'On pace for the week', behind: (n) => 'Behind by ' + n + ' words', ahead: (n) => 'Ahead by ' + n + ' words',
             cont: 'Continue reading', end: 'End the week', gone: 'This week\'s book is no longer in the library.',
             finished: (d) => 'Book finished in ' + d + (d === 1 ? ' day' : ' days') + '. Well read!', next: 'Pick the next book',
-            rotH: '8-week reading plan', rotNote: 'Public-domain editions (Standard Ebooks). Each book fits in a week at 50 minutes a day.', week: 'Week', words: 'k words', startThis: 'Start this week', preparing: 'Preparing the book…', reading: 'in progress', doneTag: 'read', openBook: 'Open the book', reread: 'Read again (new week)', other: 'Or pick another book from your library (for example, a PDF you uploaded):', rotFail: 'Could not load the book: ',
+            rotCount: (d, n) => d + ' of ' + n + ' weeks completed', rotH: '8-week reading plan', rotNote: 'Public-domain editions (Standard Ebooks). Each book fits in a week at 50 minutes a day.', week: 'Week', words: 'k words', startThis: 'Start this week', preparing: 'Preparing the book…', reading: 'in progress', doneTag: 'read', openBook: 'Open the book', reread: 'Read again (new week)', other: 'Or pick another book from your library (for example, a PDF you uploaded):', rotFail: 'Could not load the book: ',
             closeH: 'Week closing', cDays: 'reading days', cWords: 'words read', cMin: 'min studied', cRdLs: 'min reading / listening', cSaved: 'words saved', cRev: 'reviews done', cSess: 'full daily sessions', cTexts: 'texts written',
             closeAsk: 'Write a summary of about 150 words in English: the book\'s central argument and an objection of your own.', counter: (n) => n + ' / 150 words', closeSave: 'Save the closing', saveAnyway: 'Save anyway',
             needWords: (n) => 'Write at least ' + n + ' words.', needBook: (n) => 'Use at least ' + n + ' words from the book (see the week\'s list).', needObj: 'Include an objection of your own (however, but, although, I disagree…).',
@@ -124,17 +124,25 @@
     function roteiroList(plan, metas, collapsed) {
         const done = hist(), wrap = collapsed ? el('details', 'lb-rot') : el('div', 'lb-rot'); wrap.id = 'lb-rot';
         const head = collapsed ? el('summary', null, t('rotH')) : el('h3', 'lb-rot-h', t('rotH'));
-        wrap.append(head, el('p', 'lb-note', t('rotNote')));
+        const isDone = (it) => done.some((h) => h.slug === it.slug);
+        const sum = el('div', 'lb-rot-sum'), strip = el('div', 'lb-rot-strip'); strip.setAttribute('aria-hidden', 'true');
+        ROTEIRO.forEach((it) => strip.appendChild(el('span', isDone(it) ? 'on' : (plan && plan.slug === it.slug ? 'now' : ''))));
+        sum.append(el('span', 'lb-rot-count', t('rotCount')(ROTEIRO.filter(isDone).length, ROTEIRO.length)), strip);
+        wrap.append(head, el('p', 'lb-note', t('rotNote')), sum);
         const msg = el('p', 'lb-note'); msg.id = 'lb-rot-msg';
         ROTEIRO.forEach((it) => {
-            const row = el('div', 'lb-rot-item'); row.dataset.slug = it.slug;
+            const dn = isDone(it), cur = !dn && plan && plan.slug === it.slug;
+            const row = el('div', 'lb-rot-item ' + (dn ? 'done' : cur ? 'now' : 'todo')); row.dataset.slug = it.slug;
             const names = it[D.state.readLang];
-            const info = el('div', 'lb-rot-info');
-            info.append(el('strong', null, t('week') + ' ' + it.n + ' · ' + names[0] + ' — ' + names[1]), el('small', null, Math.round(it.w / 1000) + ' ' + t('words')));
+            const mark = el('span', 'lb-rot-mark', dn ? '✓' : String(it.n)); mark.setAttribute('aria-hidden', 'true');
+            const info = el('div', 'lb-rot-info'), meta = el('div', 'lb-rot-meta');
+            meta.appendChild(el('small', null, Math.round(it.w / 1000) + ' ' + t('words')));
+            if (dn) meta.appendChild(el('span', 'lb-rot-done', '✓ ' + t('doneTag')));
+            else if (cur) meta.appendChild(el('span', 'lb-rot-now', t('reading')));
+            info.append(el('strong', null, t('week') + ' ' + it.n + ' · ' + names[0] + ' — ' + names[1]), meta);
             const act = el('div', 'lb-rot-act');
-            if (done.some((h) => h.slug === it.slug)) {
+            if (dn) {
                 // livro concluído nunca fica trancado: dá para abrir e, sem plano em andamento, reler em uma nova semana
-                const s = el('span', 'lb-ok', '✓ ' + t('doneTag')); s.className = 'lb-ok lb-rot-done'; act.appendChild(s);
                 const bo = btn(t('openBook'), async () => { try { D.openDoc(await addRoteiro(it, metas)); } catch (e) { msg.textContent = t('rotFail') + (e && e.message ? e.message : e); } }); bo.id = 'lb-rot-open-' + it.n; act.appendChild(bo);
                 if (!plan) {
                     const br = btn(t('reread'), async () => {
@@ -144,7 +152,7 @@
                     }); br.id = 'lb-rot-again-' + it.n; act.appendChild(br);
                 }
             }
-            else if (plan && plan.slug === it.slug) act.appendChild(el('span', 'lb-rot-now', t('reading')));
+            else if (cur) { /* em andamento: o selo já está ao lado do título */ }
             else if (!plan) {
                 const b = btn(t('startThis'), async () => {
                     wrap.querySelectorAll('button').forEach((x) => { x.disabled = true; });
@@ -155,7 +163,7 @@
                     } catch (e) { msg.textContent = t('rotFail') + (e && e.message ? e.message : e); wrap.querySelectorAll('button').forEach((x) => { x.disabled = false; }); }
                 }, 'lb-primary'); b.id = 'lb-rot-' + it.n; act.appendChild(b);
             }
-            row.append(info, act); wrap.appendChild(row);
+            row.append(mark, info); if (act.children.length) row.appendChild(act); wrap.appendChild(row);
         });
         wrap.appendChild(msg);
         return wrap;

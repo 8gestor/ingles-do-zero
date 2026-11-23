@@ -481,7 +481,9 @@ $test = @'
       idoc().getElementById('lb-close-other').click();
       await until(function () { return idoc().getElementById('lb-rot-1'); }, 5000);
       ok('L13 depois de ler, a semana 2 aparece como lida e as outras 7 continuam disponíveis', /lido/.test(idoc().querySelector('.lb-rot-item[data-slug="epicteto-enchiridion"] .lb-rot-done').textContent) && !idoc().getElementById('lb-rot-2') && idoc().querySelectorAll('#lb-rot button.lb-primary').length === 7 && !!idoc().getElementById('lb-rot-open-2') && !!idoc().getElementById('lb-rot-again-2'));
-      idoc().getElementById('lb-rot-again-2').click();
+      var rrow = idoc().querySelector('.lb-rot-item[data-slug="epicteto-enchiridion"]'), rover = [];
+      Array.prototype.forEach.call(idoc().querySelectorAll('#lb-rot .lb-rot-item'), function (r2) { var rb = r2.getBoundingClientRect(); if (r2.scrollWidth > r2.clientWidth + 1) rover.push(r2.dataset.slug + ':scroll'); Array.prototype.forEach.call(r2.querySelectorAll('button,.lb-rot-info'), function (b2) { if (b2.getBoundingClientRect().right > rb.right + 1) rover.push(r2.dataset.slug + ':fora'); }); });
+      ok('L13b roteiro organizado: item lido com marcador ✓ e selo "lido" ao lado do título, contador "1 de 8" e nenhuma linha estoura a largura', !!rrow && rrow.classList.contains('done') && rrow.querySelector('.lb-rot-mark').textContent === '✓' && !!rrow.querySelector('.lb-rot-meta .lb-rot-done') && /1 de 8 semanas concluídas/.test(idoc().querySelector('.lb-rot-count').textContent) && idoc().querySelectorAll('.lb-rot-strip span.on').length === 1 && rover.length === 0, rover.join(','));      idoc().getElementById('lb-rot-again-2').click();
       await until(function () { var p = W().__ddWeek.load(); return p && p.slug === 'epicteto-enchiridion'; }, 5000);
 
       await until(function () { return idoc().getElementById('lb-week-open'); }, 5000);
