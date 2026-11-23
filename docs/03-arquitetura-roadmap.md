@@ -1,5 +1,7 @@
 # 03 · Arquitetura e roadmap
 
+> **Atualização 22/11/2026: as seções 2 (arquitetura) e 3 (roadmap) foram substituídas por `07-desenho-reconstrucao.md` (seções 4 e 8).** A seção 1 (o que reaproveitar) e a 4 (produção de conteúdo com IA declarada) continuam valendo.
+>
 > Estado: **rascunho**. Parte do código existente (`legado-livro/`), que nasceu como aba do site do livro "Data Double".
 
 ## 1. O que existe hoje (legado)

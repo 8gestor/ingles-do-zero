@@ -1,5 +1,7 @@
 # 04 · Esboços das telas
 
+> **Atualização 22/11/2026: substituído por `07-desenho-reconstrucao.md` (seção 5: Hoje · Estante · Palavras · Progresso; sem diagnóstico por prova).** Mantido como histórico.
+>
 > Estado: **esboço para discussão**, em texto. Celular em pé é a tela principal. Nada aqui está implementado. O objetivo é decidir fluxo e conteúdo de cada tela **antes** de qualquer código.
 
 ## Mapa de navegação

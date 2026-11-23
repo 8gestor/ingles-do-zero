@@ -41,5 +41,5 @@ Nasceu da aba "Estudo de Inglês" do livro `8gestor/voce.algoritmo` (projeto sep
 
 ## 5. Documentos
 
-- `docs/01-visao.md` · `docs/02-niveis.md` · `docs/03-arquitetura-roadmap.md` · `docs/04-telas.md` · `docs/05-separacao-do-livro.md` · `docs/06-biblioteca-modulos.md` · `docs/CHANGELOG.md`.
+- `docs/01-visao.md` · `docs/02-niveis.md` · `docs/03-arquitetura-roadmap.md` · `docs/04-telas.md` · `docs/05-separacao-do-livro.md` · `docs/06-biblioteca-modulos.md` · **`docs/07-desenho-reconstrucao.md` (desenho vigente; onde contradiz 02/03/04, vale o 07)** · `docs/CHANGELOG.md`.
 - Atualizar o documento certo quando uma decisão for tomada, trocando o **(?)** pela decisão e a data.
