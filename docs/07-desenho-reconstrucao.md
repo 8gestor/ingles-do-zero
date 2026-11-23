@@ -267,7 +267,7 @@ Barra inferior: **Hoje · Estante · Palavras · Progresso** (a Leitura abre de 
 |---|---|---|---|
 | **R0 · Fundações do desenho** — **FEITA 22/11/2026** | Este documento; matriz de paridade (`08-paridade.md`, 279 verificações); avisos nos docs 02–04 | Autor aprova o desenho (Q1–Q4 decididas) | P |
 | **R1 · Núcleo novo** — **FEITA 22/11/2026** (R1a: registro de módulos, eventos, armazém com migração e cópia, preferências, rotas; R1b: mescla idêntica à do app de hoje, backup nos dois sentidos, registro de estudo, nuvem; **70 testes**; ver `09-nucleo-novo.md`). Falta só integrar ao Leitor (N1/N2, R2) e ao painel Progresso (N3–N6, R3) | Armazém com migração, eventos, registro de módulos, configuração; app de página única com rotas vazias | Testes do núcleo verdes; dados antigos migram sem perda | M |
-| **R2 · Motores** | Leitor e Narrador separados do monólito, atrás dos contratos de Voz e Tradutor | Testes de leitura, narração, sincronia e teleprompter verdes no app novo | G |
+| **R2 · Motores** — **desenho aprovado e R2.1 (ritmo e vozes) feita em 22/11/2026**; ver `10-r2-narrador.md` | Leitor e Narrador separados do monólito, atrás dos contratos de Voz e Tradutor | Testes de leitura, narração, sincronia e teleprompter verdes no app novo | G |
 | **R3 · Telas essenciais** | Hoje, Estante, Leitura (4 modos), Palavras, Progresso | O autor usa o app novo no dia a dia no celular e no PC | G |
 | **R4 · Atividades** | Shadowing (com gravação), ditado, escrita, cartões cloze, andamento unificado | Sessão do dia completa de ponta a ponta | M |
 | **R5 · Catálogo e contexto** | Formato de catálogo + validador; degraus 3–5 migrados; notas, perguntas e discussão nos 8 livros do roteiro | `validar-catalogo` verde; um livro completo com todas as camadas | G |

@@ -1,6 +1,6 @@
 # 09 · Núcleo do app novo (fase R1a)
 
-> **Estado (2026-11-22):** núcleo (R1a) e dados (R1b) escritos e testados em `site/novo/`; **70 verificações passam** (29 em `site/tools/test_novo_nucleo.ps1` + 41 em `site/tools/test_novo_dados.ps1`). **R1 concluída.** O app de hoje não foi tocado. Este é o **documento vivo** do núcleo: atualizar a cada mudança e registrar no `CHANGELOG.md`.
+> **Estado (2026-11-22):** núcleo (R1a) e dados (R1b) escritos e testados em `site/novo/`; **83 verificações passam** (29 núcleo + 41 dados + 13 narrador). **R1 concluída; R2 em andamento (R2.1 feita), ver `10-r2-narrador.md`.** O app de hoje não foi tocado. Este é o **documento vivo** do núcleo: atualizar a cada mudança e registrar no `CHANGELOG.md`.
 > Contexto: `07-desenho-reconstrucao.md` (desenho), `08-paridade.md` (contrato de paridade).
 
 ## 1. O que existe
@@ -21,9 +21,12 @@ site/novo/                         app novo (prévia, noindex; o site atual cont
     rotas.js      navegação por endereço (#/hoje, #/ler/<livro>)
   assets/js/telas.js               telas (R1: molduras + tela técnica #/sistema)
   assets/js/telas-dados.js         tela #/dados: backup do progresso e conta
+  assets/js/narrador/ritmo.js      (R2.1) modelo de tempo da fala: estimativa da palavra falada, velocidade aprendida por idioma+voz
+  assets/js/narrador/vozes.js      (R2.1) escolha e ordenação das vozes (a mesma regra do menu de vozes da casca)
   assets/js/inicio.js              liga tudo; mostra o que falhou se algo não iniciar
 site/tools/test_novo_nucleo.ps1    29 verificações do núcleo no Chrome sem tela
 site/tools/test_novo_dados.ps1     41 verificações dos dados (paridade com o app de hoje)
+site/tools/test_novo_narrador.ps1  13 verificações do ritmo e das vozes (oráculo do código antigo)
 ```
 Abrir: `site/novo/index.html` (servido em `/novo/`). A tela `#/sistema` mostra a saúde do núcleo: módulos, preferências, armazenamento, versões dos bancos e cópias de segurança.
 

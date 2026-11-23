@@ -468,7 +468,7 @@ Arquivo: **N** = `test_ingles.ps1` (núcleo), **M** = `test_ingles_modulos.ps1` 
 
 - [ ] `Y1` (M) trocar a velocidade no meio da frase continua da palavra falada (antes recomeçava a frase do início)
 - [ ] `Y2` (M) depois de retomar, o destaque continua a partir da posição já falada, sem voltar ao início da frase
-- [ ] `Y3` (M) sem evento de palavra da voz, o destaque avança por estimativa, sem voltar atrás e chegando perto do fim da frase
+- [ ] `Y3` (M) sem evento de palavra da voz, o destaque avança por estimativa, sem voltar atrás e chegando perto do fim da frase — **ritmo pronto no app novo (NR6, NR7a, NR7b)**; falta a voz do navegador (R2.2)
 
 ### `Z` · Centragem, fila sem lacuna, deslize contínuo → Motor Narrador + Teleprompter (R2)
 
@@ -514,6 +514,19 @@ Além das 279 verificações herdadas, o núcleo novo tem os seus testes em `sit
 | `NUD8` | Tela `#/dados`: backup (baixar com texto de apoio, colar, recusar) e conta (entrar e sair) | 6 |
 | **Total** | | **41** |
 
-**Total de testes do app novo: 70** (29 do núcleo + 41 de dados).
+**Total de testes do app novo: 83** (29 do núcleo + 41 de dados + 13 do narrador, ver 4.2).
 
 > **Aviso sobre os testes do app de hoje (`test_ingles_modulos.ps1`, itens TC5, L7 e L14):** são sensíveis à carga da máquina (tempo virtual do Chrome). Em 22/11/2026 falharam de forma intermitente, **igual com e sem a pasta `novo/`** (9 falhas em 12 sem `novo/`, 6 em 12 com), e passam quando a máquina está sossegada. Se falharem, rodar de novo sozinho, sem outros testes ou Chrome ao mesmo tempo, antes de suspeitar do código.
+
+### 4.2 Testes do Narrador (R2.1): `site/tools/test_novo_narrador.ps1`
+
+**13 verificações, todas passando em 22/11/2026.** Cada peça pura (ritmo e vozes) é comparada com uma **cópia literal do código antigo** com centenas de entradas aleatórias, e a sincronia é simulada com os cenários do `test_sync.ps1` do livro, em tempo simulado.
+
+| Área | O que cobre | Verificações |
+|---|---|---|
+| `NR0` | módulos `ritmo` e `vozes` prontos | 1 |
+| `NR1`–`NR2` | tempo acumulado e posição estimada idênticos aos do código antigo | 2 |
+| `NR3` | aprendizado da velocidade por idioma e voz, limites 6–40 | 3 |
+| `NR4`–`NR5` | escolha e ordenação de vozes idênticas às do app de hoje e do menu da casca | 3 |
+| `NR6`–`NR7` | sincronia por estimativa: erro médio ≤ 1,5 palavra (medido 0,35–0,73), nunca volta atrás, chega ao fim da frase, erro máximo limitado | 4 |
+| **Total** | | **13** |

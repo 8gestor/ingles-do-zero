@@ -2,6 +2,14 @@
 
 > Uma entrada por dia de trabalho, da mais nova para a mais antiga. Escreva **o que mudou, por quê e como conferir**. Mantém o autor e o Claude sem precisar reler conversas antigas.
 
+## 2026-11-22 (madrugada) · R2 · Narrador: desenho aprovado e R2.1 feita
+
+- **Mapa:** a narração do `ingles.js` (linhas 663–949, ~290) mistura quatro responsabilidades: motor de voz e tempo, laço de reprodução, marcação na tela (DOM) e tradução. Só as duas primeiras são o Narrador; a marcação é do Leitor; a tradução vira serviço atrás de uma interface (`Fonte`). 10 comportamentos a preservar listados em `docs/10-r2-narrador.md`.
+- **Decisões do autor:** desenho aprovado; velocidade aprendida por voz só **depois da paridade**; **voz neural (Piper) portada já na R2.3**; **Narrador primeiro, Leitor depois**.
+- **R2.1 feita:** `site/novo/assets/js/narrador/ritmo.js` e `vozes.js` (puros) + `site/tools/test_novo_narrador.ps1` com **13 verificações, todas passando**. Cada peça foi comparada com uma **cópia literal do código antigo** em 300 a 600 entradas aleatórias: **0 diferenças**. Sincronia por estimativa simulada (cenários do `test_sync.ps1`): erro médio **0,35 a 0,73 palavra** (limite 1,5), nunca volta atrás, chega ao fim da frase.
+- **Tempo simulado:** os testes do Narrador não usam fala nem relógio reais, então **não sofrem da instabilidade por carga da máquina** dos testes de hoje.
+- **Totais:** app novo = **83 testes** (29 núcleo + 41 dados + 13 narrador). Núcleo agora com 13 módulos.
+- **Pendente:** R2.2 (`voz-navegador.js` e `narrador.js` com `speechSynthesis` falsa); autorização para commit.
 ## 2026-11-22 (madrugada) · R1b: dados do aluno no app novo (R1 concluída)
 
 - **Autorização do autor:** seguir para a R1b (backup, sincronização e gravação à prova de fechamento), trabalhando na pasta separada `ingles-do-zero-r1` para não colidir com a outra sessão.
