@@ -1,6 +1,6 @@
 # 10 · R2 · Motor Narrador (mapa do que existe e desenho proposto)
 
-> **Estado: desenho APROVADO em 2026-11-22 (decisões na seção 6). Andamento: R2.1 FEITA (22/11/2026); R2.2, R2.3 e R2.4 FEITAS (23/11/2026, ver seções 8 e 9); R2.5 (Leitor) EM ANDAMENTO: texto, Tradutor, Fonte, página, marcação, alinhamento e setas feitos (seções 10 e 11); falta a posição estável e a tela do Leitor com Comentar, Escrever e Minhas notas.** Itens **(?)** restantes são decisões do autor.
+> **Estado: desenho APROVADO em 2026-11-22 (decisões na seção 6). Andamento: R2.1 FEITA (22/11/2026); R2.2, R2.3 e R2.4 FEITAS (23/11/2026, ver seções 8 e 9); R2.5 (Leitor) TÉCNICA FEITA (seções 10 a 12): texto, Tradutor, Fonte, página, marcação, alinhamento, setas, posição estável e a tela `#/ler/<livro>`; faltam as telas Comentar, Escrever e Minhas notas.** Itens **(?)** restantes são decisões do autor.
 > Contexto: `07-desenho-reconstrucao.md` (fase R2, motores), `08-paridade.md` (contrato: áreas `c5 c6 V X Y Z AR AL G`), `09-nucleo-novo.md` (núcleo pronto).
 > **Princípio da R2: mover sem mudar o comportamento.** Melhorias vêm depois da paridade, uma por vez, com teste.
 
@@ -189,3 +189,12 @@ Cada etapa termina com **testes verdes, documentação atualizada e CHANGELOG**,
 
 **Contrato do Leitor, como implementado:** `pagina.criar({ host, doc, lerIdioma, lado, aoPintar })`, `marcacao.criar({ pagina, faixa, envoltorio, modo, mapear }).ligar(eventos)`, `explorar.criar({ host, envoltorio, doc, lerIdioma, pagina, marcacao, narrador, tradutor, alinhar, eventos })`. O Narrador ganhou `posicionar(p, s)`.
 **Falta da R2.5:** posição estável quando o layout muda (`R1–R6`), a tela que junta tudo, e as telas de Comentar, Escrever e Minhas notas.
+
+---
+
+## 12. R2.5 · Leitor, parte 3 (2026-11-23): posição estável e a tela `#/ler/<livro>`
+
+**`posicao.js`:** enquanto o texto reflui, nenhuma posição é gravada; quando a altura assenta, volta ao parágrafo certo. Prova (R1–R5), com o app de hoje e o novo lado a lado: rolar até o parágrafo 60, estreitar a largura (900 para 420 px), trocar de modo e voltar, alargar: a posição continua 60 e nenhuma posição errada é gravada; depois a rolagem volta a gravar normalmente.
+**`tela-leitor.js`:** a tela de verdade. Abre o livro do banco do app de hoje, pinta, narra com marcação, traduz por frase, explora com as setas, grava a posição e as palavras ouvidas, liga o registro de estudo. Verificada de ponta a ponta no app novo (T1–T10).
+**Total do teste do Leitor:** 55 verificações (duas rodadas seguidas verdes).
+**Falta:** Comentar (folha que sobe: Nota, Comentar, Contexto), Escrever e Minhas notas (decisões em `07`, seção 11); a Estante (R3) para abrir livros pela interface.

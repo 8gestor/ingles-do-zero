@@ -18,7 +18,6 @@ App.define('telas', ['eventos', 'armazem', 'config', 'rotas'], function (deps) {
     }
     rotas.registrar('/hoje', { titulo: 'Hoje', montar: moldura('Hoje', 'fase R3', 'Aqui ficará a sessão do dia: continuar a leitura, palavras para rever e a escrita de hoje, numa ação principal por dia.') });
     rotas.registrar('/estante', { titulo: 'Estante', montar: moldura('Estante', 'fase R3', 'Aqui ficarão os livros por degrau de leitura e o botão para trazer o seu próprio livro (PDF, EPUB ou texto).') });
-    rotas.registrar('/ler/:livro', { titulo: 'Leitura', montar(el, p) { moldura('Leitura', 'fase R2/R3', 'Aqui abrirá o livro "' + p.livro + '" no leitor, com narração, tradução por frase e os quatro modos de leitura.')(el); } });
     rotas.registrar('/palavras', { titulo: 'Palavras', montar: moldura('Palavras', 'fase R3/R4', 'Aqui ficarão as palavras salvas e a revisão espaçada, com a frase do livro.') });
     rotas.registrar('/progresso', { titulo: 'Progresso', montar: moldura('Progresso', 'fase R3', 'Aqui ficará o andamento: tempo lendo, ouvindo, falando e escrevendo, e a sugestão de degrau.') });
 

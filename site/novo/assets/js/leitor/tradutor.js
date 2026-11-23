@@ -127,9 +127,15 @@ App.define('tradutor', [], function () {
             ancora = i;
             return new Promise((res) => { (esperas[i] = esperas[i] || []).push(res); bombear(); });
         }
+        // traduz um texto avulso do idioma `de` para o outro (palavra solta, alinhamento); nulo se não há tradutor
+        async function traduzir(texto, de) {
+            const inst = await instancia(de, outro(de));
+            if (!inst) return null;
+            return String(await inst.translate(texto)).trim() || null;
+        }
         function abrir(d) { doc = d; ancora = (d && d.pos) || 0; modoTudo = false; }
         return {
-            abrir, frase, garantir, bombear, ativarPar,
+            abrir, frase, garantir, bombear, ativarPar, traduzir,
             ancora(i) { ancora = i; }, tudo(on) { modoTudo = !!on; if (modoTudo) bombear(); }, modoTudo: () => modoTudo,
             estado() { const k = doc ? chavePar(doc.lang, outro(doc.lang)) : ''; return { avail: TR.insts[k] ? 'available' : TR.avail[k], erro, ocupado: bombeando, modoTudo, traduzidos: contar(), progresso: TR.progress[k] || 0, erroMotor: TR.err[k] || '' }; }
         };

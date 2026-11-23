@@ -80,6 +80,10 @@ App.define('armazem', ['eventos'], function (deps) {
             stores: () => Array.from(db.objectStoreNames),
             async get(s, k) { return req(db.transaction(s, 'readonly').objectStore(s).get(k)); },
             async all(s) { return req(db.transaction(s, 'readonly').objectStore(s).getAll()); },
+            // itens cuja chave começa com prefixo (ex.: traduções idDoLivro:0, idDoLivro:1…): { chave: valor }
+            async porPrefixo(s, prefixo) {
+                return new Promise((ok, err) => { const out = {}, rq = db.transaction(s, 'readonly').objectStore(s).openCursor(IDBKeyRange.bound(prefixo, prefixo + '￿')); rq.onsuccess = () => { const c = rq.result; if (!c) return ok(out); out[String(c.key)] = c.value; c.continue(); }; rq.onerror = () => err(rq.error); });
+            },
             async contar(s) { return req(db.transaction(s, 'readonly').objectStore(s).count()); },
             async put(s, v, k) { const tx = rw(s), st = tx.objectStore(s); if (k !== undefined) st.put(v, k); else st.put(v); return fimTx(tx); },
             async del(s, k) { const tx = rw(s); tx.objectStore(s).delete(k); return fimTx(tx); },

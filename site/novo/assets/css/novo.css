@@ -29,3 +29,20 @@ body { margin: 0; background: var(--c-bg, #f4ecd8); color: var(--c-text, #222); 
 .novo-campo { flex: 1 1 220px; min-width: 0; min-height: 44px; padding: 0 12px; font: inherit; font-size: .95rem; color: inherit; background: transparent; border: var(--border-tech, 1px solid currentColor); border-radius: 8px; box-sizing: border-box; }
 .novo-texto { flex: 1 1 100%; width: 100%; min-height: 120px; font: 12px/1.4 monospace; color: inherit; background: transparent; border: var(--border-tech, 1px solid currentColor); border-radius: 8px; box-sizing: border-box; }
 .novo-linha [hidden] { display: none; }
+/* tela do Leitor (#/ler/<livro>) — R2.5g. A marcação do texto (.lb-s, .wd, .lb-band…) vem de ../../assets/css/capitulos/ingles.css. */
+.lei-raiz { display: flex; flex-direction: column; gap: 8px; }
+.lei-topo { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.lei-volta { display: inline-flex; align-items: center; min-height: 44px; color: var(--c-dim, #555); text-decoration: none; font-size: .9rem; white-space: nowrap; }
+.lei-titulo { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.lei-faixa { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; font-size: .8rem; }
+.lei-grupo { display: inline-flex; align-items: center; gap: 4px; }
+.lei-rotulo { color: var(--c-dim, #555); letter-spacing: .08em; font-size: .7rem; margin-right: 2px; }
+.lei-btn { min-height: 44px; min-width: 44px; padding: 0 12px; font: inherit; font-size: .85rem; color: inherit; background: transparent; border: var(--border-tech, 1px solid rgba(0,0,0,.25)); border-radius: 8px; cursor: pointer; }
+.lei-chip[aria-pressed="true"] { background: var(--c-text, #222); color: var(--c-bg, #f4ecd8); }
+.lei-play { font-weight: 600; margin-left: auto; }
+.lei-velo { min-width: 3.2em; text-align: center; }
+.lei-estado { color: var(--c-dim, #555); font-size: .78rem; margin-left: auto; }
+.lei-acoes { position: sticky; bottom: 56px; display: grid; grid-template-columns: repeat(4, 1fr); background: var(--c-bg, #f4ecd8); border-top: var(--border-tech, 1px solid rgba(0,0,0,.2)); }
+.lei-acao { border: 0; border-radius: 0; border-right: 1px solid rgba(0,0,0,.12); }
+.lei-btn:disabled { opacity: .5; cursor: default; }
+.lei-btn:focus-visible, .lei-volta:focus-visible { outline: 2px solid currentColor; outline-offset: 2px; }

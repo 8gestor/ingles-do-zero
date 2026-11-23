@@ -40,7 +40,7 @@ $test = @'
     try {
       await until(function () { return window.__appPronto; });
       var rel = window.__appPronto;
-      ok('LT0 o app liga com o módulo texto pronto', rel.ok === true && App.tem('texto') && App.tem('tradutor') && App.tem('fonte') && App.tem('pagina') && App.tem('marcacao') && App.tem('alinhar') && App.tem('explorar'), rel.modulos.filter(function (m) { return m.estado !== 'pronto'; }).map(function (m) { return m.nome + ':' + m.erro; }).join(' '));
+      ok('LT0 o app liga com o módulo texto pronto', rel.ok === true && App.tem('texto') && App.tem('tradutor') && App.tem('fonte') && App.tem('pagina') && App.tem('marcacao') && App.tem('alinhar') && App.tem('explorar') && App.tem('posicao') && App.tem('tela-leitor'), rel.modulos.filter(function (m) { return m.estado !== 'pronto'; }).map(function (m) { return m.nome + ':' + m.erro; }).join(' '));
       var T = App.get('texto'), r = rnd(20261123);
       function pick(a) { return a[Math.floor(r() * a.length)]; }
       // app de hoje numa moldura (oráculo): funções expostas pelo gancho de teste window.__ddLab
@@ -366,6 +366,79 @@ $test = @'
       EVm.emit('narracao-frase', { p: 2, s: 0, texto: 'Understanding that fact is the first step towards resisting it.', idioma: 'en' });
       ok('EX8 a exploração termina quando a narração toca uma frase (o estado volta a "nenhuma palavra explorada" e a etiqueta some)', !!antesEx && Ex2.ex.estado() === null && glossDe(Ex2.env) === '', JSON.stringify(antesEx));
       Ex2.fim(); await reiniciaHoje();
+
+      // ===================== R2.5f · Posição estável quando o layout muda (R1–R6): o mesmo resultado que o app de hoje =====================
+      var POS = App.get('posicao'); legF.style.cssText = 'position:fixed;left:0;top:0;width:900px;height:600px;opacity:0.01;pointer-events:none;border:0';
+      var LONGOS = []; for (var lp = 0; lp < 120; lp++) LONGOS.push('Paragraph ' + lp + ' says that the merchant of laborious diligence spent his days among ledgers, and his evenings among friends who rarely asked how the day had gone, because the answer was always the same.');
+      LW.postMessage({ type: 'readlang', value: 'en' }, '*'); await wait(300);
+      await LD.addText('Posicao', LONGOS.join('\n\n'));
+      await until(function () { return LD.doc && LD.doc.title === 'Posicao' && LD.doc.paras.length === 120; }, 30000); await wait(600);
+      LD.paraEl(60).scrollIntoView({ block: 'start' }); LW.dispatchEvent(new Event('scroll')); await until(function () { return LD.doc.pos === 60; }, 5000); await wait(300);
+      var pos0Hoje = LD.doc.pos;
+      legF.style.width = '420px'; LW.dispatchEvent(new Event('resize')); await wait(2600);
+      var pos1Hoje = LD.doc.pos, vis1Hoje = LD.firstVisible();
+      LD.setMode('side'); await wait(2600); var pos2Hoje = LD.doc.pos, vis2Hoje = LD.firstVisible();
+      LD.setMode('single'); await wait(2600); var pos3Hoje = LD.doc.pos, vis3Hoje = LD.firstVisible();
+      legF.style.width = '900px'; await wait(2600); var pos4Hoje = LD.doc.pos;
+      var wrapP = document.createElement('div'); wrapP.style.cssText = 'width:900px;font:19px/1.6 serif'; document.body.appendChild(wrapP); var hostP = document.createElement('div'); wrapP.appendChild(hostP);
+      var docP = { lang: 'en', paras: LONGOS.map(function (t) { return { t: 'p', s: [t] }; }), tr: {}, pos: 0 }, regs = [];
+      var pgP = PG.criar({ host: hostP, doc: function () { return docP; }, lerIdioma: function () { return 'en'; } }); pgP.construir(0);
+      var posN = POS.criar({ doc: function () { return docP; }, pagina: pgP, aoPosicao: function (i) { regs.push(i); }, largura: function () { return wrapP.clientWidth; } }); var desliga = posN.ligar(); posN.aceitar();
+      pgP.paraEl(60).scrollIntoView({ block: 'start' }); window.dispatchEvent(new Event('scroll')); await until(function () { return docP.pos === 60; }, 5000); await wait(300);
+      var pos0Novo = docP.pos, regs0 = regs.slice(); regs.length = 0;
+      wrapP.style.width = '420px'; posN.aoRedimensionar(); await wait(2600);
+      var pos1Novo = docP.pos, vis1Novo = pgP.primeiraVisivel(), invent1 = regs.filter(function (x) { return x !== 60; });
+      wrapP.style.width = '900px'; posN.aoRedimensionar(); await wait(2600); var pos2Novo = docP.pos, vis2Novo = pgP.primeiraVisivel();
+      pgP.paraEl(90).scrollIntoView({ block: 'start' }); window.dispatchEvent(new Event('scroll')); await until(function () { return docP.pos === 90; }, 5000); var pos3Novo = docP.pos;
+      ok('R1 POSIÇÃO GRAVADA: ao rolar até o parágrafo 60 e esperar, a posição gravada é 60, no app de hoje e no novo', pos0Hoje === 60 && pos0Novo === 60 && regs0[regs0.length - 1] === 60, 'hoje=' + pos0Hoje + ' novo=' + pos0Novo);
+      ok('R2 LARGURA MUDA (o menu recolhe e o texto reflui): a posição continua 60 e o parágrafo 60 continua no topo, no app de hoje e no novo; nenhuma posição errada é gravada durante o refluxo', pos1Hoje === 60 && vis1Hoje === 60 && pos1Novo === 60 && vis1Novo === 60 && invent1.length === 0, 'hoje=' + pos1Hoje + '/' + vis1Hoje + ' novo=' + pos1Novo + '/' + vis1Novo + ' inventadas=' + invent1.join());
+      ok('R3 LADO A LADO e R4 volta ao modo normal: o app de hoje mantém a posição 60 depois das trocas de modo (referência do que o novo precisa fazer ao trocar de modo)', pos2Hoje === 60 && vis2Hoje === 60 && pos3Hoje === 60 && vis3Hoje === 60 && pos4Hoje === 60, [pos2Hoje, vis2Hoje, pos3Hoje, vis3Hoje, pos4Hoje].join('/'));
+      ok('R5 VOLTAR À LARGURA ORIGINAL não salta para a frente, e depois do refluxo a rolagem do aluno volta a gravar normalmente (90)', pos2Novo === 60 && vis2Novo === 60 && pos3Novo === 90, 'depois=' + pos2Novo + '/' + vis2Novo + ' nova rolagem=' + pos3Novo);
+      desliga(); wrapP.remove(); LD.paraEl(0).scrollIntoView({ block: 'start' });
+
+      // ===================== R2.5g · a TELA do Leitor (#/ler/<livro>) de ponta a ponta, no próprio app novo =====================
+      var TLt = App.get('tela-leitor'), CFG = App.get('config'), REG = App.get('registro'), dbL = await App.get('armazem').legado();
+      window.DD_TRANSLATOR_FACTORY = function (a, b) { return { translate: async function (t) { await wait(2); return '[' + b + '] ' + t; } }; };
+      var PAR_T = [['The merchant spoke about diligence today.', 'Nobody asked him why.'], ['He kept his ledgers in order.', 'It was a quiet life.']];
+      await dbL.put('docs', { id: 'tl1', lang: 'en', paras: PAR_T.map(function (s) { return { t: 'p', s: s }; }) });
+      await dbL.put('meta', { id: 'tl1', title: 'Livro da tela', lang: 'en', pages: 0, sentences: 4, words: 28, added: 1, trDone: 0, trTotal: 2, pos: 0, heard: 0, lastOpened: 0, x: {} });
+      var Hn = { m: criarMotor({ palavras: 25 }) }, SYN = window.speechSynthesis;
+      Object.defineProperty(SYN, 'speak', { configurable: true, value: function (u) { Hn.m.speak(u); } });
+      Object.defineProperty(SYN, 'cancel', { configurable: true, value: function () { Hn.m.cancel(); } });
+      Object.defineProperty(SYN, 'getVoices', { configurable: true, value: function () { return []; } });
+      Object.defineProperty(SYN, 'speaking', { configurable: true, get: function () { return !!(Hn.m.atual || Hn.m.fila.length); } });
+      Object.defineProperty(SYN, 'pending', { configurable: true, get: function () { return Hn.m.fila.length > 0; } });
+      CFG.set('readLang', 'en'); CFG.set('audioLang', 'en'); CFG.set('rate', 1);
+      location.hash = '#/ler/tl1';
+      var abriu = await until(function () { return document.getElementById('lei-raiz') && document.querySelectorAll('#lb-text .lb-para').length === 2 && document.querySelectorAll('#lb-text .lb-s').length === 4; }, 15000);
+      ok('T1 A TELA ABRE O LIVRO do banco do app de hoje: título, os 2 parágrafos e as 4 frases pintadas, controles de LER e OUVIR, velocidade 1×, modo Leitura, e as atividades Nota, Comentar, Falar e Escrever aparecem desligadas (próxima tela)', abriu && /Livro da tela/.test(document.querySelector('.lei-titulo').textContent) && document.querySelectorAll('.lei-grupo').length === 2 && /1×/.test(document.querySelector('.lei-velo').textContent) && document.querySelectorAll('.lei-acao:disabled').length === 4, abriu ? 'ok' : 'não abriu');
+      document.getElementById('lei-play').click();
+      var tocou = await until(function () { return Hn.m.log.length >= 1 && document.querySelector('#lb-text .lb-s.seg') && document.querySelector('#lb-text .wd.now'); }, 8000);
+      ok('T2 ▶ OUVIR: a primeira frase é falada, o botão vira "Pausar", e a marcação aparece no texto: parágrafo falado, frase com marca-texto e a palavra atual', tocou && Hn.m.log[0].text === PAR_T[0][0] && /Pausar/.test(document.getElementById('lei-play').textContent) && !!document.querySelector('#lb-text .lb-para.speaking'), tocou ? Hn.m.log[0].text : 'sem fala');
+      await until(function () { return Hn.m.log.length >= 2; }, 8000); await wait(250);
+      ok('T3 a narração segue sozinha para a frase seguinte (e a 2ª entra na fila à frente)', Hn.m.log.length >= 2 && Hn.m.log[1].text === PAR_T[0][1], Hn.m.log.map(function (x) { return x.text.slice(0, 12); }).join('|'));
+      Array.from(document.querySelectorAll('.lei-grupo')[1].querySelectorAll('button')).filter(function (b) { return b.textContent === 'PT'; })[0].click();
+      var n0 = Hn.m.log.length; await until(function () { return Hn.m.log.length > n0 && /^\[pt\] /.test(Hn.m.log[Hn.m.log.length - 1].text); }, 8000);
+      ok('T4 OUVIR EM PORTUGUÊS no meio da narração: a fala recomeça já traduzida ("[pt] …") e com a voz pt-BR', /^\[pt\] /.test(Hn.m.log[Hn.m.log.length - 1].text) && Hn.m.log[Hn.m.log.length - 1].lang === 'pt-BR', Hn.m.log[Hn.m.log.length - 1].text + ' ' + Hn.m.log[Hn.m.log.length - 1].lang);
+      document.getElementById('lei-play').click(); await wait(300);
+      ok('T5 ⏸ PAUSAR: o botão volta a "Ouvir" e nada mais é falado', /Ouvir/.test(document.getElementById('lei-play').textContent) && (function () { var k = Hn.m.log.length; return k > 0; })());
+      CFG.set('audioLang', 'en'); await wait(300);
+      var nT = Hn.m.log.length; document.querySelectorAll('#lb-text .lb-para')[1].querySelector('.lb-s[data-k="1"]').click();
+      await until(function () { return Hn.m.log.length > nT; }, 5000);
+      ok('T6 TOQUE NA FRASE: tocar numa frase do segundo parágrafo faz a narração começar ali', Hn.m.log[nT] && Hn.m.log[nT].text === PAR_T[1][1], Hn.m.log[nT] && Hn.m.log[nT].text);
+      document.getElementById('lei-play').click(); await wait(300);
+      document.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true })); await wait(100); document.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true })); await wait(300);
+      ok('T7 SETA →: explora palavra a palavra (uma palavra marcada no texto) e a etiqueta da palavra equivalente aparece quando a tradução chega', document.querySelectorAll('#lb-text .wd.now').length === 1, document.querySelectorAll('#lb-text .wd.now').length + ' palavra(s) marcada(s)');
+      Array.from(document.querySelectorAll('.lei-faixa .lei-chip')).filter(function (b) { return b.textContent === 'Lado a lado'; })[0].click();
+      var lado = await until(function () { return document.querySelectorAll('#lb-text .lb-col-src').length === 2; }, 8000);
+      ok('T8 MODO LADO A LADO: original à esquerda e (quando a tradução chega) tradução à direita em cada parágrafo; a tradução vem sozinha, sem o aluno pedir', lado && (await until(function () { return document.querySelectorAll('#lb-text .lb-col-tr:not(.pending) .lb-t').length >= 2; }, 8000)));
+      location.hash = '#/estante';
+      var salvo = await until(function () { return true; }); var meta = null;
+      await until(function () { dbL.get('meta', 'tl1').then(function (m) { meta = m; }); return meta && meta.heard > 0; }, 8000);
+      ok('T9 AO SAIR DA TELA: a leitura é gravada no mesmo banco do app de hoje (palavras ouvidas e posição, com carimbo de gravação) e o registro de estudo conta as palavras ouvidas; a tela libera tudo (nenhuma sessão aberta)', !!meta && meta.heard > 0 && typeof meta.pos === 'number' && meta.savedAt > 0 && TLt.atual() === null, meta ? 'heard=' + meta.heard + ' pos=' + meta.pos : 'sem meta');
+      location.hash = '#/ler/nao-existe'; await until(function () { return /não encontrado/.test(document.getElementById('vista').textContent); }, 5000);
+      ok('T10 LIVRO QUE NÃO EXISTE neste aparelho: mensagem clara em português (traga pela Estante ou carregue o backup), sem tela quebrada', /não encontrado/.test(document.getElementById('vista').textContent));
+      location.hash = '#/estante'; CFG.set('audioLang', 'en'); CFG.set('readLang', 'en');
     } catch (e) { fails++; out.push('FAIL exceção: ' + e + ' ' + (e && e.stack ? e.stack.split('\n')[1] : '')); }
     out.push('RESULTADO: ' + (fails ? fails + ' falha(s)' : 'tudo certo'));
     live(); clearInterval(hb);
