@@ -1,6 +1,13 @@
 # Registro de evolução (CHANGELOG)
 
 > Uma entrada por dia de trabalho, da mais nova para a mais antiga. Escreva **o que mudou, por quê e como conferir**. Mantém o autor e o Claude sem precisar reler conversas antigas.
+## 2026-11-22 · Manual reescrito (explica o sistema inteiro)
+
+- **Pedido do autor:** reescrever todo o manual explicando como funciona todo o sistema.
+- **Feito:** `site/manual-biblioteca.html` (PT e EN) agora tem 12 seções: a ideia (ler, ouvir, falar, escrever), mapa do site e barra do topo, primeiro dia (Degrau 0 ou roteiro), biblioteca e livros, leitor (modos, narração, cores), ler e ouvir, teleprompter, ferramentas de estudo e vocabulário, rotina (sessão do dia e progresso), aparelhos, conta e backup, privacidade, problemas. Corrige o texto antigo que citava "colar texto" (retirado da interface) e acrescenta Degrau 0, seções do menu e Configurações.
+- **Teste:** M1 em `test_ingles.ps1` passou a esperar 12 seções por idioma.
+- **Não publicado** (regra do autor).
+
 
 ## 2026-11-22 (madrugada) · Publicação da R1 e da R2.1 no main, mesclagem com a outra sessão e correção da tela Sistema
 
