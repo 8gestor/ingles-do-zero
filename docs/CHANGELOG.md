@@ -29,13 +29,32 @@ Pedido do autor: separar a Biblioteca em seções, sem perder nada, **escolhidas
 - **Roteiro de 8 semanas (redesenho):** cada semana é uma linha em grade (marcador redondo com o número, ✓ preenchido quando lida, anel quando em andamento), título que quebra sem estourar, selo "✓ LIDO" / "EM ANDAMENTO" ao lado do tamanho, botões alinhados à direita (no celular, abaixo, com a largura toda), resumo "N de 8 semanas concluídas" com faixa de 8 segmentos e título sem a barra do tema Papel. Teste L13b (inclui a conferência de que nenhuma linha estoura a largura). Publicado em 2026-11-22 com autorização do autor.
 - Manual da Biblioteca atualizado (PT/EN). Testes: seção AB (9 verificações) e F5 em `test_ingles_modulos.ps1`; 1a/1b em `test_ingles.ps1`. `TC5` (tempo do teleprompter) falha também sem estas mudanças; é anterior.
 - Publicado em `main` (2026-11-22), com autorização do autor.
+
+## 2026-11-22 (madrugada) · R2 · Narrador: desenho aprovado e R2.1 feita
+
+- **Mapa:** a narração do `ingles.js` (linhas 663–949, ~290) mistura quatro responsabilidades: motor de voz e tempo, laço de reprodução, marcação na tela (DOM) e tradução. Só as duas primeiras são o Narrador; a marcação é do Leitor; a tradução vira serviço atrás de uma interface (`Fonte`). 10 comportamentos a preservar listados em `docs/10-r2-narrador.md`.
+- **Decisões do autor:** desenho aprovado; velocidade aprendida por voz só **depois da paridade**; **voz neural (Piper) portada já na R2.3**; **Narrador primeiro, Leitor depois**.
+- **R2.1 feita:** `site/novo/assets/js/narrador/ritmo.js` e `vozes.js` (puros) + `site/tools/test_novo_narrador.ps1` com **13 verificações, todas passando**. Cada peça foi comparada com uma **cópia literal do código antigo** em 300 a 600 entradas aleatórias: **0 diferenças**. Sincronia por estimativa simulada (cenários do `test_sync.ps1`): erro médio **0,35 a 0,73 palavra** (limite 1,5), nunca volta atrás, chega ao fim da frase.
+- **Tempo simulado:** os testes do Narrador não usam fala nem relógio reais, então **não sofrem da instabilidade por carga da máquina** dos testes de hoje.
+- **Totais:** app novo = **83 testes** (29 núcleo + 41 dados + 13 narrador). Núcleo agora com 13 módulos.
+- **Pendente:** R2.2 (`voz-navegador.js` e `narrador.js` com `speechSynthesis` falsa); autorização para commit.
+## 2026-11-22 (madrugada) · R1b: dados do aluno no app novo (R1 concluída)
+
+- **Autorização do autor:** seguir para a R1b (backup, sincronização e gravação à prova de fechamento), trabalhando na pasta separada `ingles-do-zero-r1` para não colidir com a outra sessão.
+- **Feito:** `mescla.js`, `dados.js`, `registro.js`, `nuvem.js`, `telas-dados.js` (rota `#/dados`) em `site/novo/`; eventos do estudo e da nuvem declarados; `armazem.ls` ganhou `getRaw/setRaw` (o código do aparelho do app de hoje é texto puro). `test_novo_dados.ps1` com **41 verificações, todas passando**; `test_novo_nucleo.ps1` segue "tudo certo" (agora com 11 módulos).
+- **Paridade provada, não suposta:** o teste carrega o app de hoje numa moldura e compara: a **mescla** (8 casos + **300 pares aleatórios**, byte a byte), o **snapshot** e o **backup nos dois sentidos** (arquivo do novo carregado no de hoje e vice-versa restauram exatamente o mesmo progresso). Backup, sessão e dados são compartilhados entre os dois apps enquanto convivem.
+- **Melhoria sobre o app de hoje:** o registro de estudo **lê o storage antes de gravar e soma o pendente**, então uma mescla (backup ou nuvem) feita no meio nunca é sobrescrita por um valor antigo da memória.
+- **Matriz de paridade:** BK 11/11, SY 10/10 e S 2/2 passam no app novo (23 de 279). N1/N2 ficam com a infraestrutura pronta (integra ao Leitor na R2); N3–N6 são do painel Progresso (R3).
+- **Aviso, testes do app de hoje:** `test_ingles_modulos.ps1` (TC5, L7, L14) oscila conforme a carga da máquina. Medi **igual com e sem a pasta `novo/`** (9 falhas em 12 sem, 6 em 12 com); passam quando a máquina está sossegada. Rodar sozinho antes de suspeitar do código.
+- **Correção de contagem:** o núcleo (R1a) tem **29** verificações (não 32); com as 41 de dados, o app novo tem **70** testes (não 73).`n- **Pendente:** autorização para publicar (o `/novo/` só vai ao ar com o merge em `main`); próxima fase **R2 (Motores: Leitor e Narrador)**.
 ## 2026-11-22 (madrugada) · R1a: núcleo do app novo
 
 - **Autorização do autor:** começar a R1. Escopo desta etapa (R1a): registro de módulos, eventos, armazém com migração e cópia de segurança, preferências, rotas e moldura do app; **R1b** (backup, sincronização, gravação à prova de fechamento) fica para depois, porque exige portar e testar a mescla contra a do app de hoje.
-- **Feito:** `site/novo/` (prévia, `noindex`) com `app.js`, `eventos.js`, `armazem.js`, `config.js`, `rotas.js`, `telas.js`, `inicio.js`, moldura e tela técnica `#/sistema`; teste `site/tools/test_novo_nucleo.ps1` com **32 verificações, todas passando**. As baterias antigas (módulos e núcleo/PDF) continuam "tudo certo". Nenhum arquivo do app de hoje foi alterado. Documento vivo: `docs/09-nucleo-novo.md`.
+- **Feito:** `site/novo/` (prévia, `noindex`) com `app.js`, `eventos.js`, `armazem.js`, `config.js`, `rotas.js`, `telas.js`, `inicio.js`, moldura e tela técnica `#/sistema`; teste `site/tools/test_novo_nucleo.ps1` com **29 verificações, todas passando** (a primeira versão deste registro e o texto do commit `1ac2cc3` diziam 32 por engano; o certo é 29). As baterias antigas (módulos e núcleo/PDF) continuam "tudo certo". Nenhum arquivo do app de hoje foi alterado. Documento vivo: `docs/09-nucleo-novo.md`.
 - **Descoberta crítica (registrada em `07`, seção 7, e `09`, seção 4):** o app de hoje abre `dd-ingles` **fixo na versão 2**; subir a versão no núcleo novo **quebraria o site atual**. Regra: o banco antigo **não é migrado** enquanto os dois apps coexistirem; o app novo usa o mesmo banco sem mudar a versão e guarda o novo em `dd-ingles-novo` (esse sim com migração e cópia automática). Teste `NU6c` garante que o app antigo ainda abre o banco depois do núcleo novo.
 - **Aprendizado de teste:** o Chrome headless usa tempo virtual; esperar o IndexedDB sem um timer ativo faz a página parar, e um `open` pode gastar ~100 s virtuais. O teste usa batimento de timer, prazos generosos e orçamento maior (detalhe em `09`, seção 8).
 - **Pendente:** R1b; autorização para commit e para publicar (o `/novo/` só vai ao ar com o merge em `main`).
+
 ## 2026-11-22 (madrugada) · Desenho da reconstrução (imersão em livros)
 
 - **Pedido do autor:** desenhar o site como **imersão em livros** (ler, ouvir, falar, escrever, entender contextos), não como escola tradicional; reformular o que existe, **cortando o excesso e mantendo o útil**; segurança/duas etapas **adiadas**.

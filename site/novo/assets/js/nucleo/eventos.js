@@ -39,6 +39,19 @@ App.define('eventos', [], function () {
     declarar('armazem-migrado', 'um banco subiu de versão: { banco, de, para, copia }');
     declarar('armazem-erro', 'um banco não abriu ou falhou: { banco, erro }');
     declarar('dados-importados', 'um backup foi carregado: { dias, cartoes, livros }');
+    declarar('dados-aplicados', 'dados mesclados foram gravados no aparelho: { origem }');
+    // estudo (quem emite: leitor, narrador e atividades, nas fases R2–R4; quem escuta: registro de estudo e sincronização)
+    declarar('livro-aberto', 'um livro abriu: { id, titulo }');
+    declarar('livro-fechado', 'um livro fechou: { id, titulo }');
+    declarar('livro-importado', 'um livro foi trazido pelo aluno: { id, titulo }');
+    declarar('frase-ouvida', 'palavras ouvidas na narração: { palavras }');
+    declarar('palavra-salva', 'uma palavra foi salva nos cartões');
+    declarar('revisao-feita', 'um cartão foi revisado');
+    declarar('ditado-feito', 'um ditado foi concluído');
+    declarar('escrita-salva', 'um texto escrito pelo aluno foi guardado');
+    // nuvem
+    declarar('nuvem-estado', 'a conta/sincronização mudou: { estado, msg } (estado: out = fora, in = dentro, sync = sincronizando)');
+    declarar('sincronia-comecando', 'a sincronização vai ler os dados: gravar o que estiver pendente');
 
     return { declarar, on, off, uma, emit, erros, nomes: () => Array.from(catalogo.keys()) };
 });

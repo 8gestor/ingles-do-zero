@@ -39,7 +39,7 @@ $test = @'
       await until(function () { return window.__appPronto; }, 20000);
       var rel = window.__appPronto || { modulos: [] };
       var nomes = rel.modulos.map(function (m) { return m.nome + ':' + m.estado; }).join(' ');
-      ok('NU1 o app liga sozinho: eventos, armazem, config, rotas, telas e inicio prontos', rel.ok === true && rel.modulos.length === 6, nomes);
+      ok('NU1 o app liga sozinho: os 13 módulos prontos (eventos, armazem, config, mescla, dados, registro, nuvem, ritmo, vozes, rotas, telas, telas-dados e inicio)', rel.ok === true && rel.modulos.length === 13, nomes);
 
       var ev = App.get('eventos'), ar = App.get('armazem'), cf = App.get('config'), rt = App.get('rotas');
 
@@ -133,7 +133,7 @@ $test = @'
       ok('NU16 texto vindo do endereço aparece como texto, nunca vira HTML (sem <b> nem <img> criados)', vista.querySelectorAll('b, img').length === 0 && vista.textContent.indexOf('<b>negrito</b>') >= 0, vista.querySelectorAll('b, img').length + ' elementos');
       location.hash = '#/sistema'; await until(function () { var b = document.getElementById('sis-armazem'); return b && /IndexedDB/.test(b.textContent); }, 15000);
       var sisMods = document.querySelectorAll('#sis-modulos li[data-estado="pronto"]').length, sisTxt = document.getElementById('sis-armazem').textContent;
-      ok('NU17 a tela Sistema lista os 6 módulos prontos e mostra o armazenamento e as versões dos dois bancos (antigo v2, novo v1)', sisMods === 6 && /IndexedDB: sim/.test(sisTxt) && /versão 2/.test(sisTxt) && /dd-ingles-novo\)\: versão 1/.test(sisTxt) && !!document.getElementById('sis-persistir'), 'prontos=' + sisMods);
+      ok('NU17 a tela Sistema lista os 13 módulos prontos e mostra o armazenamento e as versões dos dois bancos (antigo v2, novo v1)', sisMods === 13 && /IndexedDB: sim/.test(sisTxt) && /versão 2/.test(sisTxt) && /dd-ingles-novo\)\: versão 1/.test(sisTxt) && !!document.getElementById('sis-persistir'), 'prontos=' + sisMods);
 
       // ===================== registro de módulos (depois de zerar o registro do app) =====================
       App._zerar();

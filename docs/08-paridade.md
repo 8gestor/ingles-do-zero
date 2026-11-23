@@ -2,7 +2,7 @@
 
 > **Para que serve:** garantir que **nenhuma função se perde** na reconstrução (`07-desenho-reconstrucao.md`, seção 7). Cada verificação dos testes de hoje é um **contrato**: o app novo só vira o principal quando todas passarem nele (adaptando seletores, **nunca enfraquecendo** a verificação).
 > **Gerada em 2026-11-22** a partir de `site/tools/test_ingles.ps1` (núcleo) e `site/tools/test_ingles_modulos.ps1` (módulos): **279 verificações** em **39 áreas**. Quando um teste for criado, alterado ou removido, atualizar esta matriz e o `CHANGELOG.md`.
-> **Status:** `[ ]` = ainda não verificada no app novo · `[x]` = passa no app novo (data) · `[~]` = substituída por decisão do autor (explicar). Hoje **tudo está `[ ]`**, porque o app novo ainda não existe; as 279 passam no site atual.
+> **Status:** `[ ]` = ainda não verificada no app novo · `[x]` = passa no app novo (data) · `[~]` = substituída por decisão do autor (explicar). Em 22/11/2026 (fim da R1b): **BK 11/11, SY 10/10 e S 2/2 já passam no app novo** (23 de 279); o restante segue `[ ]`. As 279 passam no site atual.
 
 ## 1. Funções de hoje → onde ficam no app novo
 
@@ -52,7 +52,7 @@
 | `AL` | Alinhamento de palavras entre idiomas | 5 | Serviço do Narrador | R2 | 0/5 |
 | `AR` | Setas e velocidade no teleprompter | 5 | Leitor/Narrador (atalhos) | R2 | 0/5 |
 | `B` | Nível de dificuldade do texto | 7 | Catálogo/Estante (faixas por degrau) | R5 | 0/7 |
-| `BK` | Backup do progresso em arquivo | 11 | Núcleo (sincronização e backup) | R1 | 0/11 |
+| `BK` | Backup do progresso em arquivo | 11 | Núcleo (sincronização e backup) | R1 | **11/11** |
 | `C` | Treino: repetir, shadowing, ditado | 9 | Atividades (shadowing ganha gravação local) | R4 | 0/9 |
 | `D` | Perguntas de compreensão (modelo local) | 5 | Atividades (troca por perguntas do catálogo; local vira extra) | R4–R5 | 0/5 |
 | `E` | Painel de progresso (dias, minutos, palavras) | 6 | Progresso | R3 | 0/6 |
@@ -63,13 +63,13 @@
 | `I` | Controles de estudo e painéis Aa/Voz no cabeçalho | 6 | Interface | R3 | 0/6 |
 | `J` | Legenda | 17 | Modo de leitura (fundida ao Teleprompter) | R3 | 0/17 |
 | `L` | Livro da semana (roteiro de 8 livros) | 16 | Planejador | R4 | 0/16 |
-| `N` | Posição e palavras gravadas ao fechar a aba | 7 | Núcleo (Armazém) | R1 | 0/7 |
+| `N` | Posição e palavras gravadas ao fechar a aba | 7 | Núcleo (Armazém) | R1 | 0/7 (infra pronta: N1 e N2 faltam integrar ao Leitor, R2; N3–N6 são do painel Progresso, R3) |
 | `O` | Sessão do dia (50 min, 4 blocos) | 13 | Planejador / tela Hoje | R3–R4 | 0/13 |
 | `P` | Modo foco com painel (AGORA, PROGRESSO, HOJE) | 8 | Leitura + componente de andamento unificado | R3–R4 | 0/8 |
 | `Q` | Fechamento da semana | 8 | Planejador | R4 | 0/8 |
 | `R` | Posição estável quando o layout muda | 6 | Motor Leitor | R2 | 0/6 |
-| `S` | Estatísticas gravadas na hora | 2 | Núcleo (Armazém) | R1 | 0/2 |
-| `SY` | Conta e sincronização (Supabase) | 10 | Núcleo (sincronização e backup) | R1 | 0/10 |
+| `S` | Estatísticas gravadas na hora | 2 | Núcleo (Armazém) | R1 | **2/2** |
+| `SY` | Conta e sincronização (Supabase) | 10 | Núcleo (sincronização e backup) | R1 | **10/10** |
 | `T` | Botões do site (Teleprompter, Raio-X) | 4 | Interface | R3 | 0/4 |
 | `TC` | Painel de andamento do teleprompter | 6 | Componente de andamento unificado | R4 | 0/6 |
 | `U` | Seletor de modos e teleprompter | 10 | Leitura (4 modos) | R3 | 0/10 |
@@ -220,17 +220,17 @@ Arquivo: **N** = `test_ingles.ps1` (núcleo), **M** = `test_ingles_modulos.ps1` 
 
 ### `BK` · Backup do progresso em arquivo → Núcleo (sincronização e backup) (R1)
 
-- [ ] `BK1` (M) o bloco Backup do progresso existe na Biblioteca, com baixar, carregar e colar
-- [ ] `BK2` (M) exportar gera um arquivo do site (app, versão, data) com o progresso e SEM o corpo dos livros (só títulos, posição e contadores; o cartão da palavra guarda a frase de …
-- [ ] `BK3` (M) importar soma sem perder nada: dia/campo = maior valor (900 fica, 50 entra), dia novo entra, cartão novo, histórico e escrita em união
-- [ ] `BK4` (M) o que o arquivo traz de livro que ainda não está aqui fica guardado (posição e palavras ouvidas) e vai nos próximos backups
-- [ ] `BK5` (M) carregar o mesmo arquivo de novo não duplica nada
-- [ ] `BK6` (M) arquivo que não é backup do site é recusado e não muda nada
-- [ ] `BK7` (M) quando o livro do backup entra na biblioteca ele já abre na posição e com as palavras ouvidas guardadas, e a pendência some
-- [ ] `BK8` (M) sem suporte a download, o progresso aparece como texto para copiar (e é um backup válido)
-- [ ] `BK9` (M) colar o texto de um backup e importar funciona e mostra o resumo
-- [ ] `BK10` (M) texto colado que não é backup mostra aviso claro
-- [ ] `BK11` (M) o backup funciona com a sincronização desligada (sem configuração, sem conta)
+- [x] `BK1` (M) o bloco Backup do progresso existe na Biblioteca, com baixar, carregar e colar — **app novo: NUD8a** (22/11)
+- [x] `BK2` (M) exportar gera um arquivo do site (app, versão, data) com o progresso e SEM o corpo dos livros (só títulos, posição e contadores; o cartão da palavra guarda a frase de … — **app novo: NUD3a** (22/11)
+- [x] `BK3` (M) importar soma sem perder nada: dia/campo = maior valor (900 fica, 50 entra), dia novo entra, cartão novo, histórico e escrita em união — **app novo: NUD3c, NUD3d** (22/11)
+- [x] `BK4` (M) o que o arquivo traz de livro que ainda não está aqui fica guardado (posição e palavras ouvidas) e vai nos próximos backups — **app novo: NUD4a** (22/11)
+- [x] `BK5` (M) carregar o mesmo arquivo de novo não duplica nada — **app novo: NUD3d** (22/11)
+- [x] `BK6` (M) arquivo que não é backup do site é recusado e não muda nada — **app novo: NUD3e, NUD3f** (22/11)
+- [x] `BK7` (M) quando o livro do backup entra na biblioteca ele já abre na posição e com as palavras ouvidas guardadas, e a pendência some — **app novo: NUD4b** (22/11)
+- [x] `BK8` (M) sem suporte a download, o progresso aparece como texto para copiar (e é um backup válido) — **app novo: NUD8b** (22/11)
+- [x] `BK9` (M) colar o texto de um backup e importar funciona e mostra o resumo — **app novo: NUD8c** (22/11)
+- [x] `BK10` (M) texto colado que não é backup mostra aviso claro — **app novo: NUD8d** (22/11)
+- [x] `BK11` (M) o backup funciona com a sincronização desligada (sem configuração, sem conta) — **app novo: NUD8d** (22/11)
 
 ### `C` · Treino: repetir, shadowing, ditado → Atividades (shadowing ganha gravação local) (R4)
 
@@ -353,13 +353,13 @@ Arquivo: **N** = `test_ingles.ps1` (núcleo), **M** = `test_ingles_modulos.ps1` 
 
 ### `N` · Posição e palavras gravadas ao fechar a aba → Núcleo (Armazém) (R1)
 
-- [ ] `N1` (M) ao ocultar ou fechar a aba, a posição e as palavras ouvidas são gravadas na hora (espelho síncrono e banco)
-- [ ] `N2` (M) se o banco ficou para trás (aba fechada antes de gravar), ao reabrir vale o espelho mais novo
-- [ ] `N3` (M) o botão Zerar estatísticas aparece quando há o que zerar
-- [ ] `N4` (M) pede confirmação explicando o que será zerado e o que fica, e cancelar não apaga nada
+- [ ] `N1` (M) ao ocultar ou fechar a aba, a posição e as palavras ouvidas são gravadas na hora (espelho síncrono e banco) — infraestrutura pronta no app novo (NUD6e, NUD6h); falta integrar ao Leitor (R2)
+- [ ] `N2` (M) se o banco ficou para trás (aba fechada antes de gravar), ao reabrir vale o espelho mais novo — infraestrutura pronta no app novo (NUD6e, NUD6h); falta integrar ao Leitor (R2)
+- [ ] `N3` (M) o botão Zerar estatísticas aparece quando há o que zerar — painel Progresso (R3)
+- [ ] `N4` (M) pede confirmação explicando o que será zerado e o que fica, e cancelar não apaga nada — painel Progresso (R3)
 - [ ] `N4b` (M) cancelar volta ao botão e mantém as estatísticas
-- [ ] `N5` (M) zerar apaga minutos, palavras ouvidas, contadores dos livros e histórico, e mantém posição, livros e palavras salvas
-- [ ] `N6` (M) depois de zerar o botão some e o painel volta ao convite inicial
+- [ ] `N5` (M) zerar apaga minutos, palavras ouvidas, contadores dos livros e histórico, e mantém posição, livros e palavras salvas — painel Progresso (R3)
+- [ ] `N6` (M) depois de zerar o botão some e o painel volta ao convite inicial — painel Progresso (R3)
 
 ### `O` · Sessão do dia (50 min, 4 blocos) → Planejador / tela Hoje (R3–R4)
 
@@ -410,21 +410,21 @@ Arquivo: **N** = `test_ingles.ps1` (núcleo), **M** = `test_ingles_modulos.ps1` 
 
 ### `S` · Estatísticas gravadas na hora → Núcleo (Armazém) (R1)
 
-- [ ] `S1` (M) palavras ouvidas (e salvas, revisões, ditados) são gravadas na hora, no mesmo instante do evento
-- [ ] `S2` (M) os tempos (total, lendo, ouvindo) são gravados em até 2 s, sem esperar ocultar nem fechar a aba
+- [x] `S1` (M) palavras ouvidas (e salvas, revisões, ditados) são gravadas na hora, no mesmo instante do evento — **app novo: NUD6a** (22/11)
+- [x] `S2` (M) os tempos (total, lendo, ouvindo) são gravados em até 2 s, sem esperar ocultar nem fechar a aba — **app novo: NUD6c** (22/11)
 
 ### `SY` · Conta e sincronização (Supabase) → Núcleo (sincronização e backup) (R1)
 
-- [ ] `SY1` (M) a tela Conta e sincronização existe na Biblioteca e, sem configuração, diz que a sincronização não está ativada (o site segue normal)
-- [ ] `SY2` (M) mesclar não perde nada: dia/campo = maior valor, cartão = o mais revisado, listas = união, livro = posição mais recente com o maior número de palavras ouvidas
-- [ ] `SY3` (M) com a configuração presente, aparece o campo de e-mail para entrar
-- [ ] `SY4` (M) enviar o código chama o login por código e abre o campo do código
-- [ ] `SY4b` (M) quando o envio do código falha, a tela mostra o motivo técnico (ex.: 500: Error sending magic link email) para achar o problema
-- [ ] `SY5` (M) código errado é recusado; o certo entra e o progresso local sobe para a nuvem (estatísticas e vocabulário), sem o texto dos livros
-- [ ] `SY6` (M) o que veio de outro aparelho entra aqui sem perder o local: dia com o maior tempo, cartão novo, posição e palavras ouvidas do livro mais recentes
-- [ ] `SY7` (M) se outro aparelho gravar no meio, a sincronização relê, mescla e tenta de novo (conflito resolvido) e a nuvem fica com tudo
-- [ ] `SY8` (M) sair da conta não apaga nada do aparelho (estatísticas, vocabulário e livros continuam)
-- [ ] `SY9` (M) sem configuração o site volta ao normal (nada é chamado)
+- [x] `SY1` (M) a tela Conta e sincronização existe na Biblioteca e, sem configuração, diz que a sincronização não está ativada (o site segue normal) — **app novo: NUD7a, NUD8a** (22/11)
+- [x] `SY2` (M) mesclar não perde nada: dia/campo = maior valor, cartão = o mais revisado, listas = união, livro = posição mais recente com o maior número de palavras ouvidas — **app novo: NUD1a, NUD1b, NUD1c** (22/11)
+- [x] `SY3` (M) com a configuração presente, aparece o campo de e-mail para entrar — **app novo: NUD8e** (22/11)
+- [x] `SY4` (M) enviar o código chama o login por código e abre o campo do código — **app novo: NUD7d, NUD8e** (22/11)
+- [x] `SY4b` (M) quando o envio do código falha, a tela mostra o motivo técnico (ex.: 500: Error sending magic link email) para achar o problema — **app novo: NUD7c** (22/11)
+- [x] `SY5` (M) código errado é recusado; o certo entra e o progresso local sobe para a nuvem (estatísticas e vocabulário), sem o texto dos livros — **app novo: NUD7e** (22/11)
+- [x] `SY6` (M) o que veio de outro aparelho entra aqui sem perder o local: dia com o maior tempo, cartão novo, posição e palavras ouvidas do livro mais recentes — **app novo: NUD7f** (22/11)
+- [x] `SY7` (M) se outro aparelho gravar no meio, a sincronização relê, mescla e tenta de novo (conflito resolvido) e a nuvem fica com tudo — **app novo: NUD7f** (22/11)
+- [x] `SY8` (M) sair da conta não apaga nada do aparelho (estatísticas, vocabulário e livros continuam) — **app novo: NUD7h, NUD8f** (22/11)
+- [x] `SY9` (M) sem configuração o site volta ao normal (nada é chamado) — **app novo: NUD7a** (22/11)
 
 ### `T` · Botões do site (Teleprompter, Raio-X) → Interface (R3)
 
@@ -468,7 +468,7 @@ Arquivo: **N** = `test_ingles.ps1` (núcleo), **M** = `test_ingles_modulos.ps1` 
 
 - [ ] `Y1` (M) trocar a velocidade no meio da frase continua da palavra falada (antes recomeçava a frase do início)
 - [ ] `Y2` (M) depois de retomar, o destaque continua a partir da posição já falada, sem voltar ao início da frase
-- [ ] `Y3` (M) sem evento de palavra da voz, o destaque avança por estimativa, sem voltar atrás e chegando perto do fim da frase
+- [ ] `Y3` (M) sem evento de palavra da voz, o destaque avança por estimativa, sem voltar atrás e chegando perto do fim da frase — **ritmo pronto no app novo (NR6, NR7a, NR7b)**; falta a voz do navegador (R2.2)
 
 ### `Z` · Centragem, fila sem lacuna, deslize contínuo → Motor Narrador + Teleprompter (R2)
 
@@ -480,7 +480,7 @@ Arquivo: **N** = `test_ingles.ps1` (núcleo), **M** = `test_ingles_modulos.ps1` 
 
 ## 4. Testes novos do app novo (criados a partir da R1a)
 
-Além das 279 verificações herdadas, o núcleo novo tem os seus testes em `site/tools/test_novo_nucleo.ps1`: **32 verificações, todas passando em 22/11/2026**. Cobrem recursos que a reconstrução **acrescenta** (registro de módulos, eventos tipados, migração com cópia de segurança, rotas) e garantem a convivência com o app de hoje (`NU6`: o banco antigo abre na versão 2 depois do núcleo novo). Detalhes em `09-nucleo-novo.md`, seção 8.
+Além das 279 verificações herdadas, o núcleo novo tem os seus testes em `site/tools/test_novo_nucleo.ps1`: **29 verificações, todas passando em 22/11/2026**. Cobrem recursos que a reconstrução **acrescenta** (registro de módulos, eventos tipados, migração com cópia de segurança, rotas) e garantem a convivência com o app de hoje (`NU6`: o banco antigo abre na versão 2 depois do núcleo novo). Detalhes em `09-nucleo-novo.md`, seção 8.
 
 | Área | O que cobre | Verificações |
 |---|---|---|
@@ -493,6 +493,40 @@ Além das 279 verificações herdadas, o núcleo novo tem os seus testes em `sit
 | `NU8–NU12` | Migração com cópia automática, restauração, cancelamento se a cópia falhar, versão mais nova, só 3 cópias | 5 |
 | `NU13–NU17` | Rotas (parâmetros, desconhecida, erro numa tela, texto nunca vira HTML) e tela Sistema | 6 |
 | `NU18` | Registro de módulos (ordem, dependência faltando, ciclo, módulo que falha, definir tarde) | 4 |
-| **Total** | | **32** (30 itens `NU` numerados; alguns agrupam 2–5 verificações) |
+| **Total** | | **29** |
 
 **Áreas da matriz ainda abertas na R1 (R1b):** `BK`, `SY`, `N`, `S`.
+
+### 4.1 Testes de dados do app novo (R1b): `site/tools/test_novo_dados.ps1`
+
+**41 verificações, todas passando em 22/11/2026.** A peça central é a **paridade com o app de hoje**: o teste carrega o app atual numa moldura e compara, com os mesmos dados, o app novo e o de hoje.
+
+| Área | O que cobre | Verificações |
+|---|---|---|
+| `NUD0` | O app de hoje carrega como referência | 1 |
+| `NUD1` | **Mescla idêntica nos dois apps**: 8 casos fixos, **300 pares aleatórios** (semente fixa) e propriedades (idempotente, nunca perde dia, cartão ou livro) | 3 |
+| `NUD2` | Snapshot do app novo = snapshot do app de hoje (mesmo banco, mesmo localStorage) | 1 |
+| `NUD3` | Backup **nos dois sentidos** (exportado por um, carregado pelo outro), sem duplicar, 6 tipos de arquivo inválido, arquivo com partes quebradas | 6 |
+| `NUD4` | Livros pendentes: ficam guardados, abrem na posição certa quando entram, livro já existente recebe a posição | 3 |
+| `NUD5` | Livro aberto não muda por baixo do leitor; livro fechado recebe a mescla | 2 |
+| `NUD6` | Registro de estudo (eventos na hora, tempos a cada 2 s, pagehide, soma por cima de mescla alheia, sequência) e espelho da leitura | 8 |
+| `NUD7` | Nuvem simulada: sem configuração, e-mail inválido, falha do envio com motivo, login, código errado, sincronizar, **conflito**, sessão vencida, sair, sem rede e volta | 11 |
+| `NUD8` | Tela `#/dados`: backup (baixar com texto de apoio, colar, recusar) e conta (entrar e sair) | 6 |
+| **Total** | | **41** |
+
+**Total de testes do app novo: 83** (29 do núcleo + 41 de dados + 13 do narrador, ver 4.2).
+
+> **Aviso sobre os testes do app de hoje (`test_ingles_modulos.ps1`, itens TC5, L7 e L14):** são sensíveis à carga da máquina (tempo virtual do Chrome). Em 22/11/2026 falharam de forma intermitente, **igual com e sem a pasta `novo/`** (9 falhas em 12 sem `novo/`, 6 em 12 com), e passam quando a máquina está sossegada. Se falharem, rodar de novo sozinho, sem outros testes ou Chrome ao mesmo tempo, antes de suspeitar do código.
+
+### 4.2 Testes do Narrador (R2.1): `site/tools/test_novo_narrador.ps1`
+
+**13 verificações, todas passando em 22/11/2026.** Cada peça pura (ritmo e vozes) é comparada com uma **cópia literal do código antigo** com centenas de entradas aleatórias, e a sincronia é simulada com os cenários do `test_sync.ps1` do livro, em tempo simulado.
+
+| Área | O que cobre | Verificações |
+|---|---|---|
+| `NR0` | módulos `ritmo` e `vozes` prontos | 1 |
+| `NR1`–`NR2` | tempo acumulado e posição estimada idênticos aos do código antigo | 2 |
+| `NR3` | aprendizado da velocidade por idioma e voz, limites 6–40 | 3 |
+| `NR4`–`NR5` | escolha e ordenação de vozes idênticas às do app de hoje e do menu da casca | 3 |
+| `NR6`–`NR7` | sincronia por estimativa: erro médio ≤ 1,5 palavra (medido 0,35–0,73), nunca volta atrás, chega ao fim da frase, erro máximo limitado | 4 |
+| **Total** | | **13** |
