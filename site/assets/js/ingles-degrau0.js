@@ -76,8 +76,11 @@
         }
         const info = stories.map((s) => {
             const m = metas.find((x) => x.x && x.x[TAG] === s.n);
-            const total = m ? (m.trTotal || 0) : 0, pos = m ? (m.pos || 0) : 0;
-            return { s, m, done: !!m && total > 0 && pos >= total - 1, started: !!m && pos > 0 };
+            const total = m ? (m.trTotal || 0) : 0, pos = m ? (m.pos || 0) : 0, heard = m ? (m.heard || 0) : 0;
+            // Uma fábula curta cabe numa tela: a página não rola e a posição fica em 0. Por isso "lida" vale por duas provas:
+            // chegou ao último parágrafo OU ouviu pelo menos 80% das palavras da história (a contagem de palavras ouvidas é do núcleo).
+            const reachedEnd = total > 0 && pos >= total - 1, heardAll = s.words > 0 && heard >= Math.ceil(s.words * 0.8);
+            return { s, m, done: !!m && (reachedEnd || heardAll), started: !!m && (pos > 0 || heard > 0) };
         });
         const nowIdx = info.findIndex((i) => !i.done);
         body.textContent = '';
