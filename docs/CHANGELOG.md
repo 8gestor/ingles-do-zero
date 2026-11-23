@@ -45,6 +45,13 @@
 - **Detalhe de fidelidade:** a parada por erros conta erros **no total** da sessão (como o app de hoje), não "3 seguidos" como dizia o texto do doc 10; mantido de propósito, é paridade.
 - **Ainda não coberto (R2.4):** a comparação direta de sequência de falas com o `ingles.js` de hoje, rodando os dois lado a lado; aqui a prova é por comportamento (itens 1–9 do doc 10), não por oráculo.
 - **Pendente:** autorização para commit; R2.3 (adaptador do Piper) e R2.4 (paridade com o app de hoje).
+## 2026-11-23 · R2.3: voz neural (Piper) atrás do contrato de Voz, no app novo
+
+- **Feito:** `voz-neural.js` (motor do Piper: fila única, cache, fallback, carga preguiçosa; sem tela) e `voz.js` (neural se ativa, senão navegador; recomeço vale para os dois). `narrador.js` pede `voz.preparar` das 2 frases seguintes. App novo: **17 módulos**.
+- **Teste:** `test_novo_narrador.ps1` 25 → **35** (NR18a, NR18–NR25), com Piper, áudio e relógio falsos. Conferido por mutação (sem fila única, NR20 falha; sem fallback, NR24 falha; sem a checagem de cancelamento, NR21 falha). `test_novo_nucleo.ps1` espera 17 módulos.
+- **Única diferença do app de hoje (deliberada):** a frase atual entra na fila de síntese antes das seguintes. Registrada em `docs/10`, seção 9.
+- **Não mexe no app de hoje.** O painel de baixar/ativar a voz fica para as telas. Próxima: R2.4 (paridade com o `ingles.js`).
+
 ## 2026-11-23 · R2.2: voz do navegador e Narrador (app novo)
 
 - **Feito:** `site/novo/assets/js/narrador/voz-navegador.js` e `narrador.js` (port fiel de `speakBrowser`, `runTts`, `startTts`, `stopTts`, `stepSentence`), sem DOM e com tudo injetável. Ligados em `site/novo/index.html` (agora **15 módulos**).
