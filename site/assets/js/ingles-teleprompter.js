@@ -231,11 +231,25 @@
         exK = Math.max(0, k);
         mark(exK); markSub(exK);
     }
+    // alinhamento calculado em tempo ocioso: frase atual (falada x mostrada) e a seguinte, nunca no meio do deslize
+    function warmAlign(mainText, mainLang, subText, otherLang, nb) {
+        if (!D.alignWarm) return;
+        if (mainText != null && subText != null) { D.alignWarm(mainText, subText, mainLang); D.alignWarm(subText, mainText, otherLang); }
+        if (nb) { const a = textIn(nb.p, nb.s, mainLang), b = textIn(nb.p, nb.s, otherLang); if (a != null && b != null) { D.alignWarm(a, b, mainLang); D.alignWarm(b, a, otherLang); } }
+    }
+    // rodapé: no máximo a cada 250 ms durante a fala (a cada palavra seria trabalho de layout demais); o último valor sempre aparece
+    let statsAt = 0, statsT = null;
+    function paintStatsSoon() {
+        const now = performance.now();
+        if (now - statsAt >= 250) { statsAt = now; clearTimeout(statsT); statsT = null; paintStats(); }
+        else if (!statsT) statsT = setTimeout(() => { statsT = null; statsAt = performance.now(); paintStats(); }, 250 - (now - statsAt));
+    }
     function mark(k) {
         if (k === wi) return;
-        words.forEach((w, i) => { w.el.classList.toggle('now', i === k); w.el.classList.toggle('past', i < k); });
+        if (wi >= 0 && k === wi + 1 && words[wi] && words[k]) { words[wi].el.classList.remove('now'); words[wi].el.classList.add('past'); words[k].el.classList.add('now'); }   // passo normal: só duas palavras mudam
+        else words.forEach((w, i) => { w.el.classList.toggle('now', i === k); w.el.classList.toggle('past', i < k); });
         const prev = wi, now = performance.now();
-        wi = k; paintStats();
+        wi = k; paintStatsSoon();
         if (lastArr && prev >= 0 && k === prev + 1) {                    // aprende o ritmo da voz (caracteres por ms) para o deslize casar com a fala
             const sample = (words[prev].e - words[prev].s + 1) / Math.max(1, now - lastArr);
             cpsEst = 0.6 * cpsEst + 0.4 * Math.min(0.05, Math.max(0.004, sample));
@@ -261,6 +275,7 @@
         paintSub(subText != null ? subText : t('wait'));
         sub.classList.toggle('wait', subText == null); sub.lang = otherLang;
         if (wi >= 0) markSub(wi);
+        warmAlign(mainText, mainLang, subText, otherLang, nb);
         if ((subText == null || mainLang !== rl) && asked !== base) {     // traduz só esta frase (rápido); uma vez por frase, para não repetir sem tradutor
             asked = base;
             const want = { p: cur.p, s: cur.s };

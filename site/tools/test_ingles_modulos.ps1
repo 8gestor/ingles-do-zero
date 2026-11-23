@@ -1048,6 +1048,12 @@ $test = @'
       var bBig = D().mapPos(ben, ben.indexOf('big'), bpt, 'en'), bHouse = D().mapPos(ben, ben.indexOf('house'), bpt, 'en');
       D().translateText = tOrig;
       ok('AL5 palavras sem parentesco de grafia: com a tradução da palavra solta, big cai em grande e house em casa', bBig === bpt.indexOf('grande') && bHouse === bpt.indexOf('casa'), 'antes=' + bBefore + ' big->' + bBig + ' (esperado ' + bpt.indexOf('grande') + ') house->' + bHouse + ' (esperado ' + bpt.indexOf('casa') + ')');      D().setMode('single'); post({ type: 'readlang', value: 'pt' }); post({ type: 'audiolang', value: 'pt' }); await wait(300);
+      // AL6: frase longa (estilo Dostoiévski, 220 palavras) alinha em tempo curto e continua certa (faixa em torno da diagonal)
+      var lw = [], lp = [];
+      for (var li = 0; li < 220; li++) { lw.push('word' + String.fromCharCode(97 + li % 26) + String.fromCharCode(97 + Math.floor(li / 26)) + 'x'); lp.push('palavra' + String.fromCharCode(97 + li % 26) + String.fromCharCode(97 + Math.floor(li / 26)) + 'x'); }
+      var lsp = lw.join(' ') + '.', ltg = lp.join(' ') + '.', lt0 = performance.now();
+      var l1 = W().DDLab.mapPos(lsp, lsp.indexOf(lw[110]), ltg, 'en'), l2 = W().DDLab.mapPos(lsp, lsp.indexOf(lw[10]), ltg, 'en'), l3 = W().DDLab.mapPos(lsp, lsp.indexOf(lw[210]), ltg, 'en'), lms = performance.now() - lt0;
+      ok('AL6 frase longa de 220 palavras: cada palavra cai na equivalente (o tempo é medido à parte, em tempo real)', l1 === ltg.indexOf(lp[110]) && l2 === ltg.indexOf(lp[10]) && l3 === ltg.indexOf(lp[210]), Math.round(lms) + ' ms');
       D().$('lb-back').click(); await wait(300);
       // ===================== AR. velocidade 0,25 a 3x e setas para acompanhar o texto =====================
       await D().addText('Setas teste', 'First sentence here today. Second sentence here today. Third sentence here today.\n\nFourth sentence here today. Fifth sentence here today.');

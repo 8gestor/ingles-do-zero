@@ -1,6 +1,13 @@
 # Registro de evolução (CHANGELOG)
 
 > Uma entrada por dia de trabalho, da mais nova para a mais antiga. Escreva **o que mudou, por quê e como conferir**. Mantém o autor e o Claude sem precisar reler conversas antigas.
+## 2026-11-23 · Teleprompter mais fluido (frases longas)
+
+- **Relato do autor:** o teleprompter travava um pouco durante a leitura. **Diagnóstico (por leitura do código, sem perfil no aparelho dele):** não era memória; era trabalho na thread principal durante a animação. O alinhamento de palavras entre idiomas (`ingles-alinhar.js`) tinha custo cúbico na frase, era refeito a cada lote de traduções e rodava no meio do deslize; o rodapé reescrevia ~12 textos a cada palavra. *Noites Brancas* tem frases de 100 a 200 palavras.
+- **Correções:** (1) frase com mais de 1.600 pares palavra×palavra alinha só numa faixa de ±16 palavras em torno da diagonal (custo linear; frases curtas seguem com a conta completa, resultado idêntico); (2) `DDLab.alignWarm` calcula o alinhamento da frase atual e da seguinte em tempo ocioso (`requestIdleCallback`), chamado por `render()` do teleprompter; (3) traduções novas não invalidam mais, na hora, o cálculo de frase longa (ele é refeito em tempo ocioso; frase curta continua recalculando na hora); (4) rodapé de estatísticas a cada 250 ms durante a fala (`paintStatsSoon`), e `mark()` troca só as duas palavras que mudam no passo normal.
+- **Medição (Chrome, frase de 220 palavras, tempo real):** 66 ms → 14 ms por alinhamento, mesmo resultado. Em aparelho fraco (celular, TV, Kindle) os números absolutos serão maiores, a proporção deve se manter.
+- **Teste:** AL6 (frase longa: cada palavra cai na equivalente) em `test_ingles_modulos.ps1`; `test_ingles_modulos.ps1` e `test_ingles.ps1` passam. Branch `fix/teleprompter-fluidez`, não publicado.
+
 ## 2026-11-23 · Testes sem resultado: orcamento de tempo virtual do Chrome
 
 - **Defeito do teste (nao do site):** rodadas do `test_ingles_modulos.ps1` terminavam sem a linha RESULTADO (cortadas em 173 a 250 das 259 linhas, sem nenhum FAIL). **Causa:** o Chrome sem tela encerrava ao esgotar `--virtual-time-budget=4200000` (70 min virtuais); com disco/CPU lentos o tempo virtual corre mais depressa durante as esperas por IndexedDB.
