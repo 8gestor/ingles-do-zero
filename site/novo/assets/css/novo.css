@@ -1,0 +1,25 @@
+/* novo.css — moldura do app novo (fase R1). Reaproveita as cores dos temas de ../../assets/css/base.css e papel.css.
+   Regra de plataformas: alvos de toque >= 44 px, layout fluido de 320 px a TV, nada só com mouse. */
+html { -webkit-text-size-adjust: 100%; }
+body { margin: 0; background: var(--c-bg, #f4ecd8); color: var(--c-text, #222); font-family: var(--font-ui, 'Inter', sans-serif); font-size: var(--base-size, 19px); line-height: 1.55; }
+.novo-topo { position: sticky; top: 0; z-index: 5; display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 10px 16px; background: var(--c-bg, #f4ecd8); border-bottom: var(--border-tech, 1px solid rgba(0,0,0,.12)); }
+.novo-marca { font-size: 1.05rem; }
+.novo-previa { font-size: .7rem; letter-spacing: .08em; text-transform: uppercase; padding: 2px 8px; border-radius: 999px; border: var(--border-tech, 1px solid currentColor); color: var(--c-dim, #555); margin-left: 6px; }
+.novo-topo-links a { display: inline-flex; align-items: center; min-height: 44px; padding: 0 10px; color: var(--c-dim, #555); text-decoration: none; font-size: .85rem; }
+.novo-topo-links a:hover, .novo-topo-links a:focus-visible { color: var(--c-text, #222); text-decoration: underline; }
+.novo-vista { max-width: 760px; margin: 0 auto; padding: 20px 16px 110px; outline: none; }
+.novo-h1 { font-size: 1.5rem; margin: 8px 0 4px; }
+.novo-h2 { font-size: 1.05rem; margin: 22px 0 6px; }
+.novo-fase { margin: 0 0 14px; color: var(--c-dim, #555); font-size: .85rem; letter-spacing: .04em; text-transform: uppercase; }
+.novo-erro { color: #b3261e; font-weight: 600; }
+.novo-btn { min-height: 44px; padding: 0 16px; margin-top: 12px; font: inherit; font-size: .9rem; color: inherit; background: transparent; border: var(--border-tech, 1px solid currentColor); border-radius: 8px; cursor: pointer; }
+.novo-btn:disabled { opacity: .6; cursor: default; }
+.novo-menu { position: fixed; left: 0; right: 0; bottom: 0; z-index: 5; display: flex; background: var(--c-bg, #f4ecd8); border-top: var(--border-tech, 1px solid rgba(0,0,0,.12)); padding-bottom: env(safe-area-inset-bottom, 0); }
+.novo-menu a { flex: 1 1 0; display: flex; align-items: center; justify-content: center; min-height: 56px; color: var(--c-dim, #555); text-decoration: none; font-size: .9rem; border-top: 3px solid transparent; }
+.novo-menu a.on { color: var(--c-text, #222); border-top-color: currentColor; font-weight: 600; }
+.novo-menu a:focus-visible { outline: 2px solid currentColor; outline-offset: -4px; }
+.sis-linha { margin: 4px 0; font-size: .92rem; word-break: break-word; }
+.sis-lista { margin: 0; padding-left: 1.1em; font-size: .92rem; }
+.sis-pronto::marker { content: '✓ '; }
+.sis-erro, .sis-bloqueado { color: #b3261e; }
+.sis-erro::marker, .sis-bloqueado::marker { content: '✗ '; }

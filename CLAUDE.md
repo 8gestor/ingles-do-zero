@@ -30,7 +30,7 @@ Nasceu da aba "Estudo de Inglês" do livro `8gestor/voce.algoritmo` (projeto sep
 ## 3. Máquina e ferramentas
 
 - Windows. **Só PowerShell 7 (`pwsh`), Git Bash e Chrome.** Python e Node não existem nesta máquina.
-- Testes: Chrome headless dirigido por PowerShell. Rodar de dentro de `site/`: `pwsh tools\test_ingles_modulos.ps1` e `pwsh tools\test_ingles.ps1` (esperado: `tudo certo`). Os testes copiam `site/` para uma pasta temporária e injetam o código de teste na casca (`index.html`).
+- Testes: Chrome headless dirigido por PowerShell. Rodar de dentro de `site/`: `pwsh tools\test_ingles_modulos.ps1` e `pwsh tools\test_ingles.ps1` (app de hoje) e `pwsh tools\test_novo_nucleo.ps1` (núcleo do app novo, em `site/novo/`); esperado: `tudo certo`. **Em teste que use IndexedDB no Chrome sem tela: manter um batimento de timer e prazos generosos (tempo virtual; ver `docs/09`, seção 8). Nunca mudar a versão nem o desenho do banco `dd-ingles` enquanto o app de hoje existir.** Os testes copiam `site/` para uma pasta temporária e injetam o código de teste na casca (`index.html`).
 - PowerShell: aliases colidem com funções (`rd`, `r`); use nomes como `ReadFx/WriteFx/Subst`. UTF-8 **sem BOM**; guarda de não vazio antes de gravar.
 
 ## 4. Git e GitHub
@@ -41,5 +41,5 @@ Nasceu da aba "Estudo de Inglês" do livro `8gestor/voce.algoritmo` (projeto sep
 
 ## 5. Documentos
 
-- `docs/01-visao.md` · `docs/02-niveis.md` · `docs/03-arquitetura-roadmap.md` · `docs/04-telas.md` · `docs/05-separacao-do-livro.md` · `docs/06-biblioteca-modulos.md` · **`docs/07-desenho-reconstrucao.md` (desenho vigente; onde contradiz 02/03/04, vale o 07)** · `docs/08-paridade.md` (matriz de paridade: contrato da reconstrução) · `docs/CHANGELOG.md`.
+- `docs/01-visao.md` · `docs/02-niveis.md` · `docs/03-arquitetura-roadmap.md` · `docs/04-telas.md` · `docs/05-separacao-do-livro.md` · `docs/06-biblioteca-modulos.md` · **`docs/07-desenho-reconstrucao.md` (desenho vigente; onde contradiz 02/03/04, vale o 07)** · `docs/08-paridade.md` (matriz de paridade: contrato da reconstrução) · `docs/09-nucleo-novo.md` (núcleo do app novo, `site/novo/`) · `docs/CHANGELOG.md`.
 - Atualizar o documento certo quando uma decisão for tomada, trocando o **(?)** pela decisão e a data.

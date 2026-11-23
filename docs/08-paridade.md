@@ -477,3 +477,22 @@ Arquivo: **N** = `test_ingles.ps1` (núcleo), **M** = `test_ingles_modulos.ps1` 
 - [ ] `Z3` (M) a próxima frase já aparece carregada à direita, esmaecida, enquanto só a atual é destacada
 - [ ] `Z4` (M) atualizações repetidas sem mudança não refazem a linha: mesmos elementos, mesma palavra destacada e a linha não se mexe (sem travada na transição)
 - [ ] `Z5` (M) a linha desliza de forma contínua e linear no ritmo da fala (sem parar a cada palavra): duração entre 90 e 1400 ms
+
+## 4. Testes novos do app novo (criados a partir da R1a)
+
+Além das 279 verificações herdadas, o núcleo novo tem os seus testes em `site/tools/test_novo_nucleo.ps1`: **32 verificações, todas passando em 22/11/2026**. Cobrem recursos que a reconstrução **acrescenta** (registro de módulos, eventos tipados, migração com cópia de segurança, rotas) e garantem a convivência com o app de hoje (`NU6`: o banco antigo abre na versão 2 depois do núcleo novo). Detalhes em `09-nucleo-novo.md`, seção 8.
+
+| Área | O que cobre | Verificações |
+|---|---|---|
+| `NU1` | O app liga sozinho; os 6 módulos ficam prontos | 1 |
+| `NU2` | Eventos tipados: desconhecido é erro, escutador que falha isolado, desligar, uma vez | 3 |
+| `NU3` | Preferências compatíveis com `dd-settings`: limpeza e limites, preserva campos do app antigo, aparência | 5 |
+| `NU5` | localStorage seguro | 1 |
+| `NU6` | Banco do app de hoje: versão 2 mantida, leitura e gravação, **app antigo ainda abre** | 3 |
+| `NU7` | Banco novo (6 stores) | 1 |
+| `NU8–NU12` | Migração com cópia automática, restauração, cancelamento se a cópia falhar, versão mais nova, só 3 cópias | 5 |
+| `NU13–NU17` | Rotas (parâmetros, desconhecida, erro numa tela, texto nunca vira HTML) e tela Sistema | 6 |
+| `NU18` | Registro de módulos (ordem, dependência faltando, ciclo, módulo que falha, definir tarde) | 4 |
+| **Total** | | **32** (30 itens `NU` numerados; alguns agrupam 2–5 verificações) |
+
+**Áreas da matriz ainda abertas na R1 (R1b):** `BK`, `SY`, `N`, `S`.
