@@ -22,7 +22,7 @@
             onPace: 'No ritmo da semana', behind: (n) => 'Atrasado em ' + n + ' palavras', ahead: (n) => 'Adiantado em ' + n + ' palavras',
             cont: 'Continuar a leitura', end: 'Encerrar a semana', gone: 'O livro da semana não está mais na biblioteca.',
             finished: (d) => 'Livro concluído em ' + d + (d === 1 ? ' dia' : ' dias') + '. Boa leitura!', next: 'Escolher o próximo livro',
-            rotCount: (d, n) => d + ' de ' + n + ' semanas concluídas', rotH: 'Roteiro de 8 semanas', rotNote: 'Edições de domínio público (Standard Ebooks). Cada livro cabe em uma semana com 50 minutos por dia.', week: 'Semana', words: 'mil palavras', startThis: 'Começar esta semana', preparing: 'Preparando o livro…', reading: 'em andamento', doneTag: 'lido', openBook: 'Abrir o livro', reread: 'Reler (nova semana)', other: 'Ou escolha outro livro da sua biblioteca (por exemplo, um PDF que você enviou):', rotFail: 'Não consegui carregar o livro: ',
+            rotCount: (d, n) => d + ' de ' + n + ' semanas concluídas', rotH: 'Roteiro de 9 semanas', rotNote: 'Edições de domínio público (Standard Ebooks). Cada livro cabe em uma semana com 50 minutos por dia.', week: 'Semana', words: 'mil palavras', startThis: 'Começar esta semana', preparing: 'Preparando o livro…', reading: 'em andamento', doneTag: 'lido', openBook: 'Abrir o livro', reread: 'Reler (nova semana)', other: 'Ou escolha outro livro da sua biblioteca (por exemplo, um PDF que você enviou):', rotFail: 'Não consegui carregar o livro: ',
             closeH: 'Fechamento da semana', cDays: 'dias de leitura', cWords: 'palavras lidas', cMin: 'min estudados', cRdLs: 'min lendo / ouvindo', cSaved: 'palavras salvas', cRev: 'revisões feitas', cSess: 'sessões do dia completas', cTexts: 'textos escritos',
             closeAsk: 'Escreva, em inglês, um resumo de cerca de 150 palavras: o argumento central do livro e uma objeção sua.', counter: (n) => n + ' / 150 palavras', closeSave: 'Salvar o fechamento', saveAnyway: 'Salvar assim mesmo',
             needWords: (n) => 'Escreva pelo menos ' + n + ' palavras.', needBook: (n) => 'Use pelo menos ' + n + ' palavras do livro (veja a lista da semana).', needObj: 'Inclua uma objeção sua (however, but, although, I disagree…).',
@@ -41,7 +41,7 @@
             onPace: 'On pace for the week', behind: (n) => 'Behind by ' + n + ' words', ahead: (n) => 'Ahead by ' + n + ' words',
             cont: 'Continue reading', end: 'End the week', gone: 'This week\'s book is no longer in the library.',
             finished: (d) => 'Book finished in ' + d + (d === 1 ? ' day' : ' days') + '. Well read!', next: 'Pick the next book',
-            rotCount: (d, n) => d + ' of ' + n + ' weeks completed', rotH: '8-week reading plan', rotNote: 'Public-domain editions (Standard Ebooks). Each book fits in a week at 50 minutes a day.', week: 'Week', words: 'k words', startThis: 'Start this week', preparing: 'Preparing the book…', reading: 'in progress', doneTag: 'read', openBook: 'Open the book', reread: 'Read again (new week)', other: 'Or pick another book from your library (for example, a PDF you uploaded):', rotFail: 'Could not load the book: ',
+            rotCount: (d, n) => d + ' of ' + n + ' weeks completed', rotH: '9-week reading plan', rotNote: 'Public-domain editions (Standard Ebooks). Each book fits in a week at 50 minutes a day.', week: 'Week', words: 'k words', startThis: 'Start this week', preparing: 'Preparing the book…', reading: 'in progress', doneTag: 'read', openBook: 'Open the book', reread: 'Read again (new week)', other: 'Or pick another book from your library (for example, a PDF you uploaded):', rotFail: 'Could not load the book: ',
             closeH: 'Week closing', cDays: 'reading days', cWords: 'words read', cMin: 'min studied', cRdLs: 'min reading / listening', cSaved: 'words saved', cRev: 'reviews done', cSess: 'full daily sessions', cTexts: 'texts written',
             closeAsk: 'Write a summary of about 150 words in English: the book\'s central argument and an objection of your own.', counter: (n) => n + ' / 150 words', closeSave: 'Save the closing', saveAnyway: 'Save anyway',
             needWords: (n) => 'Write at least ' + n + ' words.', needBook: (n) => 'Use at least ' + n + ' words from the book (see the week\'s list).', needObj: 'Include an objection of your own (however, but, although, I disagree…).',
@@ -55,16 +55,17 @@
     const dayKey = (d) => { const x = d || new Date(); return x.getFullYear() + '-' + String(x.getMonth() + 1).padStart(2, '0') + '-' + String(x.getDate()).padStart(2, '0'); };
     const dayNum = (k) => { const p = k.split('-').map(Number); return Math.round(Date.UTC(p[0], p[1] - 1, p[2]) / DAY); };
 
-    // roteiro de 8 semanas: textos de domínio público em assets/livros/ (Standard Ebooks), um por semana
+    // roteiro de 9 semanas: textos de domínio público em assets/livros/ (Standard Ebooks), um por semana
     const ROTEIRO = [
-        { n: 1, slug: 'seneca-brevidade-da-vida', doc: 'Seneca — On the Shortness of Life', w: 10623, pt: ['Sêneca', 'Sobre a Brevidade da Vida'], en: ['Seneca', 'On the Shortness of Life'] },
-        { n: 2, slug: 'epicteto-enchiridion', doc: 'Epictetus — The Enchiridion', w: 8181, pt: ['Epicteto', 'Enchiridion (Manual)'], en: ['Epictetus', 'The Enchiridion'] },
-        { n: 3, slug: 'seneca-paz-de-espirito', doc: 'Seneca — On Peace of Mind', w: 13257, pt: ['Sêneca', 'Sobre a Paz de Espírito'], en: ['Seneca', 'On Peace of Mind'] },
-        { n: 4, slug: 'platao-apologia', doc: 'Plato — Apology', w: 11329, pt: ['Platão', 'Apologia de Sócrates'], en: ['Plato', 'Apology'] },
-        { n: 5, slug: 'thoreau-desobediencia-civil', doc: 'Thoreau — On the Duty of Civil Disobedience', w: 9370, pt: ['Thoreau', 'Desobediência Civil'], en: ['Thoreau', 'Civil Disobedience'] },
-        { n: 6, slug: 'emerson-self-reliance', doc: 'Emerson — Self-Reliance', w: 10115, pt: ['Emerson', 'Confiança em Si Mesmo (Self-Reliance)'], en: ['Emerson', 'Self-Reliance'] },
-        { n: 7, slug: 'tolstoi-confissao', doc: 'Tolstoy — A Confession', w: 25781, pt: ['Tolstói', 'Uma Confissão'], en: ['Tolstoy', 'A Confession'] },
-        { n: 8, slug: 'stevenson-jekyll-hyde', doc: 'Stevenson — The Strange Case of Dr Jekyll and Mr Hyde', w: 25609, pt: ['Stevenson', 'O Médico e o Monstro'], en: ['Stevenson', 'Dr Jekyll and Mr Hyde'] }
+        { n: 1, slug: 'dostoievski-noites-brancas', doc: 'Dostoevsky — White Nights', w: 20231, pt: ['Dostoiévski', 'Noites Brancas'], en: ['Dostoevsky', 'White Nights'] },
+        { n: 2, slug: 'seneca-brevidade-da-vida', doc: 'Seneca — On the Shortness of Life', w: 10623, pt: ['Sêneca', 'Sobre a Brevidade da Vida'], en: ['Seneca', 'On the Shortness of Life'] },
+        { n: 3, slug: 'epicteto-enchiridion', doc: 'Epictetus — The Enchiridion', w: 8181, pt: ['Epicteto', 'Enchiridion (Manual)'], en: ['Epictetus', 'The Enchiridion'] },
+        { n: 4, slug: 'seneca-paz-de-espirito', doc: 'Seneca — On Peace of Mind', w: 13257, pt: ['Sêneca', 'Sobre a Paz de Espírito'], en: ['Seneca', 'On Peace of Mind'] },
+        { n: 5, slug: 'platao-apologia', doc: 'Plato — Apology', w: 11329, pt: ['Platão', 'Apologia de Sócrates'], en: ['Plato', 'Apology'] },
+        { n: 6, slug: 'thoreau-desobediencia-civil', doc: 'Thoreau — On the Duty of Civil Disobedience', w: 9370, pt: ['Thoreau', 'Desobediência Civil'], en: ['Thoreau', 'Civil Disobedience'] },
+        { n: 7, slug: 'emerson-self-reliance', doc: 'Emerson — Self-Reliance', w: 10115, pt: ['Emerson', 'Confiança em Si Mesmo (Self-Reliance)'], en: ['Emerson', 'Self-Reliance'] },
+        { n: 8, slug: 'tolstoi-confissao', doc: 'Tolstoy — A Confession', w: 25781, pt: ['Tolstói', 'Uma Confissão'], en: ['Tolstoy', 'A Confession'] },
+        { n: 9, slug: 'stevenson-jekyll-hyde', doc: 'Stevenson — The Strange Case of Dr Jekyll and Mr Hyde', w: 25609, pt: ['Stevenson', 'O Médico e o Monstro'], en: ['Stevenson', 'Dr Jekyll and Mr Hyde'] }
     ];
     const HKEY = 'dd-ingles-semana-hist';
     const hist = () => { try { const h = JSON.parse(localStorage.getItem(HKEY) || '[]'); return Array.isArray(h) ? h : []; } catch (e) { return []; } };

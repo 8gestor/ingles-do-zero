@@ -1,6 +1,13 @@
 # Registro de evolução (CHANGELOG)
 
 > Uma entrada por dia de trabalho, da mais nova para a mais antiga. Escreva **o que mudou, por quê e como conferir**. Mantém o autor e o Claude sem precisar reler conversas antigas.
+## 2026-11-23 · Noites Brancas, de Dostoiévski, vira o primeiro livro da Biblioteca
+
+- **Pedido do autor:** incluir *Noites Brancas* (1848, domínio público) como primeiro livro da lista.
+- **O que mudou:** o roteiro passou de 8 para 9 semanas; *White Nights* é a **semana 1** e os outros livros subiram uma posição (o histórico é por `slug`, então o progresso de quem já leu não se perde). Texto em `site/assets/livros/dostoievski-noites-brancas.txt` (~20 mil palavras, só a novela, sem as outras histórias do volume). **Fonte:** tradução de Constance Garnett (1918), Project Gutenberg #36034; a Standard Ebooks ainda não publica esta obra. O original é em russo, então a Biblioteca traz a tradução inglesa em domínio público; o português vem do Tradutor do Chrome, como nos demais livros.
+- **Arquivos:** `ingles-semana.js` (ROTEIRO e textos), `LEIAME.md` dos livros, manual (PT/EN), `test_ingles_modulos.ps1` (L9–L13, Q5–Q7 ajustados para 9 livros e semana 3 = Epicteto).
+- **Conferir:** `pwsh tools\test_ingles_modulos.ps1` (resultado: tudo certo). Não publicado; branch `feature/noites-brancas`.
+
 ## 2026-11-22 · Degrau 0: fabula ouvida inteira passa a contar como lida
 
 - **Defeito (relatado pelo autor):** mesmo lendo/ouvindo a historia toda, ela nao ficava concluida. **Causa:** a fabula cabe numa tela, a pagina nao rola e `meta.pos` fica em 0; o Degrau 0 so marcava "lida" com `pos` no ultimo paragrafo.
