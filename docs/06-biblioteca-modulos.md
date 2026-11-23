@@ -25,6 +25,17 @@
 | `ingles-semana.js` | Livro da semana: **roteiro de 8 semanas** (livros de domínio público em `assets/livros/*.txt`, extraídos da Standard Ebooks; ver o LEIAME da pasta; botão traz o livro para a biblioteca e começa a semana; histórico em `dd-ingles-semana-hist`) **fechamento da semana** (ao concluir o livro: revisão com 8 números reais da semana, resumo de ~150 palavras com objeção e checagem por regras, guardado em `dd-ingles-escrita` com `kind: 'semana'` e marcado no histórico, e sugestão do próximo livro ainda não lido do roteiro) e plano de 7 dias para qualquer livro em inglês da biblioteca, cota diária de palavras, ritmo (em dia/adiantado/atrasado) e palavras difíceis para ver antes; progresso pela posição de leitura (`meta.pos`), plano em localStorage `dd-ingles-semana` |
 | `ingles-voz.js` | voz neural LOCAL opcional (Piper, `assets/vendor/piper`): ~60 MB por idioma, baixa uma vez, cai para a voz do navegador se falhar |
 
+### Backup do progresso em arquivo (`ingles-sync.js`, bloco `#lb-backup`) — 2026-11-22
+
+Levar o progresso de um site/aparelho para outro **sem conta e sem internet** (criado para migrar do livro para o site de inglês, serve para sempre).
+
+- **Baixar progresso** gera `progresso-ingles-AAAA-MM-DD.json` = `{ app: 'ingles-progresso', v: 1, exportedAt, data }`, com `data` = o mesmo `snapshot()` da nuvem: estatísticas por dia, vocabulário (cada cartão leva a **frase de contexto** da palavra, como na nuvem), histórico do roteiro e do dia, textos de escrita, posição e palavras ouvidas por livro (título + idioma). **Nunca o corpo dos livros** (sem `paras`).
+- **Carregar progresso** (arquivo) e **Colar texto** (para Kindle/TV, que nem sempre baixam/abrem arquivos; se o aparelho não baixa, "Baixar" mostra o texto para copiar). Valida `app`/`v` e normaliza tudo (`cleanBackup`); arquivo estranho é recusado sem mudar nada.
+- **Importar = mesclar, nunca apagar:** `merge(local, arquivo)` com as mesmas regras da nuvem (dia/campo = maior valor, cartão = mais revisado, livro = posição mais recente e mais palavras ouvidas, listas em união). Carregar o mesmo arquivo duas vezes não duplica nada.
+- **Livros que ainda não estão neste aparelho:** posição e palavras ouvidas ficam em `localStorage` `dd-ingles-pend-docs` (entram nos próximos backups e na nuvem). Quando o livro entra na biblioteca, o evento `imported` (que passa o objeto **antes** de abrir) injeta `pos` e `heard`, e o livro já abre no ponto certo; a pendência some. Livros já existentes são atualizados na hora (`apply`).
+- Funciona com a sincronização desligada (sem `sync-config`) e sem conta. API: `DDLab.sync.exportData()`, `importData(texto)`, `applyPending()`.
+- Limite conhecido: "Zerar estatísticas" não apaga posições pendentes de livros que ainda não entraram.
+- Testes: seção **BK** (11 verificações) de `test_ingles_modulos.ps1`, no site e no livro.
 Pontos de extensão do núcleo: eventos `open`, `close`, `lang`, `sentence`, `heard`, `tap`, `stop`, `imported`, `vocab-saved`, `reviewed`, `dictation`;
 `DDLab.importers`, `DDLab.badge(meta)`, `DDLab.wordInfo(word, lang)`. Banco IndexedDB `dd-ingles` v2 (`meta`, `docs`, `tr`, `vocab`); `meta.x` guarda extras dos módulos.
 Testes: `tools/test_ingles.ps1` (PDF real, núcleo) e `tools/test_ingles_modulos.ps1` (seções A–G, um por módulo; a voz neural é testada com biblioteca simulada).
