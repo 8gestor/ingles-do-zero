@@ -252,7 +252,7 @@ Barra inferior: **Hoje · Estante · Palavras · Progresso** (a Leitura abre de 
 
 ## 7. Protocolo "nenhuma função perdida, nada quebrado"
 
-1. **Matriz de paridade**: uma tabela (`docs/08-paridade.md`, a criar na R0) com **cada função de hoje → quem a substitui → qual teste a cobre**. A reconstrução só avança quando a coluna do teste está verde.
+1. **Matriz de paridade**: uma tabela (`docs/08-paridade.md`, **criada em 22/11/2026**: 279 verificações em 39 áreas) com **cada função de hoje → quem a substitui → qual teste a cobre**. A reconstrução só avança quando a coluna do teste está verde.
 2. **Construir ao lado, trocar depois** (padrão "estrangulador"): a versão atual continua no ar e funcionando; a nova roda em `/novo/` (ou com `?novo=1`) até **passar todos os testes atuais + os novos**. Só então é a principal.
 3. **Os testes de hoje viram o contrato.** Tudo o que `test_ingles_modulos.ps1` e `test_ingles.ps1` verificam precisa passar no app novo (adaptando só os seletores, nunca enfraquecendo a verificação).
 4. **Dados do aluno nunca são perdidos**: migração do banco com **backup automático antes**, leitura de todos os formatos de backup anteriores, e a mescla continua "nunca apaga".
@@ -265,7 +265,7 @@ Barra inferior: **Hoje · Estante · Palavras · Progresso** (a Leitura abre de 
 
 | Fase | Entrega | Saída verificável | Esforço |
 |---|---|---|---|
-| **R0 · Fundações do desenho** | Este documento aprovado; matriz de paridade; ajuste dos docs 01–04 | Autor aprova o desenho e as respostas das perguntas | P |
+| **R0 · Fundações do desenho** — **FEITA 22/11/2026** | Este documento; matriz de paridade (`08-paridade.md`, 279 verificações); avisos nos docs 02–04 | Autor aprova o desenho (Q1–Q4 decididas) | P |
 | **R1 · Núcleo novo** | Armazém com migração, eventos, registro de módulos, configuração; app de página única com rotas vazias | Testes do núcleo verdes; dados antigos migram sem perda | M |
 | **R2 · Motores** | Leitor e Narrador separados do monólito, atrás dos contratos de Voz e Tradutor | Testes de leitura, narração, sincronia e teleprompter verdes no app novo | G |
 | **R3 · Telas essenciais** | Hoje, Estante, Leitura (4 modos), Palavras, Progresso | O autor usa o app novo no dia a dia no celular e no PC | G |

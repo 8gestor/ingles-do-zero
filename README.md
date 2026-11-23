@@ -15,6 +15,7 @@ Este projeto nasceu da aba "Estudo de Inglês" do livro *Data Double* (`8gestor/
 | [`docs/03-arquitetura-roadmap.md`](docs/03-arquitetura-roadmap.md) | O que reaproveitar do legado, arquitetura, fases, riscos |
 | [`docs/04-telas.md`](docs/04-telas.md) | Esboços das telas e fluxo |
 | [`docs/07-desenho-reconstrucao.md`](docs/07-desenho-reconstrucao.md) | **Desenho da reconstrução** (imersão em livros): método, jornada, arquitetura, telas, roadmap |
+| [`docs/08-paridade.md`](docs/08-paridade.md) | **Matriz de paridade**: as 279 verificações de hoje que o app novo precisa cumprir |
 | [`docs/05-separacao-do-livro.md`](docs/05-separacao-do-livro.md) | Decisão de separar, etapas, o que mudou, pendências |
 | [`docs/06-biblioteca-modulos.md`](docs/06-biblioteca-modulos.md) | Módulos da Biblioteca, narração, plataformas, sincronização |
 | [`docs/CHANGELOG.md`](docs/CHANGELOG.md) | Registro dia a dia do que evoluiu |
