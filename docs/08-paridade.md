@@ -480,7 +480,7 @@ Arquivo: **N** = `test_ingles.ps1` (núcleo), **M** = `test_ingles_modulos.ps1` 
 
 ## 4. Testes novos do app novo (criados a partir da R1a)
 
-Além das 279 verificações herdadas, o núcleo novo tem os seus testes em `site/tools/test_novo_nucleo.ps1`: **29 verificações, todas passando em 22/11/2026**. Cobrem recursos que a reconstrução **acrescenta** (registro de módulos, eventos tipados, migração com cópia de segurança, rotas) e garantem a convivência com o app de hoje (`NU6`: o banco antigo abre na versão 2 depois do núcleo novo). Detalhes em `09-nucleo-novo.md`, seção 8.
+Além das 279 verificações herdadas, o núcleo novo tem os seus testes em `site/tools/test_novo_nucleo.ps1`: **30 verificações, todas passando em 22/11/2026**. Cobrem recursos que a reconstrução **acrescenta** (registro de módulos, eventos tipados, migração com cópia de segurança, rotas) e garantem a convivência com o app de hoje (`NU6`: o banco antigo abre na versão 2 depois do núcleo novo). Detalhes em `09-nucleo-novo.md`, seção 8.
 
 | Área | O que cobre | Verificações |
 |---|---|---|
@@ -493,7 +493,7 @@ Além das 279 verificações herdadas, o núcleo novo tem os seus testes em `sit
 | `NU8–NU12` | Migração com cópia automática, restauração, cancelamento se a cópia falhar, versão mais nova, só 3 cópias | 5 |
 | `NU13–NU17` | Rotas (parâmetros, desconhecida, erro numa tela, texto nunca vira HTML) e tela Sistema | 6 |
 | `NU18` | Registro de módulos (ordem, dependência faltando, ciclo, módulo que falha, definir tarde) | 4 |
-| **Total** | | **29** |
+| **Total** | | **30** (inclui NU1b, que abre a página direto em `#/sistema`) |
 
 **Áreas da matriz ainda abertas na R1 (R1b):** `BK`, `SY`, `N`, `S`.
 
@@ -514,7 +514,7 @@ Além das 279 verificações herdadas, o núcleo novo tem os seus testes em `sit
 | `NUD8` | Tela `#/dados`: backup (baixar com texto de apoio, colar, recusar) e conta (entrar e sair) | 6 |
 | **Total** | | **41** |
 
-**Total de testes do app novo: 83** (29 do núcleo + 41 de dados + 13 do narrador, ver 4.2).
+**Total de testes do app novo: 84** (30 do núcleo + 41 de dados + 13 do narrador, ver 4.2).
 
 > **Aviso sobre os testes do app de hoje (`test_ingles_modulos.ps1`, itens TC5, L7 e L14):** são sensíveis à carga da máquina (tempo virtual do Chrome). Em 22/11/2026 falharam de forma intermitente, **igual com e sem a pasta `novo/`** (9 falhas em 12 sem `novo/`, 6 em 12 com), e passam quando a máquina está sossegada. Se falharem, rodar de novo sozinho, sem outros testes ou Chrome ao mesmo tempo, antes de suspeitar do código.
 

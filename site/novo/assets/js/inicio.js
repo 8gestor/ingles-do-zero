@@ -21,14 +21,16 @@ App.define('inicio', ['eventos', 'armazem', 'config', 'rotas', 'telas'], functio
     aparencia();
     eventos.on('config-mudou', aparencia);
     eventos.on('rota-mudou', marcaMenu);
-    rotas.iniciar(document.getElementById('vista'));
-    return {};
+    // A rota inicial só abre DEPOIS que todos os módulos terminaram de iniciar (no fim do boot, abaixo): se abrisse aqui, dentro da fábrica,
+    // a tela Sistema (aberta direto por #/sistema) veria este próprio módulo como "iniciando" e mostraria "HÁ FALHAS".
+    return { abrir() { rotas.iniciar(document.getElementById('vista')); } };
 });
 
 // Liga tudo quando a página carrega; se algo falhar, mostra no lugar da tela.
 window.addEventListener('DOMContentLoaded', function () {
     App.boot().then(function (rel) {
-        window.__appPronto = rel;
+        if (App.tem('inicio')) App.get('inicio').abrir();               // primeiro abre a tela; só então avisa que o app está pronto
+        window.__appPronto = App.relatorio();
         if (rel.ok) return;
         const v = document.getElementById('vista'); if (!v) return;
         v.textContent = '';

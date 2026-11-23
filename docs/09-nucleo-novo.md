@@ -1,6 +1,6 @@
 # 09 · Núcleo do app novo (fase R1a)
 
-> **Estado (2026-11-22):** núcleo (R1a) e dados (R1b) escritos e testados em `site/novo/`; **83 verificações passam** (29 núcleo + 41 dados + 13 narrador). **R1 concluída; R2 em andamento (R2.1 feita), ver `10-r2-narrador.md`.** O app de hoje não foi tocado. Este é o **documento vivo** do núcleo: atualizar a cada mudança e registrar no `CHANGELOG.md`.
+> **Estado (2026-11-22):** núcleo (R1a) e dados (R1b) escritos e testados em `site/novo/`; **84 verificações passam** (30 núcleo + 41 dados + 13 narrador). **R1 concluída; R2 em andamento (R2.1 feita), ver `10-r2-narrador.md`.** O app de hoje não foi tocado. Este é o **documento vivo** do núcleo: atualizar a cada mudança e registrar no `CHANGELOG.md`.
 > Contexto: `07-desenho-reconstrucao.md` (desenho), `08-paridade.md` (contrato de paridade).
 
 ## 1. O que existe
@@ -24,7 +24,7 @@ site/novo/                         app novo (prévia, noindex; o site atual cont
   assets/js/narrador/ritmo.js      (R2.1) modelo de tempo da fala: estimativa da palavra falada, velocidade aprendida por idioma+voz
   assets/js/narrador/vozes.js      (R2.1) escolha e ordenação das vozes (a mesma regra do menu de vozes da casca)
   assets/js/inicio.js              liga tudo; mostra o que falhou se algo não iniciar
-site/tools/test_novo_nucleo.ps1    29 verificações do núcleo no Chrome sem tela
+site/tools/test_novo_nucleo.ps1    30 verificações do núcleo no Chrome sem tela
 site/tools/test_novo_dados.ps1     41 verificações dos dados (paridade com o app de hoje)
 site/tools/test_novo_narrador.ps1  13 verificações do ritmo e das vozes (oráculo do código antigo)
 ```
@@ -65,7 +65,7 @@ Navegação por hash: `#/hoje`, `#/estante`, `#/palavras`, `#/progresso`, `#/ler
 5. Teste novo em `test_novo_nucleo.ps1` e linha na matriz `08-paridade.md`.
 
 ## 8. Testes (`site/tools/test_novo_nucleo.ps1`)
-`pwsh tools\test_novo_nucleo.ps1` (de dentro de `site/`; precisa do Chrome; termina com `tudo certo`). 29 verificações: NU1 (liga sozinho), NU2 (eventos), NU3 (preferências), NU5 (localStorage), NU6 (banco do app de hoje: versão 2 mantida e **o app antigo ainda abre o banco depois**), NU7 (banco novo), NU8–NU12 (migração, cópia, restauração, cancelamento, versão mais nova, só 3 cópias), NU13–NU17 (rotas e telas), NU18 (registro de módulos).
+`pwsh tools\test_novo_nucleo.ps1` (de dentro de `site/`; precisa do Chrome; termina com `tudo certo`). 30 verificações (NU1b abre a página direto em `#/sistema`): NU1 (liga sozinho), NU2 (eventos), NU3 (preferências), NU5 (localStorage), NU6 (banco do app de hoje: versão 2 mantida e **o app antigo ainda abre o banco depois**), NU7 (banco novo), NU8–NU12 (migração, cópia, restauração, cancelamento, versão mais nova, só 3 cópias), NU13–NU17 (rotas e telas), NU18 (registro de módulos).
 
 **Armadilha de teste (custou uma rodada):** o Chrome de teste usa **tempo virtual**. Enquanto a página espera o disco (IndexedDB), o relógio virtual corre (um `open` gastou ~100 s virtuais) e, **sem nenhum timer ativo, a página até para** e o resultado sai incompleto. Por isso o teste mantém um **batimento** (`setInterval` de 4 ms, parado no fim), usa **prazos de espera generosos** e orçamento `--virtual-time-budget=4200000`. Em teste novo que use IndexedDB: nunca esperar o disco sem esse batimento e nunca usar prazo curto.
 

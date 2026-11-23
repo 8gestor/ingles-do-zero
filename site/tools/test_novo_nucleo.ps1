@@ -42,6 +42,9 @@ $test = @'
       ok('NU1 o app liga sozinho: os 13 módulos prontos (eventos, armazem, config, mescla, dados, registro, nuvem, ritmo, vozes, rotas, telas, telas-dados e inicio)', rel.ok === true && rel.modulos.length === 13, nomes);
 
       var ev = App.get('eventos'), ar = App.get('armazem'), cf = App.get('config'), rt = App.get('rotas');
+      // a página foi aberta DIRETO em #/sistema (ver a URL do teste): o primeiro desenho da tela já tem de mostrar todos os módulos prontos
+      var prim = document.querySelectorAll('#sis-modulos li[data-estado="pronto"]').length, primTit = (document.querySelector('#vista .novo-h2') || {}).textContent || '';
+      ok('NU1b abrindo a página direto em #/sistema, o PRIMEIRO desenho já mostra os 13 módulos prontos e o título "todos prontos" (a rota só abre depois do boot)', prim === 13 && /todos prontos/.test(primTit) && !/HÁ FALHAS/.test(primTit), prim + ' prontos · ' + primTit);
 
       // ===================== eventos =====================
       var e1 = await lancaErro(function () { ev.emit('nao-existe', {}); }), e2 = await lancaErro(function () { ev.on('nao-existe', function () {}); }), e3 = await lancaErro(function () { ev.declarar('Nome Ruim'); });
@@ -165,7 +168,7 @@ $prof = Join-Path $tmp 'profile'
 $outFile = Join-Path $tmp 'out.txt'
 Start-Process -FilePath $Chrome -ArgumentList @('--headless=new', '--disable-gpu', '--no-first-run', "--user-data-dir=`"$prof`"",
     '--window-size=1200,900', '--virtual-time-budget=4200000', '--allow-file-access-from-files', '--dump-dom',
-    "`"file:///$($testFile.Replace('\','/'))`"") -Wait -NoNewWindow -RedirectStandardOutput $outFile -RedirectStandardError "$tmp\err.txt"
+    "`"file:///$($testFile.Replace('\','/'))#/sistema`"") -Wait -NoNewWindow -RedirectStandardOutput $outFile -RedirectStandardError "$tmp\err.txt"
 $dom = [IO.File]::ReadAllText($outFile)
 $m = [regex]::Match($dom, '(?s)<pre id="result"[^>]*>(.*?)</pre>')
 if (-not $m.Success) { 'Teste não produziu resultado. Erros do Chrome:'; Get-Content "$tmp\err.txt" -TotalCount 15; exit 2 }

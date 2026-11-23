@@ -2,6 +2,15 @@
 
 > Uma entrada por dia de trabalho, da mais nova para a mais antiga. Escreva **o que mudou, por quê e como conferir**. Mantém o autor e o Claude sem precisar reler conversas antigas.
 
+## 2026-11-22 (madrugada) · Publicação da R1 e da R2.1 no main, mesclagem com a outra sessão e correção da tela Sistema
+
+- **Publicado (autorizado pelo autor: "commit e publique"):** mesclagem `bc3a789` no `main` (R1a, R1b e R2.1 do app novo), com o site no ar em `ingles.vocealgoritmo.com.br` e o app novo em `/novo/` (prévia, `noindex`). Deploy e endereços conferidos (200), o livro segue no ar.
+- **Colisão com a outra sessão, e como foi resolvida:** as duas sessões usam a mesma pasta de trabalho. A outra sessão commitou, junto com o trabalho dela, as **minhas cópias soltas** da R1a (`docs/09` e todo `site/novo/`), que estavam sem commit na pasta compartilhada, e mesclou no `main` antes de mim. Conferi que o que ela publicou era **idêntico** ao meu commit da R1a; a mesclagem então ficou com as minhas versões nesses arquivos (superconjunto: R1b e R2.1) e **juntou as entradas dos dois lados** no `CHANGELOG.md` (Degrau 0, Seções e Roteiro dela + as minhas). Nada dela foi perdido.
+- **Regra nova para quem trabalha em paralelo:** trabalho meu fica **sempre commitado** em branch própria na pasta separada (`ingles-do-zero-r1`); nada solto na pasta compartilhada, para a outra sessão não varrer sem querer.
+- **Testes do app de hoje no `main` puro:** DG5 (Degrau 0, da outra sessão), TC5 e L14 **oscilam sozinhos**, sem nada meu (medido: `main` puro falhou em 4 de 4 rodadas; a árvore mesclada, em 4 de 4). Não são regressão da mesclagem. Pendente: estabilizar esses testes de tempo.
+- **Defeito meu, achado na conferência do que foi publicado:** abrindo o app direto em `#/sistema`, a tela mostrava "HÁ FALHAS" com 12 módulos prontos e nenhum com erro, porque a rota inicial abria **dentro da fábrica do módulo `inicio`**, que ainda estava "iniciando". Correção: `inicio` agora expõe `abrir()` e a rota só abre **depois** do fim do boot. Novo teste **NU1b** (abre a página direto em `#/sistema` e confere os 13 módulos prontos). O teste antigo não pegava porque navegava depois que tudo já tinha iniciado.
+- **Totais agora:** app novo = **84 testes** (30 núcleo + 41 dados + 13 narrador).
+- **Pendente:** R2.2 (`voz-navegador.js` e `narrador.js` com `speechSynthesis` falsa); estabilizar DG5, TC5, L14.
 ## 2026-11-22 (noite) · Degrau 0: primeiras histórias (primeiro conteúdo para iniciante)
 
 - **Pedido do autor:** nível iniciante; objetivo de 3 meses = ler, escrever, falar e ouvir em inglês; ~1 h por dia; IA local do Chrome adiada. Primeira versão = Degrau 0 como seção própria da Biblioteca, uma história por dia.
