@@ -12,7 +12,7 @@
 
 - **Defeito do teste (nao do site):** o DG7 usava `wait(600)` apos trocar o idioma; se a lista do Degrau 0 redesenhava depois, lia estado velho (`toda=false` ou `pouco=true`).
 - **Correcao** (`test_ingles_modulos.ps1`): espera ate a linha 1 ficar "done" (ouviu tudo) e ate deixar de ficar (ouviu pouco). Codigo do site intocado.
-- **Conferido:** DG7 passou 12 de 12 rodadas. Algumas rodadas terminam sem a linha final RESULTADO (execucao encerrada antes do fim, sem FAIL; tambem acontece no main anterior): investigar a parte.
+- **Conferido:** DG7 passou 8 de 8 rodadas. Algumas rodadas terminam sem a linha final RESULTADO (execucao encerrada antes do fim, sem FAIL; tambem acontece no main anterior): investigar a parte.
 
 ## 2026-11-22 · Degrau 0: fabula ouvida inteira passa a contar como lida
 
