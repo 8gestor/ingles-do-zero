@@ -29,7 +29,10 @@ App.define('armazem', ['eventos'], function (deps) {
             const raw = JSON.stringify(v);
             try { if (lsOk) localStorage.setItem(k, raw); else mem[k] = raw; return true; } catch (e) { mem[k] = raw; return false; }
         },
-        remove(k) { try { if (lsOk) localStorage.removeItem(k); } catch (e) { /* ignora */ } delete mem[k]; }
+        remove(k) { try { if (lsOk) localStorage.removeItem(k); } catch (e) { /* ignora */ } delete mem[k]; },
+        // texto puro, sem JSON (ex.: o código do aparelho, dd-sync-device, que o app de hoje guarda como texto simples)
+        getRaw(k, def) { try { const v = lsOk ? localStorage.getItem(k) : (k in mem ? mem[k] : null); return v == null ? def : v; } catch (e) { return def; } },
+        setRaw(k, v) { try { if (lsOk) localStorage.setItem(k, String(v)); else mem[k] = String(v); return true; } catch (e) { mem[k] = String(v); return false; } }
     };
 
     /* ------------------------------------------------------------ IndexedDB: peças básicas */

@@ -23,3 +23,9 @@ body { margin: 0; background: var(--c-bg, #f4ecd8); color: var(--c-text, #222); 
 .sis-pronto::marker { content: '✓ '; }
 .sis-erro, .sis-bloqueado { color: #b3261e; }
 .sis-erro::marker, .sis-bloqueado::marker { content: '✗ '; }
+.novo-card { margin: 18px 0; padding: 4px 14px 14px; border: var(--border-tech, 1px solid rgba(0,0,0,.12)); border-radius: 10px; }
+.novo-linha { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 10px 0; }
+.novo-linha .novo-btn { margin-top: 0; }
+.novo-campo { flex: 1 1 220px; min-width: 0; min-height: 44px; padding: 0 12px; font: inherit; font-size: .95rem; color: inherit; background: transparent; border: var(--border-tech, 1px solid currentColor); border-radius: 8px; box-sizing: border-box; }
+.novo-texto { flex: 1 1 100%; width: 100%; min-height: 120px; font: 12px/1.4 monospace; color: inherit; background: transparent; border: var(--border-tech, 1px solid currentColor); border-radius: 8px; box-sizing: border-box; }
+.novo-linha [hidden] { display: none; }
