@@ -23,6 +23,7 @@
 - [x] 22/11 (21h, horário de Brasília) — Merge em `main` (`713396f`), Pages ligado (publicação por fluxo, só `site/`), site no ar e conferido: https://ingles.vocealgoritmo.com.br/ (HTTP 200 em todas as páginas e scripts testados, menu com Biblioteca e Manual).
 - [x] 22/11 — DNS: autor criou o `CNAME ingles` → `8gestor.github.io.` no Registro.br; propagou; arquivo `site/CNAME` no repositório. Certificado HTTPS aprovado pelo GitHub (vence em 2027-02-20, renova sozinho); **Enforce HTTPS ligado** (http redireciona 301 para https).
 - [x] 22/11 — Login por código e `progress` na nuvem testados (envio, confirmação, leitura própria, bloqueio de linha alheia).`n- [ ] Repetir o login por código **no navegador, no endereço novo** (CORS do Supabase conferido: `Access-Control-Allow-Origin: *`; falta só o autor digitar o código na página).
+- [x] 22/11 — Migração do progresso: backup por arquivo (baixar no livro, carregar no site novo), com testes (seção BK) nos dois projetos.
 - [ ] No livro: trocar a aba de inglês por um link para o site novo, atualizar `CLAUDE.md` do livro e arquivar o código antigo (ver seção 4).
 
 ## 3. O que veio do livro e o que mudou
@@ -61,7 +62,7 @@ Decisão do autor: "trocar já por um link". Ordem segura, para nunca ficar sem 
 2. No livro: `extras` de `sumario.js` passa a apontar para o endereço novo; `ingles.html` e o resto do código de inglês vão para uma pasta de arquivo (`arquivo-ingles/`) em vez de serem apagados; o histórico do Git também guarda tudo.
 3. Atualizar `CLAUDE.md` e `README.md` do livro: o inglês agora mora em `ingles-do-zero`.
 
-Impacto para quem já usa: o progresso **fica no navegador por origem**. `vocealgoritmo.com.br` e `ingles.vocealgoritmo.com.br` são origens diferentes, então o progresso local de quem estudou no livro **não aparece sozinho no endereço novo**. Caminhos: entrar com o código de acesso (nuvem) antes da troca, ou exportar/importar. **Item aberto: decidir e implementar antes de trocar a aba.**
+Impacto para quem já usa: o progresso **fica no navegador por origem**. `vocealgoritmo.com.br` e `ingles.vocealgoritmo.com.br` são origens diferentes, então o progresso local de quem estudou no livro **não aparece sozinho no endereço novo**. **Decisão do autor (22/11): exportar e importar por arquivo.** Implementado e testado: botão **Baixar progresso** no livro e **Carregar progresso** no site novo (também "Colar texto" para Kindle/TV). Detalhes em `06-biblioteca-modulos.md` (seção Backup do progresso). A aba do livro, ao virar link, deve avisar para baixar o progresso antes.
 
 ## 5. Pontos que dependem do autor
 
