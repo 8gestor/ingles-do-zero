@@ -8,6 +8,8 @@
       entre a palavra destacada pela estimativa e a palavra realmente falada. Critério herdado: erro médio <= 1,5 palavra.
   NR1 tempo acumulado · NR2 posição estimada · NR3 aprendizado da velocidade por idioma e voz · NR4 escolha da voz · NR5 ordenação do menu de vozes ·
   NR6 sincronia por estimativa (lenta e rápida, em 3 velocidades) · NR7 sem voltar atrás e chegando ao fim da frase
+  R2.2 (voz do navegador e Narrador, com speechSynthesis e relógio FALSOS): NR8 token · NR9 fila à frente · NR10 retomar da palavra · NR11 estimativa e evento ·
+  NR12 idioma do áudio · NR13 frases sem fala e erros · NR14 palavras ouvidas · NR15 setas · NR16 treino e 0,1×–3× · NR17 vigias
   Uso: pwsh tools\test_novo_narrador.ps1 [-Chrome <caminho>]    (sai com 1 se alguma verificação falhar)
 #>
 param([string]$Chrome = 'C:\Program Files\Google\Chrome\Application\chrome.exe')
@@ -110,6 +112,146 @@ $test = @'
       ok('NR7b ao fim de cada frase o destaque chega perto da última palavra (a no máximo 1 palavra do fim) em todas as frases e cenários', Object.keys(res).every(function (k) { return res[k].fimOk === res[k].frases; }), Object.keys(res).map(function (k) { return k + '=' + res[k].fimOk + '/' + res[k].frases; }).join(' '));
       var l1 = simula('lenta', 1);
       ok('NR7c o erro máximo fica limitado: no máximo 5 palavras em 10 frases com voz lenta (o pior caso é a frase de aprendizado, sem calibração prévia; depois dela o erro cai)', l1.max <= 5, 'max=' + l1.max + ' p95=' + l1.p95);
+
+      /* ======================= R2.2 · voz do navegador e laço do Narrador (relógio e speechSynthesis FALSOS) ======================= */
+      ok('NR8a o app liga também com os módulos voz-navegador e narrador prontos', App.tem('voz-navegador') && App.tem('narrador'), '');
+      var EVB = App.get('eventos'), VN = App.get('voz-navegador'), NA = App.get('narrador');
+      async function flush() { for (var q = 0; q < 60; q++) await Promise.resolve(); }
+      function Fala(t) { this.text = t; }
+      function relogio() {
+        var t = 0, id = 0, lista = [];
+        var c = { agora: function () { return t; },
+          setInterval: function (f, ms) { lista.push({ id: ++id, f: f, ms: ms, quando: t + ms, rep: true }); return id; },
+          setTimeout: function (f, ms) { lista.push({ id: ++id, f: f, ms: ms, quando: t + ms, rep: false }); return id; },
+          limpa: function (i) { lista = lista.filter(function (x) { return x.id !== i; }); },
+          avanca: function (ms) { var fim = t + ms; for (;;) { var prox = lista.filter(function (x) { return x.quando <= fim; }).sort(function (a, b) { return a.quando - b.quando; })[0]; if (!prox) break; t = prox.quando; if (prox.rep) prox.quando += prox.ms; else lista = lista.filter(function (x) { return x !== prox; }); prox.f(); } t = fim; } };
+        c.clearInterval = c.limpa; c.clearTimeout = c.limpa; return c;
+      }
+      function sintese(vozes) {                      // motor controlado à mão: nada começa nem termina sozinho; o cancelamento chega DEPOIS (como no navegador)
+        var s = { speaking: false, pending: false, falas: [], fila: [], atual: null, getVoices: function () { return vozes || []; }, cancelamentos: 0 };
+        s.speak = function (u) { s.falas.push(u); if (!s.atual) { s.atual = u; s.speaking = true; } else s.fila.push(u); s.pending = s.fila.length > 0; };
+        s.cancel = function () { var tudo = [s.atual].concat(s.fila).filter(Boolean); s.atual = null; s.fila = []; s.speaking = false; s.pending = false; s.cancelamentos++; Promise.resolve().then(function () { tudo.forEach(function (u) { if (u.onerror) u.onerror({ error: 'canceled' }); }); }); };
+        s.comecar = function () { if (s.atual && s.atual.onstart) s.atual.onstart(); };
+        s.palavra = function (ci) { if (s.atual && s.atual.onboundary) s.atual.onboundary({ name: 'word', charIndex: ci }); };
+        s.terminar = function () { var u = s.atual; s.atual = s.fila.shift() || null; s.speaking = !!s.atual; s.pending = s.fila.length > 0; if (u && u.onend) u.onend(); if (s.atual && s.atual.onstart) s.atual.onstart(); };
+        s.falhar = function () { var u = s.atual; s.atual = s.fila.shift() || null; s.speaking = !!s.atual; if (u && u.onerror) u.onerror({ error: 'synthesis-failed' }); };
+        return s;
+      }
+      var VOZES = [{ name: 'Voz PT', lang: 'pt-BR', localService: true }, { name: 'Voz EN', lang: 'en-US', localService: true }];
+      function monta(paras, opc) {
+        opc = opc || {};
+        var rel = relogio(), sy = sintese(VOZES), est = { vel: 1, idioma: opc.idioma || 'en', escala: 1, modo: 'normal', depois: null }, antecipadas = [];
+        var voz = VN.criar({ synth: sy, Utterance: Fala, agora: rel.agora, setInterval: rel.setInterval, clearInterval: rel.clearInterval, setTimeout: rel.setTimeout, clearTimeout: rel.clearTimeout, modoNormal: function () { return est.modo === 'normal'; } });
+        function pronta(p, s, idioma) { if (idioma === 'en' || !opc.tr) return { text: paras[p][s], lang: 'en' }; var t = opc.tr[p] && opc.tr[p][s]; return t != null ? { text: t, lang: 'pt' } : { text: paras[p][s], lang: 'en' }; }
+        var fonte = { paragrafos: function () { return paras.length; }, frases: function (p) { return paras[p].length; }, jaPronta: pronta,
+          texto: async function (p, s, idioma, vale) { await Promise.resolve(); return vale() ? pronta(p, s, idioma) : null; }, antecipar: function (p, s) { antecipadas.push(p + ':' + s); } };
+        var evs = [], offs = [];
+        ['narracao-estado', 'narracao-frase', 'narracao-palavra', 'narracao-parou', 'narracao-retomou', 'frase-ouvida'].forEach(function (n) { offs.push(EVB.on(n, function (d) { evs.push({ n: n, d: d }); })); });
+        var nar = NA.criar({ fonte: fonte, voz: voz, agora: rel.agora, velocidade: function () { return est.vel; }, idiomaAudio: function () { return est.idioma; },
+          ganchos: { escala: function () { return est.escala; }, aoTerminarFrase: function (i) { return est.depois ? est.depois(i) : Promise.resolve(null); } } });
+        return { rel: rel, sy: sy, est: est, nar: nar, evs: evs, antecipadas: antecipadas, voz: voz, fim: function () { nar.parar(); offs.forEach(function (o) { o(); }); },
+          so: function (n) { return evs.filter(function (e) { return e.n === n; }); } };
+      }
+      async function inicia(m, p, s) { m.nar.tocar(p, s); await flush(); m.sy.comecar(); await flush(); }
+
+      // ===== NR8 · cancelamento por token =====
+      var m8 = monta([['One two three four five six.', 'Second sentence goes here now.']]);
+      await inicia(m8, 0, 0); m8.sy.palavra(10); await flush();
+      var u0 = m8.sy.atual, antes8 = m8.evs.length, palavrasAntes = m8.so('narracao-palavra').length;
+      m8.nar.parar(); await flush(); var aposParar = m8.evs.length;
+      u0.onboundary({ name: 'word', charIndex: 20 }); u0.onend(); await flush();
+      var tardias = m8.evs.length === aposParar;
+      m8.nar.tocar(0, 1); await flush(); var aposNova = m8.evs.length; u0.onboundary({ name: 'word', charIndex: 5 }); u0.onend(); await flush();
+      ok('NR8 nenhum evento de uma fala antiga mexe na fala nova: depois de parar e de começar outra frase, eventos atrasados da fala velha (palavra e fim) são ignorados e o cursor não anda', tardias && m8.evs.length === aposNova && m8.nar.estado().cursor.s === 1 && m8.so('frase-ouvida').length === 0, 'eventos tardios=' + (m8.evs.length - aposNova));
+      m8.fim();
+
+      // ===== NR9 · fila à frente sem lacuna =====
+      var P9 = [['First sentence is right here.', 'Second sentence follows it soon.', 'Third sentence ends the page.']];
+      var m9 = monta(P9); await inicia(m9, 0, 0);
+      var fila1 = m9.sy.falas.length === 2 && m9.sy.fila.length === 1 && m9.sy.fila[0].text === P9[0][1];
+      m9.sy.terminar(); await flush();
+      var noMeio = m9.nar.estado().cursor.s === 1 && m9.sy.falas.length === 3 && m9.sy.fila.length === 1 && m9.sy.fila[0].text === P9[0][2];
+      m9.sy.terminar(); await flush();
+      var cada = m9.sy.falas.map(function (u) { return u.text; }).join('|') === P9[0].join('|');
+      var m9b = monta(P9); m9b.est.modo = 'treino'; await inicia(m9b, 0, 0);
+      var m9c = monta(P9); await inicia(m9c, 0, 0); var tinhaFila = m9c.sy.fila.length === 1; m9c.nar.tocar(0, 2); await flush();
+      var m9d = monta(P9); await inicia(m9d, 0, 0); m9d.est.vel = 2; m9d.sy.terminar(); await flush(); var trocou = m9d.sy.atual && m9d.sy.atual.text === P9[0][1] && m9d.sy.atual.rate === 2 && m9d.sy.fila.length === 0;
+      ok('NR9 a frase seguinte entra na fila do motor enquanto a atual toca (cada frase é enviada uma única vez, na ordem); nos modos de treino NÃO há fila; ao mudar o fluxo (pulo, ou velocidade diferente da já enfileirada) a fila que sobrou é limpa', fila1 && noMeio && cada && m9b.sy.falas.length === 1 && tinhaFila && m9c.sy.fila.length === 0 && m9c.sy.atual.text === P9[0][2] && trocou, 'falas=' + m9.sy.falas.length + ' treino=' + m9b.sy.falas.length + ' apos pulo fila=' + m9c.sy.fila.length);
+      m9.fim(); m9b.fim(); m9c.fim(); m9d.fim();
+
+      // ===== NR10 · trocar velocidade no meio da frase retoma da palavra falada =====
+      var T10 = 'alpha beta gamma delta epsilon zeta eta theta';
+      var m10 = monta([[T10]]); await inicia(m10, 0, 0); m10.sy.palavra(17); await flush();
+      m10.est.vel = 2; m10.nar.reiniciarFala(); await flush(); m10.sy.comecar(); await flush(); m10.sy.palavra(6); await flush();
+      var ultima10 = m10.sy.falas[m10.sy.falas.length - 1], cis = m10.so('narracao-palavra').map(function (e) { return e.d.ci; }), nunca = cis.every(function (c, i) { return i === 0 || c >= cis[i - 1]; });
+      ok('NR10 trocar a velocidade no meio da frase recomeça DA PALAVRA falada (não do começo): fala "delta epsilon…" a 2×, e o destaque continua de onde estava e nunca volta atrás', m10.sy.falas.length === 2 && ultima10.text === T10.slice(17) && ultima10.rate === 2 && nunca && cis[cis.length - 1] === 23 && m10.so('narracao-retomou').length === 1, JSON.stringify(cis) + ' | ' + ultima10.text);
+      m10.fim();
+
+      // ===== NR11 · destaque por estimativa (voz sem evento de palavra) e por evento =====
+      var T11 = 'The merchant spoke slowly, and the whole town listened to him with great care.';
+      var m11 = monta([[T11]]); await inicia(m11, 0, 0); var sec = R.modelo(T11).total / (17 * 1);
+      for (var ms = 0; ms < sec * 1000 * 1.05; ms += 60) m11.rel.avanca(60);
+      var c11 = m11.so('narracao-palavra').map(function (e) { return e.d.ci; });
+      ok('NR11a sem evento de palavra o destaque avança pelo tempo estimado: cresce sem voltar atrás e chega perto do fim da frase', c11.length > 5 && c11.every(function (c, i) { return i === 0 || c >= c11[i - 1]; }) && c11[c11.length - 1] >= T11.length - 12, c11.length + ' marcas, última=' + c11[c11.length - 1] + ' de ' + T11.length);
+      var m11b = monta([[T11]]); await inicia(m11b, 0, 0);
+      [0, 4, 13, 20, 26].forEach(function (ci) { m11b.sy.palavra(ci); m11b.rel.avanca(120); });
+      ok('NR11b com evento de palavra em dia (intervalo menor que 350 ms) a estimativa NÃO corre à frente: só os eventos da voz marcam a posição', m11b.so('narracao-palavra').length === 5, m11b.so('narracao-palavra').length + ' marcas para 5 eventos');
+      m11.fim(); m11b.fim();
+
+      // ===== NR12 · idioma do áudio diferente do livro =====
+      var m12 = monta([['Hello world dear friend.']], { idioma: 'pt', tr: [['Olá mundo querido amigo.']] }); await inicia(m12, 0, 0);
+      var fPt = m12.sy.falas[0], m12b = monta([['Hello world dear friend.']], { idioma: 'pt', tr: [[]] }); await inicia(m12b, 0, 0); var fEn = m12b.sy.falas[0];
+      ok('NR12 áudio em português fala a TRADUÇÃO com a voz pt-BR; sem tradução cai para o original e a voz acompanha (en-US)', fPt.text === 'Olá mundo querido amigo.' && fPt.lang === 'pt-BR' && fPt.voice.name === 'Voz PT' && fEn.text === 'Hello world dear friend.' && fEn.lang === 'en-US' && fEn.voice.name === 'Voz EN', fPt.lang + ' / ' + fEn.lang);
+      m12.fim(); m12b.fim();
+
+      // ===== NR13 · frases sem fala e erros seguidos =====
+      var m13 = monta([['...', '!!!', 'A real sentence is here.']]); await inicia(m13, 0, 0);
+      var pulou = m13.sy.falas.length === 1 && m13.sy.falas[0].text === 'A real sentence is here.' && m13.so('narracao-frase').length === 3;
+      var m13b = monta([['One sentence here.', 'Two sentences here.', 'Three sentences here.', 'Four sentences here.', 'Five sentences here.', 'Six sentences here.']]);
+      m13b.nar.tocar(0, 0); await flush();
+      for (var e13 = 0; e13 < 6 && m13b.nar.estado().tocando; e13++) { m13b.sy.falhar(); await flush(); }
+      var ult = m13b.evs.filter(function (e) { return e.n === 'narracao-estado'; }).pop();
+      ok('NR13 frase sem letra nem número é pulada (não vai à voz, mas a marca passa por ela); mais de 3 erros seguidos PARAM a narração', pulou && m13b.sy.falas.length === 4 && m13b.nar.estado().tocando === false && ult.d.tocando === false, 'falas até parar=' + m13b.sy.falas.length);
+      m13.fim(); m13b.fim();
+
+      // ===== NR14 · palavras ouvidas =====
+      var m14 = monta([['One two three four five.', 'Another sentence to hear.']]); await inicia(m14, 0, 0);
+      m14.nar.parar(); await flush(); var semOuvir = m14.so('frase-ouvida').length === 0;
+      var m14b = monta([['One two three four five.', 'Another sentence to hear.']]); await inicia(m14b, 0, 0); m14b.sy.terminar(); await flush();
+      var fo = m14b.so('frase-ouvida');
+      ok('NR14 palavras ouvidas só contam quando a frase TERMINA bem (cancelada não conta), pelas palavras do texto falado: 5 palavras na primeira frase', semOuvir && fo.length === 1 && fo[0].d.palavras === 5 && fo[0].d.p === 0 && fo[0].d.s === 0, JSON.stringify(fo.map(function (e) { return e.d; })));
+      m14.fim(); m14b.fim();
+
+      // ===== NR15 · passo (setas) =====
+      var P15 = [['A1 one here.', 'A2 two here.'], ['B1 three here.']];
+      var m15 = monta(P15);
+      var a = m15.nar.passo(1), mar1 = JSON.stringify(m15.nar.estado().marca), b = m15.nar.passo(1), mar2 = JSON.stringify(m15.nar.estado().marca), c = m15.nar.passo(1), mar3 = JSON.stringify(m15.nar.estado().marca), d = m15.nar.passo(-1), mar4 = JSON.stringify(m15.nar.estado().marca);
+      var parado = a && b && !c && d && mar1 === '{"p":0,"s":1}' && mar2 === '{"p":1,"s":0}' && mar3 === mar2 && mar4 === '{"p":0,"s":1}' && m15.sy.falas.length === 0;
+      var m15b = monta(P15); await inicia(m15b, 0, 0); m15b.nar.passo(1); await flush();
+      ok('NR15 setas: parado, só a marca anda (atravessa parágrafos e para nas pontas, sem falar); tocando, a voz segue da frase nova', parado && m15b.sy.atual.text === 'A2 two here.' && m15b.nar.estado().tocando === true, mar1 + mar2 + mar3 + mar4 + ' | ' + (m15b.sy.atual && m15b.sy.atual.text));
+      m15.fim(); m15b.fim();
+
+      // ===== NR16 · ganchos de treino e velocidade 0,1× a 3× =====
+      var P16 = [['Repeat this sentence now.', 'Then move on to this one.']];
+      var m16 = monta(P16), rep = 0; m16.est.modo = 'treino'; m16.est.depois = function (i) { return Promise.resolve(i.s === 0 && rep++ === 0 ? 'repeat' : null); };
+      await inicia(m16, 0, 0); m16.sy.terminar(); await flush(); m16.sy.comecar(); await flush(); m16.sy.terminar(); await flush();
+      var txs = m16.sy.falas.map(function (u) { return u.text; });
+      var m16b = monta(P16); m16b.est.escala = 0.5; m16b.est.vel = 1.2; await inicia(m16b, 0, 0);
+      var vels = [], m16c;
+      for (var vi = 0; vi < 2; vi++) { m16c = monta(P16); m16c.est.vel = [0.1, 3][vi]; m16c.nar.tocar(0, 0); await flush(); vels.push(m16c.sy.falas[0].rate); m16c.fim(); }
+      ok('NR16 gancho de treino pede "repetir" (a mesma frase fala de novo antes de seguir); a escala de velocidade do treino multiplica a velocidade (1,2 × 0,5 = 0,6); 0,1× e 3× chegam à voz sem corte', txs[0] === P16[0][0] && txs[1] === P16[0][0] && txs[txs.length - 1] === P16[0][1] && Math.abs(m16b.sy.falas[0].rate - 0.6) < 1e-9 && vels[0] === 0.1 && vels[1] === 3, txs.length + ' falas; rate=' + m16b.sy.falas[0].rate + ' / ' + vels.join(','));
+      m16.fim(); m16b.fim();
+
+      // ===== NR17 · vigias =====
+      var P17 = [['The first sentence is here.', 'The second sentence is here.', 'The third sentence is here.']];
+      var m17 = monta(P17); m17.nar.tocar(0, 0); await flush(); m17.rel.avanca(7001); await flush();
+      var tentou = m17.sy.falas.length === 2 && m17.sy.falas[1].text === P17[0][0];
+      m17.rel.avanca(7001); await flush();
+      var pulou17 = m17.sy.falas.length === 3 && m17.sy.falas[2].text === P17[0][1];
+      var m17b = monta(P17); await inicia(m17b, 0, 0); m17b.rel.avanca(14000); await flush();
+      var seguiu = m17b.sy.falas[m17b.sy.falas.length - 1].text === P17[0][1] && m17b.sy.cancelamentos >= 1;
+      ok('NR17 vigia de partida: se o motor engole a fala, tenta a MESMA frase de novo uma vez (7 s) e, se repetir, segue para a próxima; vigia de mudez: voz que começou e calou é cancelada e a leitura segue', tentou && pulou17 && seguiu, 'falas=' + m17.sy.falas.length + ' / mudez seguiu=' + seguiu);
+      m17.fim(); m17b.fim();
     } catch (e) { fails++; out.push('FAIL exceção: ' + e + ' ' + (e && e.stack ? e.stack.split('\n')[1] : '')); }
     out.push('RESULTADO: ' + (fails ? fails + ' falha(s)' : 'tudo certo'));
     live(); clearInterval(hb);

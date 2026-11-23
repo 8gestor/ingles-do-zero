@@ -1,6 +1,6 @@
 # 10 · R2 · Motor Narrador (mapa do que existe e desenho proposto)
 
-> **Estado: desenho APROVADO em 2026-11-22 (decisões na seção 6). Andamento: R2.1 FEITA (22/11/2026); próxima R2.2.** Itens **(?)** restantes são decisões do autor.
+> **Estado: desenho APROVADO em 2026-11-22 (decisões na seção 6). Andamento: R2.1 e R2.2 FEITAS; próxima R2.3.** Itens **(?)** restantes são decisões do autor.
 > Contexto: `07-desenho-reconstrucao.md` (fase R2, motores), `08-paridade.md` (contrato: áreas `c5 c6 V X Y Z AR AL G`), `09-nucleo-novo.md` (núcleo pronto).
 > **Princípio da R2: mover sem mudar o comportamento.** Melhorias vêm depois da paridade, uma por vez, com teste.
 
@@ -101,7 +101,7 @@ Os testes da área `c5`, `V`, `X`, `Z3–Z5` e `AL4` dependem da **marcação na
 | Etapa | Entrega | Saída verificável |
 |---|---|---|
 | **R2.1** — **FEITA 22/11/2026** | `ritmo.js` e `vozes.js` | cenários de sincronia determinísticos verdes; ranking de voz igual ao de hoje (**13 verificações `NR`, ver seção 7**) |
-| **R2.2** | `voz-navegador.js` e `narrador.js` com `speechSynthesis` falsa | comportamentos 1–10 verdes |
+| **R2.2** — **FEITA 23/11/2026** | `voz-navegador.js` e `narrador.js` com `speechSynthesis` falsa | comportamentos 1–10 verdes (**12 verificações NR8–NR17, ver seção 8**) |
 | **R2.3** | `voz-neural.js` (adaptador do Piper) | com Piper simulado, cai no navegador se falhar (área `G`) |
 | **R2.4** | Teste de paridade com o `ingles.js` de hoje | sequências de falas idênticas |
 | **R2.5** | **Leitor**: texto, frases, marcação em 4 camadas, importação, tradução por frase | áreas `c2 c4 R W` e as de marcação (`5c–5f`, `V4–V8`) |
@@ -134,3 +134,27 @@ Cada etapa termina com **testes verdes, documentação atualizada e CHANGELOG**,
 
 **Método:** o teste carrega uma **cópia literal do código antigo** ("oráculo") ao lado do módulo novo e compara com entradas aleatórias de semente fixa. Como não usa fala nem relógio reais, **não sofre da instabilidade por carga da máquina** dos testes de hoje.
 **Observação honesta:** no pior caso (frase de aprendizado, sem calibração prévia) o erro máximo chegou a 5 palavras com voz lenta; depois da primeira frase o erro cai (p95 = 3). É o comportamento do algoritmo de hoje, preservado de propósito (a calibração guardada entre sessões é a melhoria decidida para depois da paridade).
+---
+
+## 8. R2.2 · resultado (2026-11-23)
+
+**Entregue:** `site/novo/assets/js/narrador/voz-navegador.js` (motor de voz do navegador) e `narrador.js` (laço de reprodução), ligados em `site/novo/index.html`; `test_novo_narrador.ps1` foi de 13 para **25 verificações** (NR8a e NR8–NR17). O app de hoje não foi tocado.
+
+**Método:** nada de fala nem relógio reais. Os testes usam uma `speechSynthesis` **falsa** (nada começa nem termina sozinho; o cancelamento chega depois, como no navegador) e um **relógio falso** injetado (`agora`, `setInterval`, `setTimeout`). Por isso não sofrem com a carga da máquina. Confirmei que os testes pegam defeito: desligar a limpeza da fila (NR9) ou o cancelamento por token (NR8) faz o teste correspondente falhar.
+
+| Comportamento (seção 2) | Prova |
+|---|---|
+| 1 · cancelamento por token | NR8: depois de parar e de começar outra frase, eventos atrasados (palavra, fim) da fala velha são ignorados |
+| 2 · fila à frente sem lacuna | NR9: cada frase é enviada uma vez, na ordem; nos modos de treino não há fila; pulo ou velocidade diferente limpam a fila que sobrou |
+| 3 · retomar da palavra | NR10: trocar a velocidade fala "delta epsilon…" a 2× e o destaque nunca volta atrás |
+| 4 · sem evento de palavra | NR11a: destaque por estimativa cresce sem voltar e chega ao fim; NR11b: com evento em dia a estimativa não corre à frente |
+| 5 · idioma do áudio ≠ do livro | NR12: fala a tradução com a voz pt-BR; sem tradução cai no original e a voz acompanha (en-US) |
+| 6 · pular o que não é fala; erros | NR13: frase sem letra é pulada; mais de 3 erros seguidos param |
+| 7 · palavras ouvidas | NR14: só conta no `end`, pelas palavras do texto falado |
+| 8 · passo (setas) | NR15: parado só a marca anda (atravessa parágrafos, para nas pontas); tocando a voz segue |
+| 9 · ganchos de treino | NR16: "repetir" fala de novo; escala de velocidade multiplica (1,2 × 0,5 = 0,6) |
+| 10 · velocidade 0,1×–3× | NR16: 0,1 e 3 chegam à voz sem corte |
+| vigias (mapa da seção 1) | NR17: vigia de partida (7 s, tenta de novo uma vez) e de mudez |
+
+**Contratos fixados (para o Leitor da R2.5 e a voz neural da R2.3):** Fonte `{ paragrafos, frases, texto(p,s,idioma,vale), jaPronta, antecipar?, primeiraVisivel? }`; Voz `{ falar, cancelar, pedirReinicio, limparReinicio }`; eventos `narracao-estado`, `narracao-frase`, `narracao-palavra`, `narracao-parou`, `narracao-retomou` e `frase-ouvida { palavras, p, s }`. Diferença deliberada em relação ao texto da seção 3: a Fonte recebe `vale()` (função) no lugar do `token` numérico, para não expor o contador interno.
+**Adiado de propósito:** a marcação na tela (Leitor, R2.5), o adaptador do Piper (R2.3) e a prova de paridade com o `ingles.js` de hoje (R2.4).

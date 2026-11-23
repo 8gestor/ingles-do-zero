@@ -1,6 +1,13 @@
 # Registro de evolução (CHANGELOG)
 
 > Uma entrada por dia de trabalho, da mais nova para a mais antiga. Escreva **o que mudou, por quê e como conferir**. Mantém o autor e o Claude sem precisar reler conversas antigas.
+## 2026-11-23 · R2.2: voz do navegador e Narrador (app novo)
+
+- **Feito:** `site/novo/assets/js/narrador/voz-navegador.js` e `narrador.js` (port fiel de `speakBrowser`, `runTts`, `startTts`, `stopTts`, `stepSentence`), sem DOM e com tudo injetável. Ligados em `site/novo/index.html` (agora **15 módulos**).
+- **Teste:** `test_novo_narrador.ps1` 13 → **25** (NR8a, NR8–NR17) com `speechSynthesis` e relógio **falsos**: token, fila à frente, retomar da palavra, estimativa, idioma, erros, palavras ouvidas, setas, treino, 0,1×–3×, vigias. Conferido por mutação (tirar a limpeza da fila ou o token faz NR9/NR8 falharem). `test_novo_nucleo.ps1` passou a esperar 15 módulos.
+- **Não mexe no app de hoje.** Próxima: R2.3 (adaptador do Piper), depois R2.4 (paridade com o `ingles.js`).
+- **Detalhe e contratos:** `docs/10-r2-narrador.md`, seção 8; `docs/09-nucleo-novo.md`.
+
 ## 2026-11-23 · Testes sem resultado: orcamento de tempo virtual do Chrome
 
 - **Defeito do teste (nao do site):** rodadas do `test_ingles_modulos.ps1` terminavam sem a linha RESULTADO (cortadas em 173 a 250 das 259 linhas, sem nenhum FAIL). **Causa:** o Chrome sem tela encerrava ao esgotar `--virtual-time-budget=4200000` (70 min virtuais); com disco/CPU lentos o tempo virtual corre mais depressa durante as esperas por IndexedDB.
