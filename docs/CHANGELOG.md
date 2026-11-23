@@ -8,6 +8,12 @@
 - **Arquivos:** `ingles-semana.js` (ROTEIRO e textos), `LEIAME.md` dos livros, manual (PT/EN), `test_ingles_modulos.ps1` (L9–L13, Q5–Q7 ajustados para 9 livros e semana 3 = Epicteto).
 - **Conferir:** `pwsh tools\test_ingles_modulos.ps1` (resultado: tudo certo). Não publicado; branch `feature/noites-brancas`.
 
+## 2026-11-23 · Teste DG7 estavel (espera pela lista, nao por tempo fixo)
+
+- **Defeito do teste (nao do site):** o DG7 usava `wait(600)` apos trocar o idioma; se a lista do Degrau 0 redesenhava depois, lia estado velho (`toda=false` ou `pouco=true`).
+- **Correcao** (`test_ingles_modulos.ps1`): espera ate a linha 1 ficar "done" (ouviu tudo) e ate deixar de ficar (ouviu pouco). Codigo do site intocado.
+- **Conferido:** DG7 passou 12 de 12 rodadas. Algumas rodadas terminam sem a linha final RESULTADO (execucao encerrada antes do fim, sem FAIL; tambem acontece no main anterior): investigar a parte.
+
 ## 2026-11-22 · Degrau 0: fabula ouvida inteira passa a contar como lida
 
 - **Defeito (relatado pelo autor):** mesmo lendo/ouvindo a historia toda, ela nao ficava concluida. **Causa:** a fabula cabe numa tela, a pagina nao rola e `meta.pos` fica em 0; o Degrau 0 so marcava "lida" com `pos` no ultimo paragrafo.
