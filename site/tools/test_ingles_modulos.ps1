@@ -31,7 +31,9 @@ $test = @'
   function D() { return W().DDLab; }
   function idoc() { return ifr().contentDocument; }
   function post(m) { W().postMessage(m, '*'); }
-  async function until(fn, ms) { var t = Date.now(); while (Date.now() - t < (ms || 15000)) { try { if (fn()) return true; } catch (e) {} await wait(100); } return false; }
+  // TEMPO VIRTUAL do Chrome de teste (ver docs/09, seção 8): enquanto a página espera o disco (IndexedDB) o relógio corre (um open chegou a gastar ~100 s virtuais).
+  // Um prazo curto vencia ANTES de o disco responder e o teste conferia cedo demais (instável conforme a carga da máquina). Por isso o prazo pedido (ms) é só um piso: espera-se até 15 min virtuais.
+  async function until(fn, ms) { var t = Date.now(), lim = Math.max(ms || 0, 900000); while (Date.now() - t < lim) { try { if (fn()) return true; } catch (e) {} await wait(100); } return false; }
   function clickAt(el, fx) { var r = el.getBoundingClientRect(); var x = r.left + Math.max(2, r.width * (fx || 0.1)), y = r.top + r.height / 2; el.dispatchEvent(new MouseEvent('click', { bubbles: true, clientX: x, clientY: y })); }
   var TEXT = 'Algorithms decide what we read and what we buy. They shape our choices every day. Nobody explains how they work, and few people ask.\n\nUnderstanding that fact is the first step towards resisting it. The people who build these systems are rarely asked to explain them.';
 
@@ -458,7 +460,8 @@ $test = @'
       var dgM = await D().db.get('meta', dgId); dgM.pos = dgM.trTotal; await D().db.put('meta', dgM);
       post({ type: 'readlang', value: 'en' }); await wait(400);
       ok('DG4 em ingles o titulo do degrau troca de idioma', /LEVEL 0/.test(idoc().getElementById('lb-h-degrau0').textContent), idoc().getElementById('lb-h-degrau0').textContent);
-      post({ type: 'readlang', value: 'pt' }); await wait(600);
+      post({ type: 'readlang', value: 'pt' });
+      await until(function () { return /done/.test(dgRows()[0].className) && /now/.test(dgRows()[1].className) && /1 de 6/.test(dgs.textContent); });          // espera a lista redesenhar (antes: wait fixo de 600 ms, que vencia antes do disco)
       ok('DG5 historia lida no fim fica marcada, a seguinte vira a de hoje e a contagem sobe', /done/.test(dgRows()[0].className) && /now/.test(dgRows()[1].className) && /1 de 6/.test(dgs.textContent), dgRows()[0].className + ' | ' + dgRows()[1].className);
       idoc().getElementById('lb-degrau0-open-1').click(); await until(function () { return D().doc && D().doc.id === dgId; }, 8000); await wait(300);
       var dgAll = (await D().db.all('meta')).filter(function (m) { return m.x && m.x.degrau0 === 1; });
@@ -467,10 +470,10 @@ $test = @'
       // DG7: fabula curta cabe na tela, a pagina nao rola e pos fica em 0; ouvir a historia toda tambem a marca como lida
       var dg7 = await D().db.get('meta', dgId); var dg7Pos = dg7.pos, dg7Heard = dg7.heard || 0;
       dg7.pos = 0; dg7.heard = dgDoc.words; await D().db.put('meta', dg7);
-      post({ type: 'readlang', value: 'en' }); await wait(300); post({ type: 'readlang', value: 'pt' }); await wait(600);
+      post({ type: 'readlang', value: 'en' }); await wait(300); post({ type: 'readlang', value: 'pt' }); await until(function () { return /done/.test(dgRows()[0].className); });
       var dg7a = /done/.test(dgRows()[0].className);
       dg7 = await D().db.get('meta', dgId); dg7.heard = 10; await D().db.put('meta', dg7);
-      post({ type: 'readlang', value: 'en' }); await wait(300); post({ type: 'readlang', value: 'pt' }); await wait(600);
+      post({ type: 'readlang', value: 'en' }); await wait(300); post({ type: 'readlang', value: 'pt' }); await until(function () { return !/done/.test(dgRows()[0].className); });
       var dg7b = /done/.test(dgRows()[0].className);
       ok('DG7 ouvir a fabula toda (sem rolar a pagina) marca como lida; ouvir so um pouco, nao', dg7a === true && dg7b === false, 'toda=' + dg7a + ' pouco=' + dg7b);
       dg7 = await D().db.get('meta', dgId); dg7.pos = dg7Pos; dg7.heard = dg7Heard; await D().db.put('meta', dg7);
@@ -508,21 +511,21 @@ $test = @'
       ok('L8 as notas de rodapé no fim do livro não entram no total nem na cota', ninfo.n === 10 && ninfo.words < allWords && ninfo.words === ninfo.cum[10] && ndoc.paras.length >= 15, ninfo.n + ' parágrafos de corpo de ' + ndoc.paras.length + ' | ' + ninfo.words + ' de ' + allWords + ' palavras');
       D().$('lb-back').click(); await wait(200);      // ----- roteiro de 8 semanas (livros de domínio público em assets/livros/) -----
       W().localStorage.removeItem('dd-ingles-semana'); W().localStorage.removeItem('dd-ingles-semana-hist');
-      await W().__ddWeek.render(); await until(function () { return idoc().getElementById('lb-rot-2'); }, 5000);
+      await W().__ddWeek.render(); await until(function () { return idoc().getElementById('lb-rot-3'); }, 5000);
       var rrows = idoc().querySelectorAll('#lb-rot .lb-rot-item');
-      ok('L9 roteiro: 8 semanas com autor, título e tamanho, e um botão para começar cada uma', rrows.length === 8 && /Semana 1 · Sêneca — Sobre a Brevidade da Vida/.test(rrows[0].textContent) && /Semana 8 · Stevenson/.test(rrows[7].textContent) && /mil palavras/.test(rrows[0].textContent) && idoc().querySelectorAll('#lb-rot button').length === 8);
-      var slugs = ['seneca-brevidade-da-vida', 'epicteto-enchiridion', 'seneca-paz-de-espirito', 'platao-apologia', 'thoreau-desobediencia-civil', 'emerson-self-reliance', 'tolstoi-confissao', 'stevenson-jekyll-hyde'], rbad = [];
+      ok('L9 roteiro: 9 semanas com autor, título e tamanho, e um botão para começar cada uma', rrows.length === 9 && /Semana 1 · Dostoiévski — Noites Brancas/.test(rrows[0].textContent) && /Semana 9 · Stevenson/.test(rrows[8].textContent) && /mil palavras/.test(rrows[0].textContent) && idoc().querySelectorAll('#lb-rot button').length === 9);
+      var slugs = ['dostoievski-noites-brancas', 'seneca-brevidade-da-vida', 'epicteto-enchiridion', 'seneca-paz-de-espirito', 'platao-apologia', 'thoreau-desobediencia-civil', 'emerson-self-reliance', 'tolstoi-confissao', 'stevenson-jekyll-hyde'], rbad = [];
       for (var si = 0; si < slugs.length; si++) {
         var rtxt = await new Promise(function (res, rej) { var xr = new (W().XMLHttpRequest)(); xr.open('GET', 'assets/livros/' + slugs[si] + '.txt'); xr.onload = function () { res(xr.responseText); }; xr.onerror = function () { rej('erro'); }; xr.send(); }).catch(function () { return ''; });
         var rw = rtxt.split(/\s+/).filter(Boolean).length, rthe = (rtxt.match(/\bthe\b/gi) || []).length;
         if (rw < 6000 || rw > 30000 || rthe < 150 || /Standard Ebooks|Project Gutenberg/i.test(rtxt)) rbad.push(slugs[si] + ':' + rw + '/' + rthe);
       }
-      ok('L9b os 8 arquivos do roteiro existem, são texto em inglês, cabem em 50 min por dia (até 30 mil palavras) e não trazem cabeçalho de edição', rbad.length === 0, rbad.join(' | '));
-      idoc().getElementById('lb-rot-2').click();
+      ok('L9b os 9 arquivos do roteiro existem, são texto em inglês, cabem em 50 min por dia (até 30 mil palavras) e não trazem cabeçalho de edição', rbad.length === 0, rbad.join(' | '));
+      idoc().getElementById('lb-rot-3').click();
       await until(function () { return idoc().getElementById('lb-week-title'); }, 40000);
       var rm = (await D().db.all('meta')).filter(function (m) { return m.x && m.x.roteiro === 'epicteto-enchiridion'; })[0];
       var rinfo = rm ? await W().__ddWeek.bookInfo(rm.id) : null;
-      ok('L10 começar a semana 2 traz o livro de domínio público para a biblioteca e inicia o plano', !!rm && rm.title === 'Epictetus — The Enchiridion' && rm.lang === 'en' && idoc().getElementById('lb-week-title').textContent === 'Epictetus — The Enchiridion' && JSON.parse(W().localStorage.getItem('dd-ingles-semana')).slug === 'epicteto-enchiridion' && !!rinfo && rinfo.words > 7500 && rinfo.words < 9000 && /Dia 1 de 7/.test(idoc().getElementById('lb-week-day').textContent), rinfo && (rinfo.words + ' palavras'));
+      ok('L10 começar a semana 3 traz o livro de domínio público para a biblioteca e inicia o plano', !!rm && rm.title === 'Epictetus — The Enchiridion' && rm.lang === 'en' && idoc().getElementById('lb-week-title').textContent === 'Epictetus — The Enchiridion' && JSON.parse(W().localStorage.getItem('dd-ingles-semana')).slug === 'epicteto-enchiridion' && !!rinfo && rinfo.words > 7500 && rinfo.words < 9000 && /Dia 1 de 7/.test(idoc().getElementById('lb-week-day').textContent), rinfo && (rinfo.words + ' palavras'));
       ok('L11 durante o plano o roteiro fica recolhido e marca a semana atual como em andamento, sem botões de começar outra', !!idoc().querySelector('details#lb-rot') && /em andamento/.test(idoc().querySelector('.lb-rot-item[data-slug="epicteto-enchiridion"]').textContent) && idoc().querySelectorAll('#lb-rot button').length === 0);
       rm.pos = rinfo.n - 1; await D().db.put('meta', rm); await W().__ddWeek.render();
       var rh = JSON.parse(W().localStorage.getItem('dd-ingles-semana-hist') || '[]');
@@ -531,10 +534,10 @@ $test = @'
       ok('L12b renderizar de novo não duplica o registro', JSON.parse(W().localStorage.getItem('dd-ingles-semana-hist')).length === 1);
       idoc().getElementById('lb-close-other').click();
       await until(function () { return idoc().getElementById('lb-rot-1'); }, 5000);
-      ok('L13 depois de ler, a semana 2 aparece como lida e as outras 7 continuam disponíveis', /lido/.test(idoc().querySelector('.lb-rot-item[data-slug="epicteto-enchiridion"] .lb-rot-done').textContent) && !idoc().getElementById('lb-rot-2') && idoc().querySelectorAll('#lb-rot button.lb-primary').length === 7 && !!idoc().getElementById('lb-rot-open-2') && !!idoc().getElementById('lb-rot-again-2'));
+      ok('L13 depois de ler, a semana 3 aparece como lida e as outras 8 continuam disponíveis', /lido/.test(idoc().querySelector('.lb-rot-item[data-slug="epicteto-enchiridion"] .lb-rot-done').textContent) && !idoc().getElementById('lb-rot-3') && idoc().querySelectorAll('#lb-rot button.lb-primary').length === 8 && !!idoc().getElementById('lb-rot-open-3') && !!idoc().getElementById('lb-rot-again-3'));
       var rrow = idoc().querySelector('.lb-rot-item[data-slug="epicteto-enchiridion"]'), rover = [];
       Array.prototype.forEach.call(idoc().querySelectorAll('#lb-rot .lb-rot-item'), function (r2) { var rb = r2.getBoundingClientRect(); if (r2.scrollWidth > r2.clientWidth + 1) rover.push(r2.dataset.slug + ':scroll'); Array.prototype.forEach.call(r2.querySelectorAll('button,.lb-rot-info'), function (b2) { if (b2.getBoundingClientRect().right > rb.right + 1) rover.push(r2.dataset.slug + ':fora'); }); });
-      ok('L13b roteiro organizado: item lido com marcador ✓ e selo "lido" ao lado do título, contador "1 de 8" e nenhuma linha estoura a largura', !!rrow && rrow.classList.contains('done') && rrow.querySelector('.lb-rot-mark').textContent === '✓' && !!rrow.querySelector('.lb-rot-meta .lb-rot-done') && /1 de 8 semanas concluídas/.test(idoc().querySelector('.lb-rot-count').textContent) && idoc().querySelectorAll('.lb-rot-strip span.on').length === 1 && rover.length === 0, rover.join(','));      idoc().getElementById('lb-rot-again-2').click();
+      ok('L13b roteiro organizado: item lido com marcador ✓ e selo "lido" ao lado do título, contador "1 de 9" e nenhuma linha estoura a largura', !!rrow && rrow.classList.contains('done') && rrow.querySelector('.lb-rot-mark').textContent === '✓' && !!rrow.querySelector('.lb-rot-meta .lb-rot-done') && /1 de 9 semanas concluídas/.test(idoc().querySelector('.lb-rot-count').textContent) && idoc().querySelectorAll('.lb-rot-strip span.on').length === 1 && rover.length === 0, rover.join(','));      idoc().getElementById('lb-rot-again-3').click();
       await until(function () { var p = W().__ddWeek.load(); return p && p.slug === 'epicteto-enchiridion'; }, 5000);
 
       await until(function () { return idoc().getElementById('lb-week-open'); }, 5000);
@@ -704,13 +707,13 @@ $test = @'
       await until(function () { return idoc().getElementById('lb-close-saved'); }, 15000);
       var qh = JSON.parse(W().localStorage.getItem('dd-ingles-semana-hist')), qe = JSON.parse(W().localStorage.getItem('dd-ingles-escrita'));
       ok('Q4 resumo completo é salvo: aparece no fechamento, vai para "Seus textos" e marca o livro como fechado no histórico', /Fechamento salvo \(\d+ palavras\)/.test(idoc().getElementById('lb-close-saved').textContent) && !idoc().getElementById('lb-close-text') && qe.length === 1 && qe[0].kind === 'semana' && qh.length === 1 && qh[0].closed === W().__ddWeek.dayKey() && qh[0].stats.minutes === 60 && qh[0].stats.rev === 7, JSON.stringify(qh[0].stats));
-      ok('Q5 sem o livro no roteiro, o próximo sugerido é a semana 1 e há a opção de escolher outro', /semana 1 · Sêneca — Sobre a Brevidade da Vida/.test(idoc().getElementById('lb-close').textContent) && !!idoc().getElementById('lb-close-next') && !!idoc().getElementById('lb-close-other'));
-      W().localStorage.setItem('dd-ingles-semana-hist', JSON.stringify(qh.concat([{ slug: 'seneca-brevidade-da-vida', docId: 'x', title: 'x', date: W().__ddWeek.dayKey(), days: 5 }])));
+      ok('Q5 sem o livro no roteiro, o próximo sugerido é a semana 1 e há a opção de escolher outro', /semana 1 · Dostoiévski — Noites Brancas/.test(idoc().getElementById('lb-close').textContent) && !!idoc().getElementById('lb-close-next') && !!idoc().getElementById('lb-close-other'));
+      W().localStorage.setItem('dd-ingles-semana-hist', JSON.stringify(qh.concat([{ slug: 'dostoievski-noites-brancas', docId: 'x', title: 'x', date: W().__ddWeek.dayKey(), days: 5 }, { slug: 'seneca-brevidade-da-vida', docId: 'y', title: 'y', date: W().__ddWeek.dayKey(), days: 5 }])));
       await W().__ddWeek.render(); await until(function () { return idoc().getElementById('lb-close-next'); }, 15000);
-      ok('Q6 o próximo sugerido pula os livros do roteiro já lidos (semana 2 depois da 1)', /semana 2 · Epicteto/.test(idoc().getElementById('lb-close').textContent) && /Começar a semana 2/.test(idoc().getElementById('lb-close-next').textContent));
+      ok('Q6 o próximo sugerido pula os livros do roteiro já lidos (semana 3 depois das duas primeiras)', /semana 3 · Epicteto/.test(idoc().getElementById('lb-close').textContent) && /Começar a semana 3/.test(idoc().getElementById('lb-close-next').textContent));
       idoc().getElementById('lb-close-next').click();
       await until(function () { var p = W().__ddWeek.load(); return p && p.slug === 'epicteto-enchiridion'; }, 40000);
-      ok('Q7 começar o próximo livro traz o texto para a biblioteca e abre o plano da semana 2', W().__ddWeek.load().slug === 'epicteto-enchiridion' && W().__ddWeek.load().title === 'Epictetus — The Enchiridion' && !W().__ddWeek.load().closing);
+      ok('Q7 começar o próximo livro traz o texto para a biblioteca e abre o plano da semana 3', W().__ddWeek.load().slug === 'epicteto-enchiridion' && W().__ddWeek.load().title === 'Epictetus — The Enchiridion' && !W().__ddWeek.load().closing);
       await W().__ddProg.resetAll(); await wait(300);
       ok('Q8 Zerar estatísticas apaga o histórico das semanas e mantém o texto do fechamento', W().localStorage.getItem('dd-ingles-semana-hist') === null && JSON.parse(W().localStorage.getItem('dd-ingles-escrita') || '[]').filter(function (e) { return e.kind === 'semana'; }).length === 1);
       ['dd-ingles-dia', 'dd-ingles-dia-hist', 'dd-ingles-escrita', 'dd-ingles-semana', 'dd-ingles-semana-hist'].forEach(function (k) { W().localStorage.removeItem(k); });      // ===================== R. a posição de leitura não anda quando o texto reflui (modo foco recolhe o menu; troca de modo) =====================
@@ -1045,6 +1048,12 @@ $test = @'
       var bBig = D().mapPos(ben, ben.indexOf('big'), bpt, 'en'), bHouse = D().mapPos(ben, ben.indexOf('house'), bpt, 'en');
       D().translateText = tOrig;
       ok('AL5 palavras sem parentesco de grafia: com a tradução da palavra solta, big cai em grande e house em casa', bBig === bpt.indexOf('grande') && bHouse === bpt.indexOf('casa'), 'antes=' + bBefore + ' big->' + bBig + ' (esperado ' + bpt.indexOf('grande') + ') house->' + bHouse + ' (esperado ' + bpt.indexOf('casa') + ')');      D().setMode('single'); post({ type: 'readlang', value: 'pt' }); post({ type: 'audiolang', value: 'pt' }); await wait(300);
+      // AL6: frase longa (estilo Dostoiévski, 220 palavras) alinha em tempo curto e continua certa (faixa em torno da diagonal)
+      var lw = [], lp = [];
+      for (var li = 0; li < 220; li++) { lw.push('word' + String.fromCharCode(97 + li % 26) + String.fromCharCode(97 + Math.floor(li / 26)) + 'x'); lp.push('palavra' + String.fromCharCode(97 + li % 26) + String.fromCharCode(97 + Math.floor(li / 26)) + 'x'); }
+      var lsp = lw.join(' ') + '.', ltg = lp.join(' ') + '.', lt0 = performance.now();
+      var l1 = W().DDLab.mapPos(lsp, lsp.indexOf(lw[110]), ltg, 'en'), l2 = W().DDLab.mapPos(lsp, lsp.indexOf(lw[10]), ltg, 'en'), l3 = W().DDLab.mapPos(lsp, lsp.indexOf(lw[210]), ltg, 'en'), lms = performance.now() - lt0;
+      ok('AL6 frase longa de 220 palavras: cada palavra cai na equivalente (o tempo é medido à parte, em tempo real)', l1 === ltg.indexOf(lp[110]) && l2 === ltg.indexOf(lp[10]) && l3 === ltg.indexOf(lp[210]), Math.round(lms) + ' ms');
       D().$('lb-back').click(); await wait(300);
       // ===================== AR. velocidade 0,25 a 3x e setas para acompanhar o texto =====================
       await D().addText('Setas teste', 'First sentence here today. Second sentence here today. Third sentence here today.\n\nFourth sentence here today. Fifth sentence here today.');
@@ -1135,6 +1144,7 @@ $test = @'
       ok('TC3 mostra o tempo usado, a média para concluir e o que falta, com o ritmo em palavras por minuto', /(usado|used) \d+:\d\d \/ (média|average)/.test(tcT1) && /(faltam|left) .*min/.test(tcv('lb-tele-time-2')) && /\d+ (palavras\/min|wpm)/.test(tcv('lb-tele-time-2')), tcT1 + ' | ' + tcv('lb-tele-time-2'));
       ok('TC4 mostra o que se trabalha agora: lendo e ouvindo, idiomas de leitura e de escuta, livro e frase', /(Lendo e ouvindo)/.test(tcN1) && /PT/.test(tcN1) && /EN/.test(tcN1) && /Andamento teste/.test(tcN2) && /frase \d+\/\d+/.test(tcN2), tcN1 + ' | ' + tcN2);
       D().stopTts(); await wait(1500);
+      W().dispatchEvent(new Event('pointerdown'));             // o aluno mexeu na página agora: o teste diz 'mesmo parado, com atividade recente', então a atividade precisa existir (senão o contador para quando o relógio virtual passa de 60 s)
       var tcSecs = function () { var m0 = tcv('lb-tele-time').match(/(\d+):(\d\d)/); return m0 ? +m0[1] * 60 + +m0[2] : -1; }; var tcBase = tcSecs(); var tcUsed1 = tcv('lb-tele-time').match(/(\d+):(\d\d)/);
       await until(function () { return tcSecs() > tcBase; }, 60000);
       var tcUsed2 = tcv('lb-tele-time').match(/(\d+):(\d\d)/);
@@ -1260,7 +1270,7 @@ $testFile = "$tmp\__test.html"
 $prof = Join-Path $tmp 'profile'
 $outFile = Join-Path $tmp 'out.txt'
 Start-Process -FilePath $Chrome -ArgumentList @('--headless=new', '--disable-gpu', '--no-first-run', '--autoplay-policy=no-user-gesture-required', "--user-data-dir=`"$prof`"",
-    '--window-size=1400,900', '--virtual-time-budget=4200000', '--allow-file-access-from-files', '--dump-dom',
+    '--window-size=1400,900', '--virtual-time-budget=40000000', '--allow-file-access-from-files', '--dump-dom',
     "`"file:///$($testFile.Replace('\','/'))`"") -Wait -NoNewWindow -RedirectStandardOutput $outFile -RedirectStandardError "$tmp\err.txt"
 $dom = [IO.File]::ReadAllText($outFile)
 $m = [regex]::Match($dom, '(?s)<pre id="result"[^>]*>(.*?)</pre>')

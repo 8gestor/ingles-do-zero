@@ -198,3 +198,26 @@ Cada etapa termina com **testes verdes, documentação atualizada e CHANGELOG**,
 **`tela-leitor.js`:** a tela de verdade. Abre o livro do banco do app de hoje, pinta, narra com marcação, traduz por frase, explora com as setas, grava a posição e as palavras ouvidas, liga o registro de estudo. Verificada de ponta a ponta no app novo (T1–T10).
 **Total do teste do Leitor:** 55 verificações (duas rodadas seguidas verdes).
 **Falta:** Comentar (folha que sobe: Nota, Comentar, Contexto), Escrever e Minhas notas (decisões em `07`, seção 11); a Estante (R3) para abrir livros pela interface.
+
+> **Registro da outra sessão (mesma data), mantido para histórico.** Outra sessão implementou a R2.2 em paralelo e mesclou em `main` antes desta. Na mescla ficou a implementação desta sessão (`voz-navegador.js` e `narrador.js`, com 38+ verificações, voz neural, paridade com o app de hoje e o Leitor por cima); os contratos de Fonte e de Voz coincidem. As verificações NR8–NR25 daquela sessão deixaram de existir como arquivo; os comportamentos que elas cobriam estão nas verificações NV e NA deste teste.
+
+**Entregue:** `site/novo/assets/js/narrador/voz-navegador.js` (motor de voz do navegador) e `narrador.js` (laço de reprodução), ligados em `site/novo/index.html`; `test_novo_narrador.ps1` foi de 13 para **25 verificações** (NR8a e NR8–NR17). O app de hoje não foi tocado.
+
+**Método:** nada de fala nem relógio reais. Os testes usam uma `speechSynthesis` **falsa** (nada começa nem termina sozinho; o cancelamento chega depois, como no navegador) e um **relógio falso** injetado (`agora`, `setInterval`, `setTimeout`). Por isso não sofrem com a carga da máquina. Confirmei que os testes pegam defeito: desligar a limpeza da fila (NR9) ou o cancelamento por token (NR8) faz o teste correspondente falhar.
+
+| Comportamento (seção 2) | Prova |
+|---|---|
+| 1 · cancelamento por token | NR8: depois de parar e de começar outra frase, eventos atrasados (palavra, fim) da fala velha são ignorados |
+| 2 · fila à frente sem lacuna | NR9: cada frase é enviada uma vez, na ordem; nos modos de treino não há fila; pulo ou velocidade diferente limpam a fila que sobrou |
+| 3 · retomar da palavra | NR10: trocar a velocidade fala "delta epsilon…" a 2× e o destaque nunca volta atrás |
+| 4 · sem evento de palavra | NR11a: destaque por estimativa cresce sem voltar e chega ao fim; NR11b: com evento em dia a estimativa não corre à frente |
+| 5 · idioma do áudio ≠ do livro | NR12: fala a tradução com a voz pt-BR; sem tradução cai no original e a voz acompanha (en-US) |
+| 6 · pular o que não é fala; erros | NR13: frase sem letra é pulada; mais de 3 erros seguidos param |
+| 7 · palavras ouvidas | NR14: só conta no `end`, pelas palavras do texto falado |
+| 8 · passo (setas) | NR15: parado só a marca anda (atravessa parágrafos, para nas pontas); tocando a voz segue |
+| 9 · ganchos de treino | NR16: "repetir" fala de novo; escala de velocidade multiplica (1,2 × 0,5 = 0,6) |
+| 10 · velocidade 0,1×–3× | NR16: 0,1 e 3 chegam à voz sem corte |
+| vigias (mapa da seção 1) | NR17: vigia de partida (7 s, tenta de novo uma vez) e de mudez |
+
+**Contratos fixados (para o Leitor da R2.5 e a voz neural da R2.3):** Fonte `{ paragrafos, frases, texto(p,s,idioma,vale), jaPronta, antecipar?, primeiraVisivel? }`; Voz `{ falar, cancelar, pedirReinicio, limparReinicio }`; eventos `narracao-estado`, `narracao-frase`, `narracao-palavra`, `narracao-parou`, `narracao-retomou` e `frase-ouvida { palavras, p, s }`. Diferença deliberada em relação ao texto da seção 3: a Fonte recebe `vale()` (função) no lugar do `token` numérico, para não expor o contador interno.
+**Adiado de propósito:** a marcação na tela (Leitor, R2.5), o adaptador do Piper (R2.3) e a prova de paridade com o `ingles.js` de hoje (R2.4).

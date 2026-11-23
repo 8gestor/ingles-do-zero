@@ -45,6 +45,39 @@
 - **Detalhe de fidelidade:** a parada por erros conta erros **no total** da sessão (como o app de hoje), não "3 seguidos" como dizia o texto do doc 10; mantido de propósito, é paridade.
 - **Ainda não coberto (R2.4):** a comparação direta de sequência de falas com o `ingles.js` de hoje, rodando os dois lado a lado; aqui a prova é por comportamento (itens 1–9 do doc 10), não por oráculo.
 - **Pendente:** autorização para commit; R2.3 (adaptador do Piper) e R2.4 (paridade com o app de hoje).
+## 2026-11-23 · R2.2: voz do navegador e Narrador (app novo)
+
+- **Feito:** `site/novo/assets/js/narrador/voz-navegador.js` e `narrador.js` (port fiel de `speakBrowser`, `runTts`, `startTts`, `stopTts`, `stepSentence`), sem DOM e com tudo injetável. Ligados em `site/novo/index.html` (agora **15 módulos**).
+- **Teste:** `test_novo_narrador.ps1` 13 → **25** (NR8a, NR8–NR17) com `speechSynthesis` e relógio **falsos**: token, fila à frente, retomar da palavra, estimativa, idioma, erros, palavras ouvidas, setas, treino, 0,1×–3×, vigias. Conferido por mutação (tirar a limpeza da fila ou o token faz NR9/NR8 falharem). `test_novo_nucleo.ps1` passou a esperar 15 módulos.
+- **Não mexe no app de hoje.** Próxima: R2.3 (adaptador do Piper), depois R2.4 (paridade com o `ingles.js`).
+- **Detalhe e contratos:** `docs/10-r2-narrador.md`, seção 8; `docs/09-nucleo-novo.md`.
+
+## 2026-11-23 · Teleprompter mais fluido (frases longas)
+
+- **Relato do autor:** o teleprompter travava um pouco durante a leitura. **Diagnóstico (por leitura do código, sem perfil no aparelho dele):** não era memória; era trabalho na thread principal durante a animação. O alinhamento de palavras entre idiomas (`ingles-alinhar.js`) tinha custo cúbico na frase, era refeito a cada lote de traduções e rodava no meio do deslize; o rodapé reescrevia ~12 textos a cada palavra. *Noites Brancas* tem frases de 100 a 200 palavras.
+- **Correções:** (1) frase com mais de 1.600 pares palavra×palavra alinha só numa faixa de ±16 palavras em torno da diagonal (custo linear; frases curtas seguem com a conta completa, resultado idêntico); (2) `DDLab.alignWarm` calcula o alinhamento da frase atual e da seguinte em tempo ocioso (`requestIdleCallback`), chamado por `render()` do teleprompter; (3) traduções novas não invalidam mais, na hora, o cálculo de frase longa (ele é refeito em tempo ocioso; frase curta continua recalculando na hora); (4) rodapé de estatísticas a cada 250 ms durante a fala (`paintStatsSoon`), e `mark()` troca só as duas palavras que mudam no passo normal.
+- **Medição (Chrome, frase de 220 palavras, tempo real):** 66 ms → 14 ms por alinhamento, mesmo resultado. Em aparelho fraco (celular, TV, Kindle) os números absolutos serão maiores, a proporção deve se manter.
+- **Teste:** AL6 (frase longa: cada palavra cai na equivalente) em `test_ingles_modulos.ps1`; `test_ingles_modulos.ps1` e `test_ingles.ps1` passam. Branch `fix/teleprompter-fluidez`, não publicado.
+
+## 2026-11-23 · Testes sem resultado: orcamento de tempo virtual do Chrome
+
+- **Defeito do teste (nao do site):** rodadas do `test_ingles_modulos.ps1` terminavam sem a linha RESULTADO (cortadas em 173 a 250 das 259 linhas, sem nenhum FAIL). **Causa:** o Chrome sem tela encerrava ao esgotar `--virtual-time-budget=4200000` (70 min virtuais); com disco/CPU lentos o tempo virtual corre mais depressa durante as esperas por IndexedDB.
+- **Correcao:** orcamento subiu para 40000000 (so um teto; o teste termina quando acaba).
+- **Conferido:** 6 de 6 rodadas completas (259 linhas, "tudo certo"); antes, cerca de 1 em 3 vinha cortada.
+
+## 2026-11-23 · Noites Brancas, de Dostoiévski, vira o primeiro livro da Biblioteca
+
+- **Pedido do autor:** incluir *Noites Brancas* (1848, domínio público) como primeiro livro da lista.
+- **O que mudou:** o roteiro passou de 8 para 9 semanas; *White Nights* é a **semana 1** e os outros livros subiram uma posição (o histórico é por `slug`, então o progresso de quem já leu não se perde). Texto em `site/assets/livros/dostoievski-noites-brancas.txt` (~20 mil palavras, só a novela, sem as outras histórias do volume). **Fonte:** tradução de Constance Garnett (1918), Project Gutenberg #36034; a Standard Ebooks ainda não publica esta obra. O original é em russo, então a Biblioteca traz a tradução inglesa em domínio público; o português vem do Tradutor do Chrome, como nos demais livros.
+- **Arquivos:** `ingles-semana.js` (ROTEIRO e textos), `LEIAME.md` dos livros, manual (PT/EN), `test_ingles_modulos.ps1` (L9–L13, Q5–Q7 ajustados para 9 livros e semana 3 = Epicteto).
+- **Conferir:** `pwsh tools\test_ingles_modulos.ps1` (resultado: tudo certo). Não publicado; branch `feature/noites-brancas`.
+
+## 2026-11-23 · Teste DG7 estavel (espera pela lista, nao por tempo fixo)
+
+- **Defeito do teste (nao do site):** o DG7 usava `wait(600)` apos trocar o idioma; se a lista do Degrau 0 redesenhava depois, lia estado velho (`toda=false` ou `pouco=true`).
+- **Correcao** (`test_ingles_modulos.ps1`): espera ate a linha 1 ficar "done" (ouviu tudo) e ate deixar de ficar (ouviu pouco). Codigo do site intocado.
+- **Conferido:** DG7 passou 8 de 8 rodadas. Algumas rodadas terminam sem a linha final RESULTADO (execucao encerrada antes do fim, sem FAIL; tambem acontece no main anterior): investigar a parte.
+
 ## 2026-11-22 · Degrau 0: fabula ouvida inteira passa a contar como lida
 
 - **Defeito (relatado pelo autor):** mesmo lendo/ouvindo a historia toda, ela nao ficava concluida. **Causa:** a fabula cabe numa tela, a pagina nao rola e `meta.pos` fica em 0; o Degrau 0 so marcava "lida" com `pos` no ultimo paragrafo.
@@ -59,6 +92,18 @@
 - **Não publicado** (regra do autor).
 
 
+## 2026-11-22 (madrugada) · Testes instáveis do app de hoje: causa e conserto (DG5, TC5, L14, L7)
+
+- **Pedido do autor:** corrigir os testes que oscilavam (DG5, TC5, L14). Eram falhas dos **testes**, não do código do app.
+- **Medido antes:** só **5 de 12** rodadas de `test_ingles_modulos` limpas (DG5 falhou em 5, "exceção" em 2, L14 em 1; TC5 e L7 em outras rodadas).
+- **Causa raiz** (a mesma que já tinha mordido os testes novos): o Chrome de teste usa **tempo virtual**, e enquanto a página espera o disco (IndexedDB) o relógio corre. Três formas frágeis de esperar:
+  1. `until(fn, ms)` com **prazo curto** (ex.: 5000): vencia antes de o disco responder e o teste conferia cedo demais (L7, L14, "elemento nulo").
+  2. `wait(600)` **fixo** antes de conferir a tela (DG5): conferia antes de a lista ser redesenhada.
+  3. **TC5**: o contador do teleprompter só conta com atividade nos últimos 60 s do relógio do app, e o teste nunca simulava atividade; só passava se o relógio virtual ainda não tivesse corrido 60 s desde o carregamento.
+- **Conserto** (só em `site/tools/test_ingles_modulos.ps1` e `test_ingles.ps1`; **nenhum código do app mudou**): `until` passa a tratar o prazo pedido como **piso** (espera até 15 min virtuais); DG5 espera a condição (`until`) em vez de `wait(600)`; TC5 simula a atividade (`pointerdown`) antes de medir.
+- **Medido depois:** **20 de 20** rodadas limpas de `test_ingles_modulos` numa máquina normal (antes: 5 de 12). Sob **carga máxima artificial** (12 processos ocupando os 12 núcleos): 8 de 10 limpas e o `test_ingles` (PDF) passou; as 2 falhas foram em **E5** e **L5**, uma vez cada, e não tinham falhado antes.
+- **Resíduo conhecido (honesto):** E5 e L5 oscilaram uma vez cada sob carga extrema; **não tenho causa confirmada**, então não alterei nada neles. Se aparecerem em máquina normal, aplicar a mesma receita (esperar a condição, nunca prazo curto nem `wait` fixo) ao teste específico. Ainda há ~159 `wait(N)` fixos nos testes antigos; não reescrevi todos de propósito.
+- **Estado final:** `test_ingles` 44, `test_ingles_modulos` 242, `test_novo_nucleo` 30, `test_novo_dados` 41, `test_novo_narrador` 13: todos passando.
 ## 2026-11-22 (madrugada) · Publicação da R1 e da R2.1 no main, mesclagem com a outra sessão e correção da tela Sistema
 
 - **Publicado (autorizado pelo autor: "commit e publique"):** mesclagem `bc3a789` no `main` (R1a, R1b e R2.1 do app novo), com o site no ar em `ingles.vocealgoritmo.com.br` e o app novo em `/novo/` (prévia, `noindex`). Deploy e endereços conferidos (200), o livro segue no ar.

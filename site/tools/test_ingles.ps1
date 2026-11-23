@@ -40,7 +40,9 @@ $test = @'
   function ifr() { return $('content-frame'); }
   function lab() { return ifr().contentWindow.__ddLab; }
   function post(m) { ifr().contentWindow.postMessage(m, '*'); }
-  async function until(fn, ms) { var t = Date.now(); while (Date.now() - t < (ms || 15000)) { try { if (fn()) return true; } catch (e) {} await wait(100); } return false; }
+  // TEMPO VIRTUAL do Chrome de teste (ver docs/09, seção 8): enquanto a página espera o disco (IndexedDB) o relógio corre (um open chegou a gastar ~100 s virtuais).
+  // Um prazo curto vencia ANTES de o disco responder e o teste conferia cedo demais (instável conforme a carga da máquina). Por isso o prazo pedido (ms) é só um piso: espera-se até 15 min virtuais.
+  async function until(fn, ms) { var t = Date.now(), lim = Math.max(ms || 0, 900000); while (Date.now() - t < lim) { try { if (fn()) return true; } catch (e) {} await wait(100); } return false; }
 
   window.addEventListener('load', async function () {
     try {
