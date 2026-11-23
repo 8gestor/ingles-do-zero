@@ -20,9 +20,9 @@
 - [x] 22/11 — Documentação: este arquivo, `06-biblioteca-modulos.md`, `CHANGELOG.md`, `CLAUDE.md` e `README.md` atualizados.
 - [x] 22/11 — Commit da branch `feature/separacao-site` (autor autorizou).
 - [x] 22/11 — Autor decidiu **tornar o repositório público** (varredura feita: sem segredos; o e-mail dos commits já era público no livro). Fluxo do Pages preparado em `.github/workflows/static.yml` (publica só `site/`) e `site/CNAME` com `ingles.vocealgoritmo.com.br`; **Pages ainda desligado** até o autor autorizar o merge em `main`.
-- [ ] Publicar o site novo (GitHub Pages) e conferir no ar.
-- [ ] Criar o registro DNS do subdomínio e o arquivo `CNAME` (ação do autor no provedor do domínio).
-- [x] 22/11 — Login por código e `progress` na nuvem testados (envio, confirmação, leitura própria, bloqueio de linha alheia).`n- [ ] Repetir o login por código **no endereço novo**, depois de publicado (o Supabase aceita qualquer origem, mas conferir).
+- [x] 22/11 (21h, horário de Brasília) — Merge em `main` (`713396f`), Pages ligado (publicação por fluxo, só `site/`), site no ar e conferido: https://ingles.vocealgoritmo.com.br/ (HTTP 200 em todas as páginas e scripts testados, menu com Biblioteca e Manual).
+- [x] 22/11 — DNS: autor criou o `CNAME ingles` → `8gestor.github.io.` no Registro.br; propagou; arquivo `site/CNAME` no repositório. Certificado HTTPS aprovado pelo GitHub (vence em 2027-02-20, renova sozinho); **Enforce HTTPS ligado** (http redireciona 301 para https).
+- [x] 22/11 — Login por código e `progress` na nuvem testados (envio, confirmação, leitura própria, bloqueio de linha alheia).`n- [ ] Repetir o login por código **no navegador, no endereço novo** (CORS do Supabase conferido: `Access-Control-Allow-Origin: *`; falta só o autor digitar o código na página).
 - [ ] No livro: trocar a aba de inglês por um link para o site novo, atualizar `CLAUDE.md` do livro e arquivar o código antigo (ver seção 4).
 
 ## 3. O que veio do livro e o que mudou
