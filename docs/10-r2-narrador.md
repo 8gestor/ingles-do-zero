@@ -1,6 +1,6 @@
 # 10 · R2 · Motor Narrador (mapa do que existe e desenho proposto)
 
-> **Estado: desenho APROVADO em 2026-11-22 (decisões na seção 6). Andamento: R2.1 FEITA (22/11/2026); R2.2 FEITA (23/11/2026, ver seção 8); próxima R2.3.** Itens **(?)** restantes são decisões do autor.
+> **Estado: desenho APROVADO em 2026-11-22 (decisões na seção 6). Andamento: R2.1 FEITA (22/11/2026); R2.2, R2.3 e R2.4 FEITAS (23/11/2026, ver seções 8 e 9); próxima R2.5 (Leitor).** Itens **(?)** restantes são decisões do autor.
 > Contexto: `07-desenho-reconstrucao.md` (fase R2, motores), `08-paridade.md` (contrato: áreas `c5 c6 V X Y Z AR AL G`), `09-nucleo-novo.md` (núcleo pronto).
 > **Princípio da R2: mover sem mudar o comportamento.** Melhorias vêm depois da paridade, uma por vez, com teste.
 
@@ -101,9 +101,9 @@ Os testes da área `c5`, `V`, `X`, `Z3–Z5` e `AL4` dependem da **marcação na
 | Etapa | Entrega | Saída verificável |
 |---|---|---|
 | **R2.1** — **FEITA 22/11/2026** | `ritmo.js` e `vozes.js` | cenários de sincronia determinísticos verdes; ranking de voz igual ao de hoje (**13 verificações `NR`, ver seção 7**) |
-| **R2.2** — **FEITA 23/11/2026** | `voz-navegador.js` e `narrador.js` com `speechSynthesis` falsa | comportamentos 1–9 verdes (45 verificações no total, ver seção 8) |
-| **R2.3** | `voz-neural.js` (adaptador do Piper) | com Piper simulado, cai no navegador se falhar (área `G`) |
-| **R2.4** | Teste de paridade com o `ingles.js` de hoje | sequências de falas idênticas |
+| **R2.2** — **FEITA 23/11/2026** | `voz-navegador.js` e `narrador.js` com `speechSynthesis` falsa | comportamentos 1–9 verdes (38 verificações no total, ver seção 8) |
+| **R2.3** — **FEITA 23/11/2026** | `voz-neural.js` (adaptador do Piper) | com Piper simulado, cai no navegador se falhar (área `G`) |
+| **R2.4** — **FEITA 23/11/2026** | Teste de paridade com o `ingles.js` de hoje | sequências de falas idênticas (6 cenários) |
 | **R2.5** | **Leitor**: texto, frases, marcação em 4 camadas, importação, tradução por frase | áreas `c2 c4 R W` e as de marcação (`5c–5f`, `V4–V8`) |
 | **R2.6** | Integração e atalhos (setas, F11) | `AR`, `Y`, `EX` verdes no app novo |
 
@@ -139,7 +139,7 @@ Cada etapa termina com **testes verdes, documentação atualizada e CHANGELOG**,
 
 ## 8. R2.2 · resultado (2026-11-23)
 
-**Entregue:** `voz-navegador.js` (motor do navegador) e `narrador.js` (laço de reprodução) em `site/novo/assets/js/narrador/`, ligados em `site/novo/index.html`. `test_novo_narrador.ps1`: **45 verificações, todas passando** (13 da R2.1 + 32 novas).
+**Entregue:** `voz-navegador.js` (motor do navegador) e `narrador.js` (laço de reprodução) em `site/novo/assets/js/narrador/`, ligados em `site/novo/index.html`. `test_novo_narrador.ps1`: **38 verificações, todas passando** (13 da R2.1 + 25 novas; na R2.3 sobem para 50).
 
 | Peça | O que se prova (sem fala nem relógio reais) |
 |---|---|
@@ -149,3 +149,11 @@ Cada etapa termina com **testes verdes, documentação atualizada e CHANGELOG**,
 **Contratos como implementados:** a Fonte tem `paragrafos()`, `frases(p)` (contagens), `idiomaAudio()`, `texto(p, s, idioma, ativo)`, `jaPronta(p, s, idioma)` e opcionais `primeiraVisivel()`, `antes(p, s, peca)`. A Voz tem `falar`, `cancelar`, `reiniciar`. O Narrador não conhece o motor; a voz neural (R2.3) entra atrás do mesmo contrato.
 **Fidelidade:** a parada por erros conta o **total** (como hoje), não "3 seguidos". O relógio (`agora`, timers) e a `speechSynthesis` são injetados, então os testes são determinísticos.
 **Falta (R2.4):** comparar a sequência de falas com o `ingles.js` de hoje, lado a lado.
+
+---
+
+## 9. R2.3 e R2.4 · resultado (2026-11-23)
+
+**R2.3, `voz-neural.js`:** `criarNeural({ preferencias, fabrica, Audio, relogio, velocidade, ... })` e `compor({ neural, navegador })`. Provas com **Piper e áudio simulados** (NN1–NN11): só ativa se ligada **e** com modelo baixado; modelo apagado do navegador não é baixado escondido (devolve `fallback` e avisa); falha de síntese, erro de áudio e reprodução bloqueada caem no navegador sem travar; preparar à frente com cache (1 síntese para 3 pedidos); cancelar durante a síntese; reinício que não gruda na frase seguinte; composição com queda no meio do caminho; ponta a ponta com o Narrador. O painel de baixar/ativar/remover fica para a R3 (tela de configuração).
+**R2.4, paridade:** o app de hoje (`../ingles.html`) roda numa moldura com o **mesmo motor de fala falso** do Narrador novo. Seis cenários, **todos idênticos**: leitura inteira com fila à frente · parar no meio com eventos de palavra · passo tocando · trocar velocidade no meio (retoma da palavra) · áudio em português com tradução · quatro erros. Compara texto, idioma, velocidade, entrada na fila, frases e palavras ouvidas. Uma verificação de sanidade (PA-sanidade) confirma que cada cenário exercita o que diz.
+**Total do teste do Narrador:** 58 verificações.

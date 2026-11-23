@@ -44,7 +44,7 @@ $test = @'
     try {
       await until(function () { return window.__appPronto; });
       var rel = window.__appPronto;
-      ok('NR0 o app liga com os módulos ritmo e vozes prontos', rel.ok === true && App.tem('ritmo') && App.tem('vozes') && App.tem('voz-navegador') && App.tem('narrador'), rel.modulos.filter(function (m) { return m.estado !== 'pronto'; }).map(function (m) { return m.nome + ':' + m.erro; }).join(' '));
+      ok('NR0 o app liga com os módulos ritmo e vozes prontos', rel.ok === true && App.tem('ritmo') && App.tem('vozes') && App.tem('voz-navegador') && App.tem('voz-neural') && App.tem('narrador'), rel.modulos.filter(function (m) { return m.estado !== 'pronto'; }).map(function (m) { return m.nome + ':' + m.erro; }).join(' '));
       var R = App.get('ritmo'), V = App.get('vozes'), r = rnd(20261122);
       function pick(a) { return a[Math.floor(r() * a.length)]; }
       var PALAVRAS = ['the', 'merchant', 'laborious', 'diligence', 'casa', 'grande', 'não', 'é', 'tempo', 'vida', 'a', 'of', 'Seneca', 'said'];
@@ -253,6 +253,153 @@ $test = @'
       await ate(function () { return K.s.falas.length >= 1; }); K.s.inicia(); await ate(function () { return K.s.falas.length === 2; }); var fila2 = K.s.falas[1] && K.s.falas[1].text; K.s.termina();
       await ate(function () { return K.s.falando === null && K.s.falas.length >= 2; }); K.s.inicia(); K.s.termina(); await ate(function () { return !n11.estado().tocando; });
       ok('NA10 DE PONTA A PONTA: o Narrador com o motor do navegador fala as duas frases, a 2ª já enfileirada enquanto a 1ª tocava (só 2 speak) e para sozinho no fim', fila2 === 'Frase dois completa.' && K.s.falas.length === 2 && !n11.estado().tocando, 'falas=' + K.s.falas.length + ' cancel=' + K.s.cancelamentos + ' tocando=' + n11.estado().tocando);
+
+      // ===================== R2.3 · voz neural (Piper SIMULADO, áudio e relógio falsos) e composição =====================
+      var NE = App.get('voz-neural');
+      function piperFalso(modelos, modo) {
+        var f = { predicoes: [], criadas: [], modo: modo || 'ok', modelos: modelos || ['en_US-lessac-medium', 'pt_BR-faber-medium'], carregou: 0 };
+        f.fabrica = function () { f.carregou++; return Promise.resolve({ stored: async function () { return f.modelos; }, TtsSession: { create: async function (o) { f.criadas.push(o.voiceId); return { predict: async function (t) { await tique(); if (f.modo === 'falha') throw new Error('falha simulada'); f.predicoes.push(t); return { blob: t }; } }; } } }); };
+        return f;
+      }
+      var audios = [];
+      function AudioFalso(url) { this.url = url; this.duration = 2; this.currentTime = 0; this.playbackRate = 1; this.pausado = false; this.rejeita = false; audios.push(this); }
+      AudioFalso.prototype.play = function () { var a = this; if (a.rejeita) return Promise.reject(new Error('bloqueado')); setTimeout(function () { if (a.onplay) a.onplay(); }, 0); return Promise.resolve(); };
+      AudioFalso.prototype.pause = function () { this.pausado = true; };
+      var PREFS_ON = { en: { on: true, voice: 'en_US-lessac-medium' }, pt: { on: false, voice: 'pt_BR-faber-medium' }, ready: { 'en_US-lessac-medium': true } };
+      function neural(extra, prefs) { var c = relogioFalso(), p = piperFalso(), falhas = [], n = NE.criarNeural(Object.assign({ preferencias: function () { return prefs || PREFS_ON; }, fabrica: p.fabrica, Audio: AudioFalso, relogio: c, urlDe: function (b) { return 'blob:' + b.blob; }, revogar: function () {}, aoFalhar: function (i, e) { falhas.push(i + ':' + e.message); }, suportado: true }, extra || {})); return { n: n, c: c, p: p, falhas: falhas }; }
+      async function ultimoAudio(antes) { await ate(function () { return audios.length > antes; }); return audios[audios.length - 1]; }
+
+      // NN1 quando está ativa
+      var N1x = neural({}, { en: { on: false, voice: 'x' }, pt: { on: true, voice: 'y' }, ready: { y: true } }), N1y = neural({}, { en: { on: true, voice: 'x' }, pt: { on: false, voice: 'y' }, ready: {} }), N1z = neural();
+      ok('NN1 a voz neural só está ativa se estiver LIGADA e com o modelo BAIXADO (ligada sem modelo, ou desligada com modelo, não vale); voz de cada idioma separada', N1x.n.ativa('en') === false && N1x.n.ativa('pt') === true && N1y.n.ativa('en') === false && N1z.n.ativa('en') === true && N1z.n.ativa('pt') === false);
+
+      // NN2 fala, progresso, fim, velocidade
+      var N2 = neural({ velocidade: function () { return 1.25; } }), tx2 = 'Algorithms decide what we read, and nobody explains how.', pos2 = [], res2 = null, a0 = audios.length;
+      var p2 = N2.n.falar(tx2, 'en', { aoProgresso: function (ci, len) { pos2.push([ci, len]); } }).then(function (x) { res2 = x; });
+      var au2 = await ultimoAudio(a0); await tique(); au2.currentTime = 0.5; N2.c.anda(100); au2.currentTime = 1.0; N2.c.anda(100); au2.currentTime = 1.9; N2.c.anda(100); au2.onended(); await p2;
+      var cresce2 = pos2.length >= 3 && pos2.every(function (x, i) { return i === 0 || x[0] >= pos2[i - 1][0]; }) && pos2.every(function (x) { return x[1] === tx2.length && x[0] < tx2.length; });
+      ok('NN2 fala com a voz neural: sintetiza o texto no modelo certo, toca o áudio na velocidade pedida (1,25×), acompanha a posição pela fração do áudio (crescente, dentro do texto) e termina com "end"', res2 === 'end' && N2.p.criadas.join() === 'en_US-lessac-medium' && N2.p.predicoes[0] === tx2 && au2.playbackRate === 1.25 && cresce2 && au2.url === 'blob:' + tx2, 'pos=' + pos2.map(function (x) { return x[0]; }).join(','));
+
+      // NN3 cache e preparar à frente
+      var N3 = neural(), a3 = audios.length; N3.n.preparar('Prepared sentence here.', 'en'); N3.n.preparar('Prepared sentence here.', 'en'); N3.n.preparar('...', 'en'); N3.n.preparar('Em português não ativo.', 'pt');
+      await ate(function () { return N3.p.predicoes.length >= 1; }); var p3 = N3.n.falar('Prepared sentence here.', 'en', {}); var au3 = await ultimoAudio(a3); au3.onended(); await p3;
+      ok('NN3 PREPARAR À FRENTE: a frase seguinte é sintetizada antes de tocar e o cache evita repetir (1 síntese para 3 pedidos); frase sem letra e idioma desligado não sintetizam; só 1 modelo foi carregado', N3.p.predicoes.length === 1 && N3.p.carregou === 1 && N3.p.criadas.length === 1, 'predições=' + N3.p.predicoes.length);
+
+      // NN4 modelo ausente / falha de síntese -> fallback e desliga na sessão
+      var N4 = neural(); N4.p.modelos = []; var r4 = await N4.n.falar('The model was removed from the browser.', 'en', {});
+      ok('NN4 MODELO APAGADO do navegador: não baixa escondido; devolve "fallback" (a voz do navegador assume), avisa a tela e a voz neural fica desligada nesta sessão', r4 === 'fallback' && N4.falhas.length === 1 && /modelo ausente/.test(N4.falhas[0]) && N4.n.ativa('en') === false && N4.n.falhou('en') === true, r4 + ' ' + N4.falhas.join());
+      var N5 = neural(); N5.p.modo = 'falha'; var r5 = await N5.n.falar('Synthesis will fail now.', 'en', {});
+      ok('NN5 FALHA DE SÍNTESE: devolve "fallback" e desliga a voz neural na sessão', r5 === 'fallback' && N5.n.ativa('en') === false && N5.falhas.length === 1);
+      var N6 = neural(), a6 = audios.length, p6 = N6.n.falar('Audio will error out.', 'en', {}); var au6 = await ultimoAudio(a6); await tique(); au6.onerror(); var r6 = await p6;
+      var N7b = neural(); var a7b = audios.length; AudioFalso.prototype.play = function () { return Promise.reject(new Error('bloqueado')); }; var r7b = await N7b.n.falar('Autoplay is blocked.', 'en', {}); AudioFalso.prototype.play = function () { var a = this; setTimeout(function () { if (a.onplay) a.onplay(); }, 0); return Promise.resolve(); };
+      ok('NN6 erro no áudio ou navegador que bloqueia a reprodução: devolve "fallback" nos dois casos (nunca trava)', r6 === 'fallback' && r7b === 'fallback' && N6.n.ativa('en') === false, r6 + ' ' + r7b);
+
+      // NN7 cancelar e reiniciar
+      var N8 = neural(), a8 = audios.length, p8 = N8.n.falar('This will be cancelled midway.', 'en', {}); var au8 = await ultimoAudio(a8); await tique(); N8.n.cancelar(); var r8 = await p8;
+      var N9 = neural(), p9 = N9.n.falar('Cancelled while still synthesising.', 'en', {}); N9.n.cancelar(); var r9 = await p9, a9 = audios.length; await tique(); await tique();
+      ok('NN7 cancelar() para o áudio e devolve "cancel"; cancelar ainda durante a síntese também (e nada chega a tocar depois)', r8 === 'cancel' && au8.pausado === true && r9 === 'cancel' && audios.length === a9, r8 + ' ' + r9);
+      var N10 = neural(), a10 = audios.length, p10 = N10.n.falar('This one will be restarted.', 'en', {}); var au10 = await ultimoAudio(a10); await tique(); N10.n.reiniciar(); var r10 = await p10;
+      var a10b = audios.length, p10b = N10.n.falar('Next one is plain.', 'en', {}); var au10b = await ultimoAudio(a10b); await tique(); au10b.onended(); var r10b = await p10b;
+      ok('NN8 reiniciar() faz a fala terminar com "restart" (o Narrador retoma da palavra) e o pedido não gruda na frase seguinte (que termina "end")', r10 === 'restart' && r10b === 'end', r10 + ' ' + r10b);
+
+      // NN9 composição: neural quando ativa, navegador quando não ou quando cai
+      function navFalso() { var v = { chamadas: [], cancel: 0, reinic: 0 }; v.falar = function (t, id) { v.chamadas.push(t + '|' + id); return Promise.resolve('end'); }; v.cancelar = function () { v.cancel++; }; v.reiniciar = function () { v.reinic++; }; return v; }
+      var nvF = navFalso(), N11 = neural(), comp = NE.compor({ neural: N11.n, navegador: nvF }), a11 = audios.length, p11 = comp.falar('Neural voice speaks this.', 'en', {}); var au11 = await ultimoAudio(a11); await tique(); au11.onended(); var r11 = await p11;
+      var r11b = await comp.falar('Esta é em português, neural desligada.', 'pt', {});
+      N11.p.modo = 'falha'; var r11c = await comp.falar('Now the neural voice falls.', 'en', {});
+      ok('NN9 COMPOSIÇÃO: neural fala quando ativa (o navegador não é chamado); idioma sem neural vai para o navegador; se a neural cair no meio do caminho, o navegador fala a MESMA frase ("fallback" nunca chega ao Narrador)', r11 === 'end' && r11b === 'end' && r11c === 'end' && nvF.chamadas.join() === 'Esta é em português, neural desligada.|pt,Now the neural voice falls.|en', nvF.chamadas.join());
+      var nvG = navFalso(), N12 = neural(), comp2 = NE.compor({ neural: N12.n, navegador: nvG }); comp2.reiniciar(); comp2.cancelar();
+      ok('NN9b o pedido de reinício vai só para o motor que está falando (por padrão o navegador) e o cancelamento vai para os dois', nvG.reinic === 1 && nvG.cancel === 1);
+
+      // NN10 ponta a ponta: Narrador + voz composta + neural simulada
+      var nvH = navFalso(), N13 = neural(), vozH = NE.compor({ neural: N13.n, navegador: nvH }), nH = NA.criar({ voz: vozH }); nH.abrir(fonteFalsa([['Neural one is long enough.', 'Neural two is long enough.']])); var a13 = audios.length; nH.tocar(0, 0);
+      var auH1 = await ultimoAudio(a13); await tique(); auH1.onended(); await ate(function () { return audios.length > a13 + 1; }); var auH2 = audios[audios.length - 1]; await tique(); auH2.onended(); await ate(function () { return !nH.estado().tocando; });
+      ok('NN10 DE PONTA A PONTA: o Narrador com a voz composta fala as duas frases pela voz neural (2 áudios, 2 sínteses, o navegador não é usado) e para sozinho', N13.p.predicoes.join('|') === 'Neural one is long enough.|Neural two is long enough.' && nvH.chamadas.length === 0 && !nH.estado().tocando, N13.p.predicoes.length + ' sínteses');
+      App.get('armazem').ls.set(NE.CHAVE, { en: { on: true, voice: 'en_US-lessac-medium' }, ready: { 'en_US-lessac-medium': true } });
+      var N14 = NE.criarNeural({ suportado: true });
+      ok('NN11 sem preferências injetadas, lê as do armazém no mesmo formato do app de hoje (dd-ingles-neural): inglês ligado e baixado fica ativo, português (padrão) não', N14.ativa('en') === true && N14.ativa('pt') === false);
+      App.get('armazem').ls.set(NE.CHAVE, null);
+
+      // ===================== R2.4 · PARIDADE com o app de hoje (ingles.js), lado a lado, com o MESMO motor de fala falso =====================
+      // O app de hoje roda numa moldura (../ingles.html); o Narrador novo roda aqui. Os dois recebem o mesmo texto e falam num motor de fala
+      // idêntico (fila, fim da fala, eventos de palavra, erro). Compara-se o que o aluno ouviria: a sequência de falas (texto, idioma,
+      // velocidade, se entrou na fila à frente) e os eventos de frase e de palavras ouvidas.
+      var legF = document.createElement('iframe'); legF.src = '../ingles.html'; legF.style.cssText = 'position:fixed;left:-9999px;width:900px;height:600px'; document.body.appendChild(legF);
+      await until(function () { return legF.contentWindow && legF.contentWindow.DDLab && legF.contentWindow.DDLab.addText; });
+      var LW = legF.contentWindow, LD = LW.DDLab, H = { m: null }, COL = { pecas: [], ouvidas: 0 };
+      LW.DD_TRANSLATOR_FACTORY = function (a, b) { return { translate: async function (t) { await wait(2); return '[' + b + '] ' + t; } }; };
+      function criarMotor(cfg) {
+        var m = { log: [], fila: [], atual: null, cfg: cfg || {} };
+        function iniciar() {
+          if (m.atual || !m.fila.length) return; var u = m.fila.shift(); m.atual = u;
+          setTimeout(function () {
+            if (m.atual !== u) return; if (u.onstart) u.onstart();
+            var ws = [], re = /\S+/g, x, dur = m.cfg.dur || 120;
+            if (m.cfg.palavras) { while ((x = re.exec(u.text))) ws.push(x.index); ws.forEach(function (ci, k) { setTimeout(function () { if (m.atual === u && u.onboundary) u.onboundary({ name: 'word', charIndex: ci }); }, 20 + k * m.cfg.palavras); }); dur = 20 + ws.length * m.cfg.palavras + 20; }
+            setTimeout(function () { if (m.atual !== u) return; m.atual = null; if ((m.cfg.erros || []).indexOf(u.__n) >= 0) { if (u.onerror) u.onerror({ error: 'synthesis-failed' }); } else if (u.onend) u.onend(); iniciar(); }, dur);
+          }, 0);
+        }
+        m.speak = function (u) { u.__n = m.log.length; m.log.push({ text: u.text, lang: u.lang, rate: u.rate, fila: !!(m.atual || m.fila.length) }); m.fila.push(u); iniciar(); };
+        m.cancel = function () { var tudo = (m.atual ? [m.atual] : []).concat(m.fila); m.atual = null; m.fila = []; setTimeout(function () { tudo.forEach(function (u) { if (u.onerror) u.onerror({ error: 'canceled' }); }); }, 0); };
+        return m;
+      }
+      H.m = criarMotor({});
+      var SS = LW.speechSynthesis;
+      Object.defineProperty(SS, 'speak', { configurable: true, value: function (u) { H.m.speak(u); } });
+      Object.defineProperty(SS, 'cancel', { configurable: true, value: function () { H.m.cancel(); } });
+      Object.defineProperty(SS, 'getVoices', { configurable: true, value: function () { return []; } });
+      Object.defineProperty(SS, 'speaking', { configurable: true, get: function () { return !!(H.m.atual || H.m.fila.length); } });
+      Object.defineProperty(SS, 'pending', { configurable: true, get: function () { return H.m.fila.length > 0; } });
+      LD.on('piece', function (e) { COL.pecas.push(e.p + '.' + e.s + '.' + e.lang + '.' + e.text); });
+      LD.on('heard', function (e) { COL.ouvidas += e.words; });
+      LW.postMessage({ type: 'readlang', value: 'en' }, '*'); LW.postMessage({ type: 'audiolang', value: 'en' }, '*'); await wait(300);
+      var errAdd = ''; try { await LD.addText('Paridade', 'Algorithms decide what we read and what we buy. They shape our choices every day. Nobody explains how they work, and few people ask.\n\nUnderstanding that fact is the first step towards resisting it. The people who build these systems are rarely asked to explain them.'); } catch (e) { errAdd = String(e); }
+      await until(function () { return LD.doc && LD.doc.title === 'Paridade' && LD.doc.paras.length >= 2; }, 20000);
+
+      var PARAS = LD.doc ? LD.doc.paras.map(function (p) { return p.s.slice(); }) : [];
+      ok('PA0 o app de hoje carrega na moldura com o documento de teste (2 parágrafos, 5 frases) e o motor de fala falso instalado', PARAS.length === 2 && PARAS[0].length + PARAS[1].length === 5, JSON.stringify(PARAS.map(function (p) { return p.length; })));
+
+      async function rodar(lado, cenario) {
+        var motor = criarMotor(cenario.cfg); H.m = motor; COL.pecas = []; COL.ouvidas = 0;
+        var api;
+        if (lado === 'hoje') {
+          LD.stopTts(); LD.tts.cursor = null; LD.state.rate = 1; LW.postMessage({ type: 'audiolang', value: cenario.audio || 'en' }, '*'); await wait(150);
+          api = { tocar: function (p, s) { LD.startTts(p, s); }, parar: function () { LD.stopTts(); }, passo: function (d) { LD.stepSentence(d); }, taxa: function (v) { LD.setRate(v); }, tocando: function () { return LD.tts.playing; } };
+        } else {
+          var taxa = 1, ev = App.get('eventos'), pecas = [], ouv = 0;
+          var offs = [ev.on('narracao-frase', function (e) { if (e.texto != null) COL.pecas.push(e.p + '.' + e.s + '.' + e.idioma + '.' + e.texto); }), ev.on('frase-ouvida', function (e) { COL.ouvidas += e.palavras; })];
+          var audio = cenario.audio || 'en';
+          var fonte = { idiomaOriginal: 'en', paragrafos: function () { return PARAS.length; }, frases: function (p) { return PARAS[p].length; }, idiomaAudio: function () { return audio; },
+            texto: async function (p, s, id, ativo) { if (id === 'en') return { text: PARAS[p][s], lang: 'en' }; await wait(2); return ativo() ? { text: '[' + id + '] ' + PARAS[p][s], lang: id } : null; },
+            jaPronta: function (p, s, id) { return id === 'en' ? { text: PARAS[p][s], lang: 'en' } : null; } };
+          var voz = VN.criar({ synth: { speak: motor.speak, cancel: motor.cancel, getVoices: function () { return []; }, get speaking() { return !!(motor.atual || motor.fila.length); }, get pending() { return motor.fila.length > 0; } }, Utterance: function (t) { this.text = t; }, velocidade: function () { return taxa; } });
+          var nar = NA.criar({ voz: voz }); nar.abrir(fonte);
+          api = { tocar: function (p, s) { nar.tocar(p, s); }, parar: function () { nar.parar(); }, passo: function (d) { nar.passo(d); }, taxa: function (v) { taxa = v; nar.reiniciar(); }, tocando: function () { return nar.estado().tocando; }, fim: function () { offs.forEach(function (f) { f(); }); nar.fechar(); } };
+        }
+        await cenario.rodar(api, motor);
+        await wait(400);
+        if (api.fim) api.fim(); else LD.stopTts();
+        await wait(150);
+        return { falas: motor.log.map(function (x) { return (cenario.semFila ? [x.text, x.lang, x.rate] : [x.text, x.lang, x.rate, x.fila]).join('~'); }), pecas: COL.pecas.slice(), ouvidas: COL.ouvidas };
+      }
+      async function ateM(motor, n, ms) { return until(function () { return motor.log.length >= n; }, ms || 8000); }
+      var CEN = {
+        corrida: { cfg: { dur: 120 }, rodar: async function (a, m) { a.tocar(0, 0); await until(function () { return !a.tocando(); }, 30000); } },
+        parar: { cfg: { palavras: 25 }, rodar: async function (a, m) { a.tocar(0, 0); await ateM(m, 2); await wait(60); a.parar(); } },
+        passo: { cfg: { dur: 300 }, rodar: async function (a, m) { a.tocar(0, 0); await ateM(m, 1); a.passo(1); await ateM(m, 3); await wait(50); a.parar(); } },
+        velocidade: { cfg: { palavras: 25 }, rodar: async function (a, m) { a.tocar(0, 0); await ateM(m, 1); await wait(85); a.taxa(1.5); await ateM(m, 3); await wait(50); a.parar(); } },
+        traduzido: { cfg: { dur: 100 }, audio: 'pt', semFila: true, rodar: async function (a, m) { a.tocar(0, 0); await until(function () { return !a.tocando(); }, 30000); } },
+        erros: { cfg: { dur: 80, erros: [1, 2, 3, 4] }, rodar: async function (a, m) { a.tocar(0, 0); await until(function () { return !a.tocando(); }, 30000); } }
+      };
+      var DESCR = { corrida: 'leitura inteira até o fim (com fila à frente)', parar: 'parar no meio, com eventos de palavra', passo: 'passo para a frase seguinte tocando', velocidade: 'trocar a velocidade no meio da frase (retoma da palavra)', traduzido: 'áudio em português com tradução por frase', erros: 'quatro erros de voz seguidos' };
+      var resP = {};
+      for (var nomeC of ['corrida', 'parar', 'passo', 'velocidade', 'traduzido', 'erros']) {
+        var rh = await rodar('hoje', CEN[nomeC]), rn = await rodar('novo', CEN[nomeC]);
+        resP[nomeC] = { hoje: rh, novo: rn };
+        var iguais = JSON.stringify(rh) === JSON.stringify(rn);
+        ok('PA-' + nomeC + ' PARIDADE · ' + DESCR[nomeC] + ': o Narrador novo faz EXATAMENTE a sequência de falas, de frases e de palavras ouvidas do app de hoje', iguais && rh.falas.length >= 1, 'falas hoje=' + rh.falas.length + ' novo=' + rn.falas.length + ' ouvidas ' + rh.ouvidas + '/' + rn.ouvidas + (iguais ? '' : ' | HOJE ' + rh.falas.map(function (f) { return f.slice(0, 22); }).join(' ; ') + ' | NOVO ' + rn.falas.map(function (f) { return f.slice(0, 22); }).join(' ; ')));
+      }
+      ok('PA-sanidade os cenários realmente exercitam o que dizem: a corrida fala as 5 frases e a segunda já entra na fila; a velocidade muda para 1,5 e retoma no meio da frase; os erros param após 5 falas (1 boa e 4 com erro); o áudio em português fala a tradução', resP.corrida.hoje.falas.length === 5 && /~true$/.test(resP.corrida.hoje.falas[1]) && resP.velocidade.hoje.falas.some(function (f) { return /~1.5/.test(f); }) && resP.velocidade.hoje.falas.some(function (f) { return f.split('~')[0].length < PARAS[0][0].length && /~1.5/.test(f); }) && resP.erros.hoje.falas.length === 5 && /^\[pt\] /.test(resP.traduzido.hoje.falas[0]), 'corrida=' + resP.corrida.hoje.falas.length + ' erros=' + resP.erros.hoje.falas.length);
     } catch (e) { fails++; out.push('FAIL exceção: ' + e + ' ' + (e && e.stack ? e.stack.split('\n')[1] : '')); }
     out.push('RESULTADO: ' + (fails ? fails + ' falha(s)' : 'tudo certo'));
     live(); clearInterval(hb);
