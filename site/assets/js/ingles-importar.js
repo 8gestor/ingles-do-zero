@@ -10,8 +10,8 @@
     const D = window.DDLab;
     if (!D) return;
     const L = {
-        pt: { hint: 'Também aceita EPUB. Ou cole um texto:', paste: 'Colar texto', title: 'Título', text: 'Cole o texto aqui', add: 'Adicionar à biblioteca', cancel: 'Cancelar', empty: 'Cole algum texto antes.', epubFail: 'Este EPUB não pôde ser lido (protegido ou fora do padrão).' },
-        en: { hint: 'EPUB also works. Or paste some text:', paste: 'Paste text', title: 'Title', text: 'Paste the text here', add: 'Add to library', cancel: 'Cancel', empty: 'Paste some text first.', epubFail: 'This EPUB could not be read (protected or non-standard).' }
+        pt: { hint: 'Aceita PDF, TXT e EPUB.', epubFail: 'Este EPUB não pôde ser lido (protegido ou fora do padrão).' },
+        en: { hint: 'Accepts PDF, TXT and EPUB.', epubFail: 'This EPUB could not be read (protected or non-standard).' }
     };
     const t = (k) => L[D.state.readLang][k];
     const el = (tag, cls, txt) => { const e = document.createElement(tag); if (cls) e.className = cls; if (txt != null) e.textContent = txt; return e; };
@@ -96,35 +96,13 @@
         run: async (file, onProgress) => { try { return await extractEpub(file, onProgress); } catch (e) { throw new Error(e && e.message ? e.message : t('epubFail')); } }
     });
 
-    /* ------------------------------------------------------------------ interface: aceitar .epub + colar texto */
+    /* ------------------------------------------------------------------ interface: aceitar .epub (o "colar texto" foi retirado a pedido do autor, 2026-11-22) */
     const input = D.$('lb-file');
     if (input) input.accept = (input.accept ? input.accept + ',' : '') + '.epub,application/epub+zip';
     const drop = D.$('lb-drop');
-    const box = el('div', 'lb-paste');
     const hint = el('p', 'lb-note');
-    const open = el('button', 'lb-btn'); open.type = 'button'; open.id = 'lb-paste-open';
-    const form = el('div', 'lb-paste-form'); form.hidden = true;
-    const ti = el('input', 'lb-input'); ti.type = 'text'; ti.maxLength = 120;
-    const ta = el('textarea', 'lb-input'); ta.rows = 6;
-    const row = el('div', 'lb-actions');
-    const ok = el('button', 'lb-btn lb-primary'); ok.type = 'button'; ok.id = 'lb-paste-add';
-    const no = el('button', 'lb-btn'); no.type = 'button';
-    row.append(ok, no);
-    const msg = el('p', 'lb-error'); msg.hidden = true;
-    form.append(ti, ta, msg, row);
-    box.append(hint, open, form);
-    if (drop && drop.parentNode) drop.parentNode.insertBefore(box, drop.nextSibling);
-    function labels() { hint.textContent = t('hint'); open.textContent = t('paste'); ti.placeholder = t('title'); ta.placeholder = t('text'); ok.textContent = t('add'); no.textContent = t('cancel'); }
-    open.onclick = () => { form.hidden = !form.hidden; open.hidden = !form.hidden; if (!form.hidden) ta.focus(); };
-    no.onclick = () => { form.hidden = true; open.hidden = false; msg.hidden = true; };
-    ok.onclick = async () => {
-        const txt = ta.value.trim();
-        if (!txt) { msg.textContent = t('empty'); msg.hidden = false; return; }
-        msg.hidden = true;
-        const name = (ti.value.trim() || txt.slice(0, 40)).replace(/[\\/:*?"<>|]/g, ' ');
-        ta.value = ''; ti.value = ''; form.hidden = true; open.hidden = false;
-        await D.addText(name, txt);
-    };
+    if (drop && drop.parentNode) drop.parentNode.insertBefore(hint, drop.nextSibling);
+    function labels() { hint.textContent = t('hint'); }
     D.on('lang', labels);
     labels();
     window.__ddImport = { openZip, resolve };

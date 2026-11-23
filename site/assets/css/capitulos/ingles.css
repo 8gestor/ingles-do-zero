@@ -370,3 +370,85 @@ html body[class] .wd2.now2, html body[class] .tl-sw.now2, html body[class] .lg-s
 .lb-sync-form .lb-btn { min-height: 44px; }
 .lb-sync-form [hidden] { display: none; }
 .lb-sync-line, .lb-sync-status { margin: 6px 0; color: var(--c-dim); font-size: 0.92rem; overflow-wrap: anywhere; }
+
+/* ---------- seções da Biblioteca: organização visual (menu lateral escolhe a seção; 2026-11-22) ----------
+   Uma só régua: todo bloco ocupa a largura inteira da coluna (mesmas bordas esquerda e direita), blocos têm o mesmo
+   acabamento (borda, raio, respiro), títulos e textos seguem o mesmo ritmo, e botões e campos têm a mesma altura (44 px, toque) e se alinham em linha. */
+.lb-pane { display: block; }
+.lb-pane[hidden] { display: none; }
+.lb-lead, .lb-intro, .lb-note, .lb-pane .lb-error { max-width: none; }
+.lb-lead { margin: 0 0 22px; }
+.lb-intro { margin: 0 0 18px; }
+.lb-note { margin: 14px 0 0; }
+.lb-pane > :first-child, .lb-pane > div:first-child > :first-child { margin-top: 0; }
+.lb-pane h2, .lb-pane h2.lb-head { font-size: 0.95rem; margin: 30px 0 12px; padding-bottom: 8px; border-bottom: 1px solid var(--lb-line); }
+
+/* blocos (cartões) com o mesmo acabamento */
+.lb-week, .lb-sess, .lb-prog, .lb-vocab, .lb-sync, .lb-neural { border: 1px solid var(--lb-line); border-radius: 8px; padding: 18px 20px; margin: 0 0 22px; }
+.lb-week { border-width: 2px; border-color: var(--c-text); }
+html body .lb-week h2, html body .lb-sess h2, html body .lb-prog h2, html body .lb-vocab h2, html body .lb-sync h2 { margin: 0 0 14px; padding: 0; border: 0; }
+.lb-neural { margin-top: 22px; }
+.lb-neural .lb-group:first-child { margin-top: 0; }
+
+/* botões e campos: mesma altura e mesmo respiro; grupos alinhados e distribuídos na largura */
+.lb-btn { min-height: 44px; padding: 10px 16px; line-height: 1.2; }
+.lb-input { min-height: 44px; padding: 10px 12px; }
+.lb-doc-acts, .lb-week-row, .lb-actions, .lb-sess-acts, .lb-sync-form, .lb-prog-ask, .lb-close-next { display: flex; flex-wrap: wrap; gap: 10px; align-items: stretch; }
+.lb-week-row { margin-top: 12px; }
+.lb-sync-form > .lb-input { flex: 1 1 220px; min-width: 0; }
+.lb-tools { gap: 10px; margin-bottom: 4px; }
+.lb-tools .lb-input { flex: 0 1 auto; }
+#lb-search { flex: 1 1 220px; }
+.lb-close-next .lb-btn { margin: 0; }
+
+/* listas: linhas com o mesmo respiro; texto à esquerda e ações à direita */
+.lb-doc, .lb-eng-row, .lb-vrow, .lb-rot-item { padding: 14px 0; }
+.lb-doc:last-child, .lb-eng-row:last-child, .lb-vrow:last-child { border-bottom: 0; }
+.lb-doc .lb-doc-acts { justify-content: flex-end; }
+.lb-vocab-sum { margin: 0 0 14px; }
+.lb-vocab .lb-doc-acts { margin-top: 4px; }
+.lb-prog-tiles { gap: 10px; }
+.lb-tile { padding: 12px 14px; border-radius: 6px; }
+
+/* envio */
+.lb-drop { padding: 48px 20px; border-radius: 8px; margin: 0 0 8px; }
+.lb-progress { margin: 14px 0 0; }
+
+@media (max-width: 560px) {
+    .lb-week, .lb-sess, .lb-prog, .lb-vocab, .lb-sync, .lb-neural { padding: 16px 14px; }
+    .lb-doc .lb-doc-acts { justify-content: stretch; width: 100%; }
+    .lb-doc-acts .lb-btn, .lb-week-row .lb-btn, .lb-sess-acts .lb-btn, .lb-close-next .lb-btn { flex: 1 1 130px; }
+    .lb-sync-form .lb-btn { flex: 1 1 130px; }
+}
+
+/* ---------- Roteiro de 8 semanas: linhas organizadas (marcador de estado, selo "lido", ações alinhadas) ---------- */
+html body.paper-mode .lb-rot .lb-rot-h, html body .lb-rot .lb-rot-h, html body .lb-rot > summary { font-family: var(--font-tech); font-size: .8rem; letter-spacing: .08em; text-transform: uppercase; border: 0; padding: 0; margin: 0 0 6px; }
+.lb-rot > summary { cursor: pointer; min-height: 44px; display: flex; align-items: center; margin: 0; }
+.lb-rot { margin-top: 18px; padding-top: 4px; border-top: 1px solid var(--lb-line); }
+.lb-rot > .lb-note:first-of-type, .lb-rot > .lb-note { margin: 6px 0 12px; }
+.lb-rot-sum { display: flex; align-items: center; gap: 10px 16px; flex-wrap: wrap; margin: 0 0 8px; }
+.lb-rot-count { font-family: var(--font-tech); font-size: .72rem; letter-spacing: .06em; color: var(--c-dim); }
+.lb-rot-strip { display: grid; grid-template-columns: repeat(8, 1fr); gap: 4px; flex: 1 1 160px; min-width: 120px; }
+.lb-rot-strip span { height: 8px; border: 1px solid var(--lb-line); border-radius: 2px; }
+.lb-rot-strip span.on { background: var(--c-text); border-color: var(--c-text); }
+.lb-rot-strip span.now { background: repeating-linear-gradient(45deg, var(--c-text) 0 3px, transparent 3px 6px); border-color: var(--c-text); }
+
+.lb-rot .lb-rot-item { display: grid; grid-template-columns: 40px minmax(0, 1fr) auto; align-items: center; gap: 8px 14px; padding: 14px 0; border-top: 1px solid var(--lb-line); }
+.lb-rot-mark { width: 36px; height: 36px; border-radius: 50%; border: 2px solid var(--lb-line); display: grid; place-items: center; font-family: var(--font-tech); font-size: .85rem; font-weight: 700; color: var(--c-dim); }
+.lb-rot-item.done .lb-rot-mark { background: var(--c-text); border-color: var(--c-text); color: var(--c-bg); font-size: 1rem; }
+.lb-rot-item.now .lb-rot-mark { border-color: var(--c-text); color: var(--c-text); box-shadow: 0 0 0 3px var(--lb-soft); }
+.lb-rot .lb-rot-info { display: flex; flex-direction: column; gap: 4px; min-width: 0; flex: none; }
+.lb-rot-info strong { overflow-wrap: anywhere; line-height: 1.3; }
+.lb-rot-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; }
+.lb-rot-meta small { color: var(--c-dim); }
+.lb-rot-done, .lb-rot-now { font-family: var(--font-tech); font-size: .64rem; letter-spacing: .08em; text-transform: uppercase; border-radius: 999px; padding: 2px 10px; line-height: 1.6; text-decoration: none; }
+.lb-rot-done { background: var(--c-text); color: var(--c-bg); }
+.lb-rot-now { border: 1px solid var(--c-text); }
+.lb-rot-act { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; }
+.lb-rot-act .lb-btn { white-space: nowrap; }
+.lb-rot-item.done { opacity: 1; }
+@media (max-width: 700px) {
+    .lb-rot .lb-rot-item { grid-template-columns: 36px minmax(0, 1fr); }
+    .lb-rot-act { grid-column: 1 / -1; justify-content: stretch; }
+    .lb-rot-act .lb-btn { flex: 1 1 140px; white-space: normal; }
+}

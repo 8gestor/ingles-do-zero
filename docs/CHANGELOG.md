@@ -2,6 +2,40 @@
 
 > Uma entrada por dia de trabalho, da mais nova para a mais antiga. Escreva **o que mudou, por quê e como conferir**. Mantém o autor e o Claude sem precisar reler conversas antigas.
 
+## 2026-11-22 (noite) · Degrau 0: primeiras histórias (primeiro conteúdo para iniciante)
+
+- **Pedido do autor:** nível iniciante; objetivo de 3 meses = ler, escrever, falar e ouvir em inglês; ~1 h por dia; IA local do Chrome adiada. Primeira versão = Degrau 0 como seção própria da Biblioteca, uma história por dia.
+- **Conteúdo:** `site/assets/livros/degrau0-primeiras-historias.txt`, 6 fábulas (~750 palavras, frases curtas, presente e passado simples). Enredos de Esopo (domínio público); **texto reescrito por IA (Claude) como adaptação própria, declarado no `LEIAME.md` da pasta e pendente de revisão do autor** (regra 6, Q8).
+- **Código:** novo módulo `site/assets/js/ingles-degrau0.js` (não altera `ingles-semana.js`), carregado em `ingles.html` logo após o Livro da semana. Mostra a seção acima do Livro da semana: 4 passos (ler com tradução, ouvir devagar, shadowing, salvar palavras), contador "N de 6", história de hoje destacada. Cada história vira um documento próprio ("First Stories · N. Título", `meta.x.degrau0 = N`); lida = posição no último parágrafo. PT/EN. Sem recurso opcional obrigatório (só `DDLab`).
+- **Testes:** seção DG (6 verificações) em `test_ingles_modulos.ps1`; as três baterias (`test_ingles_modulos` 252, `test_ingles`, `test_novo_nucleo`) dão "tudo certo". Achado: `L13b` pegava o primeiro `.lb-rot-count` da página; a contagem do Degrau 0 usa classe própria (`lb-dg-count`).
+- **Pendente:** revisão do autor dos 6 textos; ampliar o degrau 0 (mais histórias, ditado e cartões ligados a cada uma); teste em celular e em largura estreita (regra de plataformas); documentar no `06-biblioteca-modulos.md` e na matriz `08`. Não commitado nem publicado (branch `feature/abas-biblioteca`, que já tinha alterações anteriores não commitadas).
+
+## 2026-11-22 (noite) · Seções no menu lateral e visual organizado
+
+Pedido do autor: separar a Biblioteca em seções, sem perder nada, **escolhidas pelo menu lateral** (não por abas dentro da página), e organizar o visual (alinhado, justificado, margens).
+
+| Item do menu lateral | Conteúdo | Endereço |
+|---|---|---|
+| BIBLIOTECA | Livro da semana + Sua biblioteca (lista, busca, ordenação) | `#ingles` |
+| LEITOR / SUBIR PDF | área de envio (PDF, TXT, EPUB) | `#ingles-leitor` |
+| PROGRESSO | Sessão do dia + estatísticas (e Zerar estatísticas) | `#ingles-progresso` |
+| VOCABULÁRIO | palavras salvas, revisão, exportar TSV/Anki | `#ingles-vocabulario` |
+| CONFIGURAÇÕES | tradução no navegador, voz, voz neural, conta e nuvem, backup do progresso (o que não está no menu superior) | `#ingles-configuracoes` |
+| MANUAL DA BIBLIOTECA | (em "AJUDA") | `#manual-biblioteca` |
+
+- **Como funciona:** `sumario.js` ganhou `id` e `pane` por item; `leitor.js` (`loadPage`, `keyOf`) troca de seção sem recarregar a página (mensagem `lab-pane`; um livro aberto é fechado e a posição gravada); `ingles-abas.js` mostra a seção escolhida e troca selo, título e subtítulo. Os módulos acham a âncora da sua seção (`lb-a-week`, `lb-a-sess`, `lb-a-prog`, `lb-a-vocab`; conta e backup usam `lb-pane-cfg`). Nenhuma função foi removida.
+- **Retirado:** o bloco "Colar texto" da interface (`ingles-importar.js`). O núcleo ainda tem `DDLab.addText` (Livro da semana, testes) e o EPUB continua aceito. O "colar" do backup do progresso é outra coisa e continua.
+- **Visual (`ingles.css`, bloco final):** todos os blocos usam a largura inteira da coluna (textos sem limite de caracteres, para o justificado/esquerda do painel Aa alinhar com cartões e botões), mesmo acabamento de cartão (borda, raio, respiro), títulos no mesmo ritmo, botões e campos com 44 px e grupos de botões alinhados em linha (à esquerda; nas listas, à direita; no celular distribuídos na largura).
+- **Roteiro de 8 semanas (redesenho):** cada semana é uma linha em grade (marcador redondo com o número, ✓ preenchido quando lida, anel quando em andamento), título que quebra sem estourar, selo "✓ LIDO" / "EM ANDAMENTO" ao lado do tamanho, botões alinhados à direita (no celular, abaixo, com a largura toda), resumo "N de 8 semanas concluídas" com faixa de 8 segmentos e título sem a barra do tema Papel. Teste L13b (inclui a conferência de que nenhuma linha estoura a largura).
+- Manual da Biblioteca atualizado (PT/EN). Testes: seção AB (9 verificações) e F5 em `test_ingles_modulos.ps1`; 1a/1b em `test_ingles.ps1`. `TC5` (tempo do teleprompter) falha também sem estas mudanças; é anterior.
+- Não publicado (branch `feature/abas-biblioteca`).
+## 2026-11-22 (madrugada) · R1a: núcleo do app novo
+
+- **Autorização do autor:** começar a R1. Escopo desta etapa (R1a): registro de módulos, eventos, armazém com migração e cópia de segurança, preferências, rotas e moldura do app; **R1b** (backup, sincronização, gravação à prova de fechamento) fica para depois, porque exige portar e testar a mescla contra a do app de hoje.
+- **Feito:** `site/novo/` (prévia, `noindex`) com `app.js`, `eventos.js`, `armazem.js`, `config.js`, `rotas.js`, `telas.js`, `inicio.js`, moldura e tela técnica `#/sistema`; teste `site/tools/test_novo_nucleo.ps1` com **32 verificações, todas passando**. As baterias antigas (módulos e núcleo/PDF) continuam "tudo certo". Nenhum arquivo do app de hoje foi alterado. Documento vivo: `docs/09-nucleo-novo.md`.
+- **Descoberta crítica (registrada em `07`, seção 7, e `09`, seção 4):** o app de hoje abre `dd-ingles` **fixo na versão 2**; subir a versão no núcleo novo **quebraria o site atual**. Regra: o banco antigo **não é migrado** enquanto os dois apps coexistirem; o app novo usa o mesmo banco sem mudar a versão e guarda o novo em `dd-ingles-novo` (esse sim com migração e cópia automática). Teste `NU6c` garante que o app antigo ainda abre o banco depois do núcleo novo.
+- **Aprendizado de teste:** o Chrome headless usa tempo virtual; esperar o IndexedDB sem um timer ativo faz a página parar, e um `open` pode gastar ~100 s virtuais. O teste usa batimento de timer, prazos generosos e orçamento maior (detalhe em `09`, seção 8).
+- **Pendente:** R1b; autorização para commit e para publicar (o `/novo/` só vai ao ar com o merge em `main`).
 ## 2026-11-22 (madrugada) · Desenho da reconstrução (imersão em livros)
 
 - **Pedido do autor:** desenhar o site como **imersão em livros** (ler, ouvir, falar, escrever, entender contextos), não como escola tradicional; reformular o que existe, **cortando o excesso e mantendo o útil**; segurança/duas etapas **adiadas**.
