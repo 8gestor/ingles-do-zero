@@ -69,6 +69,12 @@ Navegação por hash: `#/hoje`, `#/estante`, `#/palavras`, `#/progresso`, `#/ler
 
 **Armadilha de teste (custou uma rodada):** o Chrome de teste usa **tempo virtual**. Enquanto a página espera o disco (IndexedDB), o relógio virtual corre (um `open` gastou ~100 s virtuais) e, **sem nenhum timer ativo, a página até para** e o resultado sai incompleto. Por isso o teste mantém um **batimento** (`setInterval` de 4 ms, parado no fim), usa **prazos de espera generosos** e orçamento `--virtual-time-budget=4200000`. Em teste novo que use IndexedDB: nunca esperar o disco sem esse batimento e nunca usar prazo curto.
 
+**Regras para escrever qualquer teste neste Chrome (aprendidas ao estabilizar DG5, TC5, L14 e L7 em 22/11/2026):**
+1. **Nunca conferir resultado assíncrono depois de um `wait(N)` fixo**: espere a CONDIÇÃO (`until`), porque o disco pode demorar mais que o tempo virtual do `wait`.
+2. **O prazo do `until` é só um piso** (a função ignora prazos menores que 15 min virtuais): prazo curto vence antes do disco e o teste confere cedo demais.
+3. **Se o app depende de "atividade recente"** (contador do teleprompter, tempo de estudo), o teste precisa SIMULAR a atividade (`pointerdown`, `keydown`); senão passa só enquanto o relógio virtual ainda está perto do carregamento da página.
+4. Ao suspeitar de instabilidade, **meça**: rode a bateria 12 a 20 vezes e conte as falhas por teste, antes e depois, em vez de rodar uma vez e concluir.
+
 ## 9. Dados do aluno (R1b): mescla, backup, registro, nuvem
 
 **Convivência:** enquanto os dois apps existirem, o app novo lê e grava nas **mesmas fontes** do app de hoje (localStorage `dd-ingles-log`, `dd-ingles-dia-hist`, `dd-ingles-semana-hist`, `dd-ingles-escrita`, `dd-sync-*`; IndexedDB `dd-ingles` → `vocab` e `meta`), então um enxerga o que o outro grava. O **texto dos livros nunca** entra no snapshot, no backup nem na nuvem.

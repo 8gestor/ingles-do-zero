@@ -516,7 +516,7 @@ Além das 279 verificações herdadas, o núcleo novo tem os seus testes em `sit
 
 **Total de testes do app novo: 84** (30 do núcleo + 41 de dados + 13 do narrador, ver 4.2).
 
-> **Aviso sobre os testes do app de hoje (`test_ingles_modulos.ps1`, itens TC5, L7 e L14):** são sensíveis à carga da máquina (tempo virtual do Chrome). Em 22/11/2026 falharam de forma intermitente, **igual com e sem a pasta `novo/`** (9 falhas em 12 sem `novo/`, 6 em 12 com), e passam quando a máquina está sossegada. Se falharem, rodar de novo sozinho, sem outros testes ou Chrome ao mesmo tempo, antes de suspeitar do código.
+> **Testes do app de hoje (`test_ingles_modulos.ps1`): estabilizados em 22/11/2026.** DG5, TC5, L14 e L7 oscilavam por esperas frágeis dos próprios testes (prazo curto e `wait` fixo em tempo virtual; TC5 sem simular atividade), não por defeito do app. Depois do conserto: **20 de 20** rodadas limpas (antes 5 de 12). Resíduo: E5 e L5 falharam uma vez cada sob carga artificial extrema (12 processos); sem causa confirmada. Ver `CHANGELOG.md` e `09-nucleo-novo.md` (seção 8, regras de teste).
 
 ### 4.2 Testes do Narrador (R2.1): `site/tools/test_novo_narrador.ps1`
 

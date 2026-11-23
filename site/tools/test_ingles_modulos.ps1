@@ -31,7 +31,9 @@ $test = @'
   function D() { return W().DDLab; }
   function idoc() { return ifr().contentDocument; }
   function post(m) { W().postMessage(m, '*'); }
-  async function until(fn, ms) { var t = Date.now(); while (Date.now() - t < (ms || 15000)) { try { if (fn()) return true; } catch (e) {} await wait(100); } return false; }
+  // TEMPO VIRTUAL do Chrome de teste (ver docs/09, seção 8): enquanto a página espera o disco (IndexedDB) o relógio corre (um open chegou a gastar ~100 s virtuais).
+  // Um prazo curto vencia ANTES de o disco responder e o teste conferia cedo demais (instável conforme a carga da máquina). Por isso o prazo pedido (ms) é só um piso: espera-se até 15 min virtuais.
+  async function until(fn, ms) { var t = Date.now(), lim = Math.max(ms || 0, 900000); while (Date.now() - t < lim) { try { if (fn()) return true; } catch (e) {} await wait(100); } return false; }
   function clickAt(el, fx) { var r = el.getBoundingClientRect(); var x = r.left + Math.max(2, r.width * (fx || 0.1)), y = r.top + r.height / 2; el.dispatchEvent(new MouseEvent('click', { bubbles: true, clientX: x, clientY: y })); }
   var TEXT = 'Algorithms decide what we read and what we buy. They shape our choices every day. Nobody explains how they work, and few people ask.\n\nUnderstanding that fact is the first step towards resisting it. The people who build these systems are rarely asked to explain them.';
 
@@ -458,7 +460,8 @@ $test = @'
       var dgM = await D().db.get('meta', dgId); dgM.pos = dgM.trTotal; await D().db.put('meta', dgM);
       post({ type: 'readlang', value: 'en' }); await wait(400);
       ok('DG4 em ingles o titulo do degrau troca de idioma', /LEVEL 0/.test(idoc().getElementById('lb-h-degrau0').textContent), idoc().getElementById('lb-h-degrau0').textContent);
-      post({ type: 'readlang', value: 'pt' }); await wait(600);
+      post({ type: 'readlang', value: 'pt' });
+      await until(function () { return /done/.test(dgRows()[0].className) && /now/.test(dgRows()[1].className) && /1 de 6/.test(dgs.textContent); });          // espera a lista redesenhar (antes: wait fixo de 600 ms, que vencia antes do disco)
       ok('DG5 historia lida no fim fica marcada, a seguinte vira a de hoje e a contagem sobe', /done/.test(dgRows()[0].className) && /now/.test(dgRows()[1].className) && /1 de 6/.test(dgs.textContent), dgRows()[0].className + ' | ' + dgRows()[1].className);
       idoc().getElementById('lb-degrau0-open-1').click(); await until(function () { return D().doc && D().doc.id === dgId; }, 8000); await wait(300);
       var dgAll = (await D().db.all('meta')).filter(function (m) { return m.x && m.x.degrau0 === 1; });
@@ -1135,6 +1138,7 @@ $test = @'
       ok('TC3 mostra o tempo usado, a média para concluir e o que falta, com o ritmo em palavras por minuto', /(usado|used) \d+:\d\d \/ (média|average)/.test(tcT1) && /(faltam|left) .*min/.test(tcv('lb-tele-time-2')) && /\d+ (palavras\/min|wpm)/.test(tcv('lb-tele-time-2')), tcT1 + ' | ' + tcv('lb-tele-time-2'));
       ok('TC4 mostra o que se trabalha agora: lendo e ouvindo, idiomas de leitura e de escuta, livro e frase', /(Lendo e ouvindo)/.test(tcN1) && /PT/.test(tcN1) && /EN/.test(tcN1) && /Andamento teste/.test(tcN2) && /frase \d+\/\d+/.test(tcN2), tcN1 + ' | ' + tcN2);
       D().stopTts(); await wait(1500);
+      W().dispatchEvent(new Event('pointerdown'));             // o aluno mexeu na página agora: o teste diz 'mesmo parado, com atividade recente', então a atividade precisa existir (senão o contador para quando o relógio virtual passa de 60 s)
       var tcSecs = function () { var m0 = tcv('lb-tele-time').match(/(\d+):(\d\d)/); return m0 ? +m0[1] * 60 + +m0[2] : -1; }; var tcBase = tcSecs(); var tcUsed1 = tcv('lb-tele-time').match(/(\d+):(\d\d)/);
       await until(function () { return tcSecs() > tcBase; }, 60000);
       var tcUsed2 = tcv('lb-tele-time').match(/(\d+):(\d\d)/);

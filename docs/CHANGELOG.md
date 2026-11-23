@@ -15,6 +15,18 @@
 - **Não publicado** (regra do autor).
 
 
+## 2026-11-22 (madrugada) · Testes instáveis do app de hoje: causa e conserto (DG5, TC5, L14, L7)
+
+- **Pedido do autor:** corrigir os testes que oscilavam (DG5, TC5, L14). Eram falhas dos **testes**, não do código do app.
+- **Medido antes:** só **5 de 12** rodadas de `test_ingles_modulos` limpas (DG5 falhou em 5, "exceção" em 2, L14 em 1; TC5 e L7 em outras rodadas).
+- **Causa raiz** (a mesma que já tinha mordido os testes novos): o Chrome de teste usa **tempo virtual**, e enquanto a página espera o disco (IndexedDB) o relógio corre. Três formas frágeis de esperar:
+  1. `until(fn, ms)` com **prazo curto** (ex.: 5000): vencia antes de o disco responder e o teste conferia cedo demais (L7, L14, "elemento nulo").
+  2. `wait(600)` **fixo** antes de conferir a tela (DG5): conferia antes de a lista ser redesenhada.
+  3. **TC5**: o contador do teleprompter só conta com atividade nos últimos 60 s do relógio do app, e o teste nunca simulava atividade; só passava se o relógio virtual ainda não tivesse corrido 60 s desde o carregamento.
+- **Conserto** (só em `site/tools/test_ingles_modulos.ps1` e `test_ingles.ps1`; **nenhum código do app mudou**): `until` passa a tratar o prazo pedido como **piso** (espera até 15 min virtuais); DG5 espera a condição (`until`) em vez de `wait(600)`; TC5 simula a atividade (`pointerdown`) antes de medir.
+- **Medido depois:** **20 de 20** rodadas limpas de `test_ingles_modulos` numa máquina normal (antes: 5 de 12). Sob **carga máxima artificial** (12 processos ocupando os 12 núcleos): 8 de 10 limpas e o `test_ingles` (PDF) passou; as 2 falhas foram em **E5** e **L5**, uma vez cada, e não tinham falhado antes.
+- **Resíduo conhecido (honesto):** E5 e L5 oscilaram uma vez cada sob carga extrema; **não tenho causa confirmada**, então não alterei nada neles. Se aparecerem em máquina normal, aplicar a mesma receita (esperar a condição, nunca prazo curto nem `wait` fixo) ao teste específico. Ainda há ~159 `wait(N)` fixos nos testes antigos; não reescrevi todos de propósito.
+- **Estado final:** `test_ingles` 44, `test_ingles_modulos` 242, `test_novo_nucleo` 30, `test_novo_dados` 41, `test_novo_narrador` 13: todos passando.
 ## 2026-11-22 (madrugada) · Publicação da R1 e da R2.1 no main, mesclagem com a outra sessão e correção da tela Sistema
 
 - **Publicado (autorizado pelo autor: "commit e publique"):** mesclagem `bc3a789` no `main` (R1a, R1b e R2.1 do app novo), com o site no ar em `ingles.vocealgoritmo.com.br` e o app novo em `/novo/` (prévia, `noindex`). Deploy e endereços conferidos (200), o livro segue no ar.
