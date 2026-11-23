@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Inglês do zero ao avançado</title>
+    
+    <link rel="stylesheet" href="assets/fonts/fonts.css">
+
+    <link rel="stylesheet" href="assets/css/leitor.css">
+</head>
+<body class="paper-mode">
+
+    <div id="backdrop" onclick="toggleSidebar()"></div>
+
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <span>INGLÊS <span style="color:var(--c-accent)">// ESTUDO</span></span>
+            <button class="btn-icon" style="border:none; width:auto;" onclick="toggleSidebar()">✕</button>
+        </div>
+        <nav class="nav-list" id="nav-container"></nav>
+    </aside>
+
+    <main class="dashboard">
+        <div class="master-header">
+            <div class="branding-bar">
+                <span class="branding-text">INGLÊS DO ZERO AO AVANÇADO</span>
+                <span class="hud-top" id="hud-top" aria-live="polite"></span>
+            </div>
+            <div class="controls-bar">
+                <div class="ctrl-group">
+                    <button class="btn-icon" onclick="toggleSidebar()" title="Índice">☰</button>
+                </div>
+                <div class="ctrl-group">
+                    <button class="btn-icon btn-aa" id="btn-aa" type="button" onclick="togglePanel('aa-panel')" title="Aparência da leitura" aria-label="Aparência da leitura" aria-expanded="false">Aa</button>
+                    <button class="btn-icon btn-text" id="btn-voz" type="button" onclick="togglePanel('voz-panel')" title="Voz da narração" aria-label="Voz da narração" aria-expanded="false" data-en="Voice">Voz</button>
+                    <button class="btn-icon btn-text" id="btn-legenda" type="button" hidden onclick="sendMsg('legend-toggle')" title="Legenda da narração" aria-label="Legenda da narração" aria-pressed="false" data-en="Captions">Legenda</button>
+                    <button class="btn-icon btn-text" id="btn-tele" type="button" hidden onclick="sendMsg('lab-tele')" title="Teleprompter: legenda corrida com a palavra falada" aria-label="Teleprompter" data-en="Teleprompter">Teleprompter</button>
+                    <div class="lang-pair" role="group" aria-label="Idioma de leitura">
+                        <span class="lang-label" data-en="READ">LER</span>
+                        <button type="button" class="lang-btn" data-opt="readLang" data-val="pt" onclick="setOption('readLang','pt')" title="Ler em português">PT</button>
+                        <button type="button" class="lang-btn" data-opt="readLang" data-val="en" onclick="setOption('readLang','en')" title="Read in English">EN</button>
+                    </div>
+                    <span class="row-break" aria-hidden="true"></span>
+                    <div class="lang-pair" role="group" aria-label="Idioma do áudio">
+                        <span class="lang-label" data-en="LISTEN">OUVIR</span>
+                        <button type="button" class="lang-btn" data-opt="audioLang" data-val="pt" onclick="setOption('audioLang','pt')" title="Ouvir em português">PT</button>
+                        <button type="button" class="lang-btn" data-opt="audioLang" data-val="en" onclick="setOption('audioLang','en')" title="Listen in English">EN</button>
+                    </div>
+                    <select id="speed-select" class="speed-select" aria-label="Velocidade da narração" onchange="setSpeed(this.value)">
+                        <option value="0.1">0,1×</option>
+                        <option value="0.2">0,2×</option>
+                        <option value="0.3">0,3×</option>
+                        <option value="0.4">0,4×</option>
+                        <option value="0.5">0,5×</option>
+                        <option value="0.6">0,6×</option>
+                        <option value="0.7">0,7×</option>
+                        <option value="0.8">0,8×</option>
+                        <option value="0.9">0,9×</option>
+                        <option value="1">1×</option>
+                        <option value="1.1">1,1×</option>
+                        <option value="1.2">1,2×</option>
+                        <option value="1.3">1,3×</option>
+                        <option value="1.4">1,4×</option>
+                        <option value="1.5">1,5×</option>
+                        <option value="1.6">1,6×</option>
+                        <option value="1.7">1,7×</option>
+                        <option value="1.8">1,8×</option>
+                        <option value="1.9">1,9×</option>
+                        <option value="2">2×</option>
+                        <option value="2.1">2,1×</option>
+                        <option value="2.2">2,2×</option>
+                        <option value="2.3">2,3×</option>
+                        <option value="2.4">2,4×</option>
+                        <option value="2.5">2,5×</option>
+                        <option value="2.6">2,6×</option>
+                        <option value="2.7">2,7×</option>
+                        <option value="2.8">2,8×</option>
+                        <option value="2.9">2,9×</option>
+                        <option value="3">3×</option>
+                    </select>                    <button class="btn-icon" id="btn-tts" onclick="sendMsg('tts-toggle')">▶</button>
+                    <button class="btn-icon" id="btn-theme" onclick="cycleTheme()">◐</button>
+                    <button class="btn-icon" onclick="toggleFullScreen()">⛶</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="viewport">
+            <iframe id="content-frame" name="viewer" src="ingles.html"></iframe>
+
+            <section id="aa-panel" class="panel" aria-label="Aparência da leitura">
+                <div class="panel-title" data-en="APPEARANCE">APARÊNCIA</div>
+                <span class="panel-label" data-en="SIZE">TAMANHO</span>
+                <div class="size-row">
+                    <button type="button" class="opt" onclick="adjustFont(-1)" aria-label="Diminuir a fonte">A−</button>
+                    <span id="font-display">19 px</span>
+                    <button type="button" class="opt" onclick="adjustFont(1)" aria-label="Aumentar a fonte">A+</button>
+                </div>
+                <span class="panel-label" data-en="FONT">FONTE</span>
+                <div class="seg">
+                    <button type="button" class="opt" data-opt="face" data-val="serif" onclick="setOption('face','serif')">Literata</button>
+                    <button type="button" class="opt" data-opt="face" data-val="legible" onclick="setOption('face','legible')" data-en="Legible">Legível</button>
+                    <button type="button" class="opt" data-opt="face" data-val="mono" onclick="setOption('face','mono')">Mono</button>
+                </div>
+                <span class="panel-label" data-en="MARGINS">MARGENS</span>
+                <div class="seg">
+                    <button type="button" class="opt" data-opt="margin" data-val="narrow" onclick="setOption('margin','narrow')" data-en="Narrow">Estreita</button>
+                    <button type="button" class="opt" data-opt="margin" data-val="medium" onclick="setOption('margin','medium')" data-en="Medium">Média</button>
+                    <button type="button" class="opt" data-opt="margin" data-val="wide" onclick="setOption('margin','wide')" data-en="Wide">Larga</button>
+                </div>
+                <span class="panel-label" data-en="ALIGNMENT">ALINHAMENTO</span>
+                <div class="seg">
+                    <button type="button" class="opt" data-opt="align" data-val="left" onclick="setOption('align','left')" data-en="Left">Esquerda</button>
+                    <button type="button" class="opt" data-opt="align" data-val="justify" onclick="setOption('align','justify')" data-en="Justified">Justificado</button>
+                </div>
+                <span class="panel-label" data-en="THEME">TEMA</span>
+                <div class="seg">
+                    <button type="button" class="opt" data-opt="theme" data-val="paper" onclick="setOption('theme','paper')" data-en="Paper">Papel</button>
+                    <button type="button" class="opt" data-opt="theme" data-val="dark" onclick="setOption('theme','dark')">Terminal</button>
+                    <button type="button" class="opt" data-opt="theme" data-val="light" onclick="setOption('theme','light')" data-en="Light">Claro</button>
+                    <button type="button" class="opt" data-opt="theme" data-val="sepia" onclick="setOption('theme','sepia')" data-en="Sepia">Sépia</button>
+                </div>
+            </section>
+
+            <section id="voz-panel" class="panel" aria-label="Voz da narração">
+                <div class="panel-title" data-en="NARRATION">NARRAÇÃO</div>
+                <span class="panel-label" data-en="VOICE">VOZ</span>
+                <div class="voice-row">
+                    <label for="voice-pt">PT</label><select id="voice-pt" onchange="setVoice('pt', this.value)"></select>
+                    <label for="voice-en">EN</label><select id="voice-en" onchange="setVoice('en', this.value)"></select>
+                </div>
+            </section>
+        </div>
+
+        <footer class="bottom-hud">
+            <div class="read-line" id="read-line"></div>
+            <div class="progress-container">
+                <span id="chapter-indicator">00/00</span>
+                <div class="progress-track"><div class="progress-fill" id="p-bar"></div></div>
+            </div>
+            <div class="hud-live" id="hud-live" aria-live="polite">
+                <span id="hl-read">0</span><span class="hl-slash">/</span><span id="hl-total">0</span> <span id="hl-lang">PT</span>
+                <span class="hl-sep">·</span> <span id="hl-left">—</span>
+            </div>
+        </footer>
+    </main>
+
+    <script src="assets/js/sumario.js"></script>
+    
+    
+    <script src="assets/js/leitor.js"></script>
+</body>
+</html>
