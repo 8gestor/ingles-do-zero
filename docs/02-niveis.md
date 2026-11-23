@@ -1,5 +1,7 @@
 # 02 · Mapa de níveis (zero ao avançado)
 
+> **Atualização 22/11/2026: parcialmente substituído por `07-desenho-reconstrucao.md` (seção 3.3, escada de leitura).** A escala CEFR fica só como rótulo; a lição de 10–15 min com gramática deixa de ser a unidade de trabalho (agora é o livro e o ciclo ler/ouvir/falar/escrever/contexto).
+>
 > Estado: **rascunho**. A estrutura segue a escala **CEFR/QECR (A1 a C2)**, de uso internacional. Os números de vocabulário e horas são **ordens de grandeza a validar**, não metas oficiais.
 
 ## Estrutura geral

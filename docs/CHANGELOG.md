@@ -2,6 +2,14 @@
 
 > Uma entrada por dia de trabalho, da mais nova para a mais antiga. Escreva **o que mudou, por quê e como conferir**. Mantém o autor e o Claude sem precisar reler conversas antigas.
 
+## 2026-11-22 (noite) · Degrau 0: primeiras histórias (primeiro conteúdo para iniciante)
+
+- **Pedido do autor:** nível iniciante; objetivo de 3 meses = ler, escrever, falar e ouvir em inglês; ~1 h por dia; IA local do Chrome adiada. Primeira versão = Degrau 0 como seção própria da Biblioteca, uma história por dia.
+- **Conteúdo:** `site/assets/livros/degrau0-primeiras-historias.txt`, 6 fábulas (~750 palavras, frases curtas, presente e passado simples). Enredos de Esopo (domínio público); **texto reescrito por IA (Claude) como adaptação própria, declarado no `LEIAME.md` da pasta e pendente de revisão do autor** (regra 6, Q8).
+- **Código:** novo módulo `site/assets/js/ingles-degrau0.js` (não altera `ingles-semana.js`), carregado em `ingles.html` logo após o Livro da semana. Mostra a seção acima do Livro da semana: 4 passos (ler com tradução, ouvir devagar, shadowing, salvar palavras), contador "N de 6", história de hoje destacada. Cada história vira um documento próprio ("First Stories · N. Título", `meta.x.degrau0 = N`); lida = posição no último parágrafo. PT/EN. Sem recurso opcional obrigatório (só `DDLab`).
+- **Testes:** seção DG (6 verificações) em `test_ingles_modulos.ps1`; as três baterias (`test_ingles_modulos` 252, `test_ingles`, `test_novo_nucleo`) dão "tudo certo". Achado: `L13b` pegava o primeiro `.lb-rot-count` da página; a contagem do Degrau 0 usa classe própria (`lb-dg-count`).
+- **Pendente:** revisão do autor dos 6 textos; ampliar o degrau 0 (mais histórias, ditado e cartões ligados a cada uma); teste em celular e em largura estreita (regra de plataformas); documentar no `06-biblioteca-modulos.md` e na matriz `08`. Não commitado nem publicado (branch `feature/abas-biblioteca`, que já tinha alterações anteriores não commitadas).
+
 ## 2026-11-22 (noite) · Seções no menu lateral e visual organizado
 
 Pedido do autor: separar a Biblioteca em seções, sem perder nada, **escolhidas pelo menu lateral** (não por abas dentro da página), e organizar o visual (alinhado, justificado, margens).
@@ -21,6 +29,19 @@ Pedido do autor: separar a Biblioteca em seções, sem perder nada, **escolhidas
 - **Roteiro de 8 semanas (redesenho):** cada semana é uma linha em grade (marcador redondo com o número, ✓ preenchido quando lida, anel quando em andamento), título que quebra sem estourar, selo "✓ LIDO" / "EM ANDAMENTO" ao lado do tamanho, botões alinhados à direita (no celular, abaixo, com a largura toda), resumo "N de 8 semanas concluídas" com faixa de 8 segmentos e título sem a barra do tema Papel. Teste L13b (inclui a conferência de que nenhuma linha estoura a largura). Publicado em 2026-11-22 com autorização do autor.
 - Manual da Biblioteca atualizado (PT/EN). Testes: seção AB (9 verificações) e F5 em `test_ingles_modulos.ps1`; 1a/1b em `test_ingles.ps1`. `TC5` (tempo do teleprompter) falha também sem estas mudanças; é anterior.
 - Publicado em `main` (2026-11-22), com autorização do autor.
+## 2026-11-22 (madrugada) · R1a: núcleo do app novo
+
+- **Autorização do autor:** começar a R1. Escopo desta etapa (R1a): registro de módulos, eventos, armazém com migração e cópia de segurança, preferências, rotas e moldura do app; **R1b** (backup, sincronização, gravação à prova de fechamento) fica para depois, porque exige portar e testar a mescla contra a do app de hoje.
+- **Feito:** `site/novo/` (prévia, `noindex`) com `app.js`, `eventos.js`, `armazem.js`, `config.js`, `rotas.js`, `telas.js`, `inicio.js`, moldura e tela técnica `#/sistema`; teste `site/tools/test_novo_nucleo.ps1` com **32 verificações, todas passando**. As baterias antigas (módulos e núcleo/PDF) continuam "tudo certo". Nenhum arquivo do app de hoje foi alterado. Documento vivo: `docs/09-nucleo-novo.md`.
+- **Descoberta crítica (registrada em `07`, seção 7, e `09`, seção 4):** o app de hoje abre `dd-ingles` **fixo na versão 2**; subir a versão no núcleo novo **quebraria o site atual**. Regra: o banco antigo **não é migrado** enquanto os dois apps coexistirem; o app novo usa o mesmo banco sem mudar a versão e guarda o novo em `dd-ingles-novo` (esse sim com migração e cópia automática). Teste `NU6c` garante que o app antigo ainda abre o banco depois do núcleo novo.
+- **Aprendizado de teste:** o Chrome headless usa tempo virtual; esperar o IndexedDB sem um timer ativo faz a página parar, e um `open` pode gastar ~100 s virtuais. O teste usa batimento de timer, prazos generosos e orçamento maior (detalhe em `09`, seção 8).
+- **Pendente:** R1b; autorização para commit e para publicar (o `/novo/` só vai ao ar com o merge em `main`).
+## 2026-11-22 (madrugada) · Desenho da reconstrução (imersão em livros)
+
+- **Pedido do autor:** desenhar o site como **imersão em livros** (ler, ouvir, falar, escrever, entender contextos), não como escola tradicional; reformular o que existe, **cortando o excesso e mantendo o útil**; segurança/duas etapas **adiadas**.
+- **Feito:** `docs/07-desenho-reconstrucao.md` (documento-mãe): tese do produto, método (ciclo do livro), jornada (sessão do dia, escada de leitura em 6 degraus), arquitetura em camadas, modelo de dados, contratos entre módulos, telas, inventário manter/fundir/cortar/criar, protocolo "nenhuma função perdida", roadmap R0–R8, riscos e 9 perguntas.
+- **Achado:** o plano antigo (`02`, `03`, `04`) era lição-por-nível (escola tradicional) e contradizia o que já funciona (livros). `02`, `03` e `04` receberam aviso de substituição. O roteiro de 8 livros cobre bem os degraus 3–5; **faltam os degraus 0–2** ("do zero"): o maior trabalho de conteúdo.
+- **Decisões do autor (Q1–Q4):** falar = shadowing + gravar-se local; conversa = roteiro + retorno por regras; zero = adaptações de domínio público como ponte; reconstrução ao lado, módulo a módulo. Registradas na seção 11 do `07`.`n- **R0 feita:** `docs/08-paridade.md` (matriz de paridade) gerada dos testes atuais: **279 verificações em 39 áreas** (44 do núcleo + 235 dos módulos), cada uma com destino no app novo e fase; mais um quadro de 23 funções de hoje → onde ficam. Hoje todas passam no site atual e estão `[ ]` no app novo. Desenho e R0 commitados na branch `feature/desenho-reconstrucao` (commit `44f1938` + R0).`n- **Pendente:** perguntas Q5–Q8 do `07` (áudio, nome/domínio, sustento, quanto revisar); começar a **R1 (núcleo novo)** com autorização do autor.
 ## 2026-11-22 (noite) · Backup do progresso (exportar e importar)
 
 - **Decisão do autor:** migrar o progresso do livro para o site novo por **arquivo** (baixar no livro, carregar no site novo).

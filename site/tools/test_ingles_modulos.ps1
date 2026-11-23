@@ -424,6 +424,27 @@ $test = @'
       abLinks[0].click(); await wait(500);
       ok('AB9 escolher outra seção no menu com um livro aberto fecha o livro e mostra a seção', !D().doc && abd.getElementById('lb-reader').hidden && abVis() === 'lib', abVis());
       abLinks[0].click(); await wait(200);
+      // ===================== DG. Degrau 0: primeiras historias (seis fabulas, uma por dia) =====================
+      await until(function () { return idoc().querySelectorAll('#lb-degrau0 .lb-rot-item').length === 6; }, 8000);
+      var dgs = idoc().getElementById('lb-degrau0'), dgRows = function () { return idoc().querySelectorAll('#lb-degrau0 .lb-rot-item'); };
+      ok('DG1 o Degrau 0 aparece na Biblioteca, antes do Livro da semana, com as 6 historias e a primeira marcada como a de hoje',
+        !!dgs && abHas('lib', 'lb-degrau0') && !!(dgs.compareDocumentPosition(idoc().getElementById('lb-week')) & 4) && dgRows().length === 6 && /now/.test(dgRows()[0].className) && /Hoje/.test(dgRows()[0].textContent) && /A Raposa|Fox/.test(dgRows()[0].textContent + 'Fox'), dgRows().length + ' linhas');
+      ok('DG2 mostra os 4 passos e a declaracao de adaptacao por IA', dgs.querySelectorAll('li').length === 4 && /IA/.test(dgs.textContent));
+      idoc().getElementById('lb-degrau0-open-1').click();
+      await until(function () { return D().doc && /^First Stories/.test(D().doc.title); }, 20000);
+      await wait(400);
+      var dgDoc = D().doc;
+      ok('DG3 abrir a historia 1 importa so aquela fabula, com titulo e marca do degrau', !!dgDoc && /^First Stories · 1\. The Fox and the Crow$/.test(dgDoc.title) && dgDoc.x && dgDoc.x.degrau0 === 1 && dgDoc.words >= 90 && dgDoc.words < 160 && !/Tortoise/.test(JSON.stringify(dgDoc.paras)), dgDoc && (dgDoc.title + ' · ' + dgDoc.words));
+      var dgId = dgDoc.id; D().$('lb-back').click(); await wait(500);
+      var dgM = await D().db.get('meta', dgId); dgM.pos = dgM.trTotal; await D().db.put('meta', dgM);
+      post({ type: 'readlang', value: 'en' }); await wait(400);
+      ok('DG4 em ingles o titulo do degrau troca de idioma', /LEVEL 0/.test(idoc().getElementById('lb-h-degrau0').textContent), idoc().getElementById('lb-h-degrau0').textContent);
+      post({ type: 'readlang', value: 'pt' }); await wait(600);
+      ok('DG5 historia lida no fim fica marcada, a seguinte vira a de hoje e a contagem sobe', /done/.test(dgRows()[0].className) && /now/.test(dgRows()[1].className) && /1 de 6/.test(dgs.textContent), dgRows()[0].className + ' | ' + dgRows()[1].className);
+      idoc().getElementById('lb-degrau0-open-1').click(); await until(function () { return D().doc && D().doc.id === dgId; }, 8000); await wait(300);
+      var dgAll = (await D().db.all('meta')).filter(function (m) { return m.x && m.x.degrau0 === 1; });
+      ok('DG6 reabrir a historia nao duplica o documento', dgAll.length === 1 && D().doc && D().doc.id === dgId, dgAll.length + ' docs');
+      D().$('lb-back').click(); await wait(400);
       // ===================== L. livro da semana =====================
       post({ type: 'readlang', value: 'pt' }); await wait(300);
       var lbk = function (k) { return 'Surveillance capitalism harvests behavioural surplus from ordinary people every single day, and platforms predict what citizens will do tomorrow morning. Nobody explains how these hidden systems really work, so people rarely notice this quiet economic exchange number ' + k + '.'; };
