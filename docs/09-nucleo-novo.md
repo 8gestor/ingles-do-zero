@@ -1,6 +1,6 @@
 # 09 · Núcleo do app novo (fase R1a)
 
-> **Estado (2026-11-22):** núcleo (R1a) e dados (R1b) escritos e testados em `site/novo/`; **96 verificações passam** (30 núcleo + 41 dados + 25 narrador). **R1 concluída; R2 em andamento (R2.1 e R2.2 feitas), ver `10-r2-narrador.md`.** O app de hoje não foi tocado. Este é o **documento vivo** do núcleo: atualizar a cada mudança e registrar no `CHANGELOG.md`.
+> **Estado (2026-11-22):** núcleo (R1a) e dados (R1b) escritos e testados em `site/novo/`; **106 verificações passam** (30 núcleo + 41 dados + 35 narrador). **R1 concluída; R2 em andamento (R2.1 a R2.3 feitas), ver `10-r2-narrador.md`.** O app de hoje não foi tocado. Este é o **documento vivo** do núcleo: atualizar a cada mudança e registrar no `CHANGELOG.md`.
 > Contexto: `07-desenho-reconstrucao.md` (desenho), `08-paridade.md` (contrato de paridade).
 
 ## 1. O que existe
@@ -24,11 +24,13 @@ site/novo/                         app novo (prévia, noindex; o site atual cont
   assets/js/narrador/ritmo.js      (R2.1) modelo de tempo da fala: estimativa da palavra falada, velocidade aprendida por idioma+voz
   assets/js/narrador/vozes.js      (R2.1) escolha e ordenação das vozes (a mesma regra do menu de vozes da casca)
   assets/js/narrador/voz-navegador.js (R2.2) motor de voz do navegador: fila à frente, vigias, estimativa de palavra, velocidade aprendida
+  assets/js/narrador/voz-neural.js    (R2.3) adaptador do Piper local atrás do contrato de Voz: fila única, cache, fallback, carga preguiçosa
+  assets/js/narrador/voz.js           (R2.3) compõe neural + navegador num só contrato (neural se ativa, senão navegador)
   assets/js/narrador/narrador.js      (R2.2) laço de reprodução: cursor, token, retomar na palavra, passo, ganchos de treino; eventos narracao-*
   assets/js/inicio.js              liga tudo; mostra o que falhou se algo não iniciar
 site/tools/test_novo_nucleo.ps1    30 verificações do núcleo no Chrome sem tela
 site/tools/test_novo_dados.ps1     41 verificações dos dados (paridade com o app de hoje)
-site/tools/test_novo_narrador.ps1  25 verificações: ritmo e vozes (oráculo do código antigo) + voz do navegador e Narrador (speechSynthesis e relógio falsos)
+site/tools/test_novo_narrador.ps1  35 verificações: ritmo e vozes (oráculo do código antigo) + voz do navegador, Narrador e voz neural (speechSynthesis, Piper e relógio falsos)
 ```
 Abrir: `site/novo/index.html` (servido em `/novo/`). A tela `#/sistema` mostra a saúde do núcleo: módulos, preferências, armazenamento, versões dos bancos e cópias de segurança.
 

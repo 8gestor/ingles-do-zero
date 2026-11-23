@@ -10,6 +10,8 @@
   NR6 sincronia por estimativa (lenta e rápida, em 3 velocidades) · NR7 sem voltar atrás e chegando ao fim da frase
   R2.2 (voz do navegador e Narrador, com speechSynthesis e relógio FALSOS): NR8 token · NR9 fila à frente · NR10 retomar da palavra · NR11 estimativa e evento ·
   NR12 idioma do áudio · NR13 frases sem fala e erros · NR14 palavras ouvidas · NR15 setas · NR16 treino e 0,1×–3× · NR17 vigias
+  R2.3 (voz neural com Piper SIMULADO e composição): NR18 quando a neural vale · NR19 áudio e posição · NR20 fila única e cache · NR21 cancelar · NR22 falhas e fallback ·
+  NR23 carga preguiçosa · NR24 voz composta (neural + navegador, recomeço) · NR25 Narrador com neural (ordem da síntese, retomar da palavra)
   Uso: pwsh tools\test_novo_narrador.ps1 [-Chrome <caminho>]    (sai com 1 se alguma verificação falhar)
 #>
 param([string]$Chrome = 'C:\Program Files\Google\Chrome\Application\chrome.exe')
@@ -252,6 +254,90 @@ $test = @'
       var seguiu = m17b.sy.falas[m17b.sy.falas.length - 1].text === P17[0][1] && m17b.sy.cancelamentos >= 1;
       ok('NR17 vigia de partida: se o motor engole a fala, tenta a MESMA frase de novo uma vez (7 s) e, se repetir, segue para a próxima; vigia de mudez: voz que começou e calou é cancelada e a leitura segue', tentou && pulou17 && seguiu, 'falas=' + m17.sy.falas.length + ' / mudez seguiu=' + seguiu);
       m17.fim(); m17b.fim();
+
+      /* ======================= R2.3 · voz neural (Piper SIMULADO) e composição das vozes ======================= */
+      ok('NR18a o app liga também com os módulos voz-neural e voz prontos', App.tem('voz-neural') && App.tem('voz'), '');
+      var VNE = App.get('voz-neural'), VZ = App.get('voz');
+      function SomFalso(url) { this.url = url; this.duration = 10; this.currentTime = 0; this.tocando = false; SomFalso.todos.push(this); }
+      SomFalso.todos = []; SomFalso.rejeita = false;
+      SomFalso.prototype.play = function () { var s = this; return Promise.resolve().then(function () { if (SomFalso.rejeita) throw new Error('bloqueado'); s.tocando = true; if (s.onplay) s.onplay(); }); };
+      SomFalso.prototype.pause = function () { this.tocando = false; };
+      function montaN(opc) {
+        opc = opc || {}; SomFalso.todos = []; SomFalso.rejeita = !!opc.rejeitaPlay;
+        var rel = relogio(), st = { cargas: 0, criadas: [], predicts: [], emVoo: 0, maxEmVoo: 0, revogadas: [], urls: 0, falhas: [], ausentes: [] };
+        var lib = { TtsSession: { create: async function (o) { st.criadas.push(o.voiceId); return { predict: async function (t) {
+          if (opc.erro) throw new Error('boom'); st.emVoo++; st.maxEmVoo = Math.max(st.maxEmVoo, st.emVoo); st.predicts.push(t); await Promise.resolve(); await Promise.resolve(); st.emVoo--; return { texto: t }; } }; } } };
+        if (!opc.semStored) lib.stored = async function () { return opc.guardados || ['v-en', 'v-pt']; };
+        var est = { on: { en: opc.on !== false, pt: opc.on !== false }, prontas: opc.prontas || ['v-en', 'v-pt'], suportado: opc.suportado !== false };
+        var neural = VNE.criar({ biblioteca: function () { st.cargas++; return Promise.resolve(lib); }, suportado: function () { return est.suportado; }, Audio: SomFalso,
+          URL: { createObjectURL: function () { return 'blob:' + (++st.urls); }, revokeObjectURL: function (u) { st.revogadas.push(u); } },
+          setInterval: rel.setInterval, clearInterval: rel.clearInterval, aoFalhar: function (i, e) { st.falhas.push(i); },
+          prefs: { ativa: function (i) { return !!est.on[i]; }, voz: function (i) { return i === 'en' ? 'v-en' : 'v-pt'; }, pronta: function (id) { return est.prontas.indexOf(id) >= 0; }, ausente: function (id) { st.ausentes.push(id); } } });
+        return { neural: neural, rel: rel, st: st, est: est };
+      }
+      var FR = 'Hello there my dear friend.';
+
+      // ===== NR18 · quando a voz neural vale =====
+      var n18 = montaN(), a1 = n18.neural.ativa('en'); n18.est.on.en = false; var a2 = n18.neural.ativa('en'); n18.est.on.en = true; n18.est.prontas = []; var a3 = n18.neural.ativa('en');
+      n18.est.prontas = ['v-en']; n18.est.suportado = false; var a4 = n18.neural.ativa('en'); n18.est.suportado = true; var a5 = n18.neural.ativa('en'), a6 = n18.neural.ativa('pt');
+      ok('NR18 a voz neural só vale no idioma com a opção ligada, o modelo baixado e o aparelho com suporte (por idioma: modelo do português ausente não afeta o inglês)', a1 && !a2 && !a3 && !a4 && a5 && !a6, [a1, a2, a3, a4, a5, a6].join(','));
+
+      // ===== NR19 · falar: áudio na velocidade pedida e posição pela fração tocada =====
+      var n19 = montaN(), prog = [], f19 = n19.neural.falar(FR, 'en', { velocidade: 1.5, aoProgresso: function (ci) { prog.push(ci); } }); await flush();
+      var au = SomFalso.todos[0], m19 = R.modelo(FR);
+      au.currentTime = 5; n19.rel.avanca(40); au.currentTime = 10; n19.rel.avanca(40); au.onended(); var r19 = await f19;
+      ok('NR19 toca o áudio sintetizado na velocidade pedida (1,5×); a posição no texto acompanha a fração do áudio sobre o texto ponderado (mesma conta do ritmo); ao fim devolve "end"', !!au && au.playbackRate === 1.5 && r19 === 'end' && prog.length === 2 && prog[0] === R.caractereNoAlvo(m19, 0.5 * m19.total) && prog[1] >= prog[0] && prog[1] === R.caractereNoAlvo(m19, m19.total), JSON.stringify(prog) + ' ' + r19);
+
+      // ===== NR20 · fila única e cache =====
+      var n20 = montaN(); n20.neural.preparar('Frase um aqui.', 'en'); n20.neural.preparar('Frase dois aqui.', 'en'); n20.neural.preparar('Frase um aqui.', 'en'); n20.neural.preparar('...', 'en'); await flush();
+      var so2 = n20.st.predicts.length === 2 && n20.st.maxEmVoo === 1;
+      var n20b = montaN(); for (var k20 = 0; k20 < 33; k20++) n20b.neural.preparar('Frase numero ' + k20 + ' aqui.', 'en'); for (var f20 = 0; f20 < 12; f20++) await flush();
+      ok('NR20 a síntese é UMA por vez (um modelo de cada vez); frase repetida usa o cache (não sintetiza de novo); sem letra não sintetiza; passando de 30 frases guardadas as mais antigas liberam o áudio', so2 && n20b.st.predicts.length === 33 && n20b.st.maxEmVoo === 1 && n20b.st.revogadas.length === 3, n20.st.predicts.length + ' sínteses; revogadas=' + n20b.st.revogadas.length);
+
+      // ===== NR21 · cancelar =====
+      var n21 = montaN(), p21 = n21.neural.falar(FR, 'en', {}); n21.neural.cancelar(); var c21 = await Promise.race([p21, wait(3000).then(function () { return 'travou'; })]);
+      var n21b = montaN(), p21b = n21b.neural.falar(FR, 'en', {}); await flush(); var au21 = SomFalso.todos[0]; n21b.neural.cancelar(); var c21b = await Promise.race([p21b, wait(3000).then(function () { return 'travou'; })]); au21.onended();
+      ok('NR21 cancelar durante a síntese ou durante o áudio devolve "cancel" (o áudio é pausado e um "fim" atrasado não muda nada)', c21 === 'cancel' && c21b === 'cancel' && au21.tocando === false && SomFalso.todos.length === 1, c21 + ' / ' + c21b);
+
+      // ===== NR22 · falhas viram "fallback" e desligam só aquele idioma =====
+      var n22 = montaN({ erro: true }), r22 = await n22.neural.falar(FR, 'en', {});
+      var after = n22.neural.ativa('en'), pt22 = n22.neural.ativa('pt');
+      var n22b = montaN(), q22 = n22b.neural.falar(FR, 'en', {}); await flush(); SomFalso.todos[0].onerror(); var r22b = await q22;
+      var n22c = montaN({ rejeitaPlay: true }), r22c = await n22c.neural.falar(FR, 'en', {});
+      var n22d = montaN({ guardados: [] }), r22d = await n22d.neural.falar(FR, 'en', {});
+      ok('NR22 síntese que falha, erro de áudio, navegador que bloqueia o play e modelo apagado do navegador devolvem "fallback"; a tela é avisada; o idioma fica desligado na sessão (o outro não); modelo ausente é marcado como não baixado', r22 === 'fallback' && !after && pt22 && n22.st.falhas[0] === 'en' && r22b === 'fallback' && r22c === 'fallback' && r22d === 'fallback' && n22d.st.ausentes[0] === 'v-en', [r22, r22b, r22c, r22d].join(','));
+
+      // ===== NR23 · biblioteca só carrega quando vai falar =====
+      var n23 = montaN(); n23.neural.ativa('en'); n23.neural.preparar('...', 'en'); n23.neural.cancelar(); var zero = n23.st.cargas;
+      var q23 = n23.neural.falar(FR, 'en', {}); await flush(); n23.neural.falar(FR, 'pt', {}); await flush();
+      ok('NR23 a biblioteca (≈ 60 MB) NÃO é carregada enquanto nada vai ser falado; ao falar carrega uma vez só, e abre um modelo por voz (en e pt)', zero === 0 && n23.st.cargas === 1 && n23.st.criadas.join() === 'v-en,v-pt', 'cargas ' + zero + ' → ' + n23.st.cargas + ' · ' + n23.st.criadas.join());
+
+      // ===== NR24 · composição neural + navegador =====
+      function comp(opc) { var n = montaN(opc), sy = sintese(VOZES), nav = VN.criar({ synth: sy, Utterance: Fala, agora: n.rel.agora, setInterval: n.rel.setInterval, clearInterval: n.rel.clearInterval, setTimeout: n.rel.setTimeout, clearTimeout: n.rel.clearTimeout }); return { n: n, sy: sy, nav: nav, voz: VZ.compor({ navegador: nav, neural: opc && opc.semNeural ? null : n.neural }) }; }
+      var c1 = comp(), p24 = c1.voz.falar(FR, 'en', {}); await flush(); SomFalso.todos[0].onended(); var r24 = await p24;
+      var c2 = comp({ erro: true }), p24b = c2.voz.falar(FR, 'en', {}); await flush();
+      var c3 = comp({ on: false }), p24c = c3.voz.falar(FR, 'en', {}); await flush();
+      var c4 = comp(), p24d = c4.voz.falar(FR, 'en', {}); await flush(); c4.voz.pedirReinicio(); var r24d = await p24d; await flush();
+      var c5 = comp({ on: false }), p24e = c5.voz.falar(FR, 'en', {}); await flush(); c5.voz.pedirReinicio(); await flush(); var r24e = await p24e;
+      ok('NR24 voz composta: neural ativa fala sozinha (navegador calado); neural que falha cai no navegador com o MESMO texto; neural desligada vai direto ao navegador; "recomeçar" vale para os dois motores (devolve restart e não deixa o pedido preso para a próxima fala)',
+        r24 === 'end' && c1.sy.falas.length === 0 && c2.sy.falas.length === 1 && c2.sy.falas[0].text === FR && c3.sy.falas.length === 1 && r24d === 'restart' && r24e === 'restart', c1.sy.falas.length + '/' + c2.sy.falas.length + '/' + c3.sy.falas.length + ' ' + r24d + ' ' + r24e);
+      var c6 = comp(), p24f = c6.voz.falar(FR, 'en', {}); await flush(); SomFalso.todos[0].onended(); await p24f;
+      var p24g = c6.voz.falar(FR, 'en', {}); await flush(); SomFalso.todos[1].onended(); var r24g = await p24g;
+      ok('NR24b depois de um recomeço a fala seguinte termina normalmente (o pedido de recomeço não fica preso)', r24g === 'end', r24g);
+
+      // ===== NR25 · Narrador + voz neural: ordem da síntese e retomada da palavra =====
+      var P25 = [['Alpha beta gamma delta epsilon zeta.', 'Second sentence is next.', 'Third sentence follows too.', 'Fourth sentence waits.']];
+      var cc = comp(), est25 = { vel: 1 }, ev25 = [], fonte25 = { paragrafos: function () { return 1; }, frases: function () { return P25[0].length; }, jaPronta: function (p, s) { return { text: P25[0][s], lang: 'en' }; }, texto: async function (p, s, i, vale) { await Promise.resolve(); return vale() ? { text: P25[0][s], lang: 'en' } : null; } };
+      var off25 = EVB.on('narracao-palavra', function (d) { ev25.push(d.ci); });
+      var nar25 = NA.criar({ fonte: fonte25, voz: cc.voz, velocidade: function () { return est25.vel; }, idiomaAudio: function () { return 'en'; }, agora: cc.n.rel.agora });
+      nar25.tocar(0, 0); await flush();
+      var ordem = cc.n.st.predicts.join('|') === P25[0].slice(0, 3).join('|');
+      var au25 = SomFalso.todos[0]; au25.duration = 10; au25.currentTime = 6; cc.n.rel.avanca(40);    // ~ 60% da frase
+      var ciAntes = ev25[ev25.length - 1]; est25.vel = 2; nar25.reiniciarFala(); await flush(); await flush();
+      var au25b = SomFalso.todos[SomFalso.todos.length - 1], novoTexto = cc.n.st.predicts[cc.n.st.predicts.length - 1];
+      var desv = P25[0][0].lastIndexOf(' ', Math.max(0, ciAntes - 1)) + 1;
+      ok('NR25 no Narrador, a frase de agora entra na fila de síntese ANTES das 2 seguintes (a voz não espera o futuro); trocar a velocidade com a voz neural recomeça da palavra falada, a 2×', ordem && ciAntes > 0 && novoTexto === P25[0][0].slice(desv) && au25b !== au25 && au25b.playbackRate === 2, 'ordem=' + cc.n.st.predicts.join(' | ').slice(0, 80) + ' · retomou em "' + novoTexto + '"');
+      nar25.parar(); off25();
     } catch (e) { fails++; out.push('FAIL exceção: ' + e + ' ' + (e && e.stack ? e.stack.split('\n')[1] : '')); }
     out.push('RESULTADO: ' + (fails ? fails + ' falha(s)' : 'tudo certo'));
     live(); clearInterval(hb);

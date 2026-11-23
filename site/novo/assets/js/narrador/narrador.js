@@ -13,7 +13,7 @@
  *     jaPronta(p, s, idioma) → { text, lang } | null               texto já disponível AGORA, sem esperar tradução (alimenta a fila à frente)
  *     antecipar(p, s, idioma)  (opcional)                           pedido para já ir traduzindo a frase (p, s)
  *     primeiraVisivel() (opcional)                                  de onde começar quando não há posição
- *   VOZ: o contrato de `voz-navegador.js` (falar, cancelar, pedirReinicio, limparReinicio).
+ *   VOZ: o contrato de `voz-navegador.js` / `voz.js` (falar, cancelar, pedirReinicio, limparReinicio; `preparar(texto, idioma)` opcional, da voz neural).
  *   GANCHOS (opcionais): escala() → fator de velocidade (a repetição pode ser desacelerada) · aoTerminarFrase({ p, s, texto, idioma, ms }) →
  *     Promise<'repeat' | qualquer outra coisa> (modos de treino).
  *
@@ -78,7 +78,7 @@ App.define('narrador', ['eventos'], function (deps) {
                 if (retomar && retomar.p === c.p && retomar.s === c.s && retomar.text === peca.text) desvio = peca.text.lastIndexOf(' ', Math.max(0, retomar.ci - 1)) + 1;
                 retomar = null;
                 let ultimoCi = desvio;
-                const r = await voz.falar(desvio ? peca.text.slice(desvio) : peca.text, peca.lang, {
+                const falando = voz.falar(desvio ? peca.text.slice(desvio) : peca.text, peca.lang, {
                     velocidade: velocidade() * escala(),
                     aoProgresso: (ci) => {
                         if (!vale()) return;
@@ -87,6 +87,16 @@ App.define('narrador', ['eventos'], function (deps) {
                     },
                     proxima: () => proximaPeca(c.p, c.s)
                 });
+                if (voz.preparar) {                  // voz neural: DEPOIS de pedir a fala atual (ela entra primeiro na fila de síntese), já sintetiza as 2 seguintes
+                    let n = 0, pp = c.p, ss = c.s + 1;
+                    while (n < 2 && pp < fonte.paragrafos()) {
+                        if (ss >= fonte.frases(pp)) { pp++; ss = 0; continue; }
+                        const x = fonte.jaPronta(pp, ss, idioma);
+                        if (x && x.text) voz.preparar(x.text, x.lang);
+                        n++; ss++;
+                    }
+                }
+                const r = await falando;
                 if (!vale()) return;
                 if (r === 'end') ev.emit('frase-ouvida', { palavras: contaPalavras(peca.text), p: c.p, s: c.s });
                 if (r === 'restart') { retomar = { p: c.p, s: c.s, text: peca.text, ci: ultimoCi }; continue; }

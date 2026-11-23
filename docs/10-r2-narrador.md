@@ -1,6 +1,6 @@
 # 10 · R2 · Motor Narrador (mapa do que existe e desenho proposto)
 
-> **Estado: desenho APROVADO em 2026-11-22 (decisões na seção 6). Andamento: R2.1 e R2.2 FEITAS; próxima R2.3.** Itens **(?)** restantes são decisões do autor.
+> **Estado: desenho APROVADO em 2026-11-22 (decisões na seção 6). Andamento: R2.1 a R2.3 FEITAS; próxima R2.4.** Itens **(?)** restantes são decisões do autor.
 > Contexto: `07-desenho-reconstrucao.md` (fase R2, motores), `08-paridade.md` (contrato: áreas `c5 c6 V X Y Z AR AL G`), `09-nucleo-novo.md` (núcleo pronto).
 > **Princípio da R2: mover sem mudar o comportamento.** Melhorias vêm depois da paridade, uma por vez, com teste.
 
@@ -102,7 +102,7 @@ Os testes da área `c5`, `V`, `X`, `Z3–Z5` e `AL4` dependem da **marcação na
 |---|---|---|
 | **R2.1** — **FEITA 22/11/2026** | `ritmo.js` e `vozes.js` | cenários de sincronia determinísticos verdes; ranking de voz igual ao de hoje (**13 verificações `NR`, ver seção 7**) |
 | **R2.2** — **FEITA 23/11/2026** | `voz-navegador.js` e `narrador.js` com `speechSynthesis` falsa | comportamentos 1–10 verdes (**12 verificações NR8–NR17, ver seção 8**) |
-| **R2.3** | `voz-neural.js` (adaptador do Piper) | com Piper simulado, cai no navegador se falhar (área `G`) |
+| **R2.3** — **FEITA 23/11/2026** | `voz-neural.js` (adaptador do Piper) e `voz.js` (composição) | com Piper simulado, cai no navegador se falhar (área `G`); **10 verificações NR18–NR25, ver seção 9** |
 | **R2.4** | Teste de paridade com o `ingles.js` de hoje | sequências de falas idênticas |
 | **R2.5** | **Leitor**: texto, frases, marcação em 4 camadas, importação, tradução por frase | áreas `c2 c4 R W` e as de marcação (`5c–5f`, `V4–V8`) |
 | **R2.6** | Integração e atalhos (setas, F11) | `AR`, `Y`, `EX` verdes no app novo |
@@ -158,3 +158,25 @@ Cada etapa termina com **testes verdes, documentação atualizada e CHANGELOG**,
 
 **Contratos fixados (para o Leitor da R2.5 e a voz neural da R2.3):** Fonte `{ paragrafos, frases, texto(p,s,idioma,vale), jaPronta, antecipar?, primeiraVisivel? }`; Voz `{ falar, cancelar, pedirReinicio, limparReinicio }`; eventos `narracao-estado`, `narracao-frase`, `narracao-palavra`, `narracao-parou`, `narracao-retomou` e `frase-ouvida { palavras, p, s }`. Diferença deliberada em relação ao texto da seção 3: a Fonte recebe `vale()` (função) no lugar do `token` numérico, para não expor o contador interno.
 **Adiado de propósito:** a marcação na tela (Leitor, R2.5), o adaptador do Piper (R2.3) e a prova de paridade com o `ingles.js` de hoje (R2.4).
+
+---
+
+## 9. R2.3 · resultado (2026-11-23)
+
+**Entregue:** `voz-neural.js` (motor do Piper atrás do contrato de Voz) e `voz.js` (compõe neural + navegador), ligados em `site/novo/index.html`; `narrador.js` ganhou o pedido opcional `voz.preparar` (sintetiza as 2 frases seguintes). `test_novo_narrador.ps1`: 25 → **35 verificações** (NR18a, NR18–NR25), com Piper, áudio e relógio **falsos** (não baixa nada, não toca nada).
+
+**Port, não reescrita:** `voz-neural.js` é o motor de `ingles-voz.js` (linhas 56–123): fila única de síntese, cache de 30 frases (as mais antigas liberam o áudio), posição do texto pela fração do áudio sobre o texto ponderado (mesma conta do `ritmo.js`), falha → `'fallback'` e idioma desligado na sessão. **Fica de fora de propósito:** o painel de ativar/baixar a voz, a confirmação do download (~60 MB) e as preferências no `localStorage` — são tela e vêm com as telas; este módulo recebe as `prefs` por injeção.
+
+| Prova | O que garante |
+|---|---|
+| NR18 | a neural só vale com a opção ligada, o modelo baixado e suporte do aparelho, **por idioma** |
+| NR19 | áudio na velocidade pedida; posição = fração tocada sobre o texto ponderado; fim devolve `end` |
+| NR20 | uma síntese por vez, cache, sem letra não sintetiza, mais de 30 frases liberam as antigas |
+| NR21 | cancelar na síntese ou no áudio devolve `cancel`; "fim" atrasado não muda nada |
+| NR22 | síntese com erro, erro de áudio, `play` bloqueado e modelo apagado → `fallback` (aviso à tela; modelo ausente marcado como não baixado) |
+| NR23 | a biblioteca (~60 MB) só carrega quando vai falar, uma vez, um modelo por voz |
+| NR24 | voz composta: neural, queda para o navegador com o mesmo texto, direto ao navegador; "recomeçar" vale para os dois e não fica preso |
+| NR25 | no Narrador, a frase de agora entra na fila de síntese antes das seguintes; trocar a velocidade com a neural retoma da palavra |
+
+**Diferença deliberada (única):** no app de hoje o aviso `sentence` dispara a síntese das próximas frases **antes** de a frase atual ser pedida, então a frase de agora esperava atrás das seguintes na fila (a primeira frase demorava mais). No Narrador novo a frase atual é pedida primeiro (NR25). Não muda o que é falado nem a ordem das falas (a prova de paridade da R2.4 compara falas, não a ordem interna da síntese).
+**Ainda não provado (R2.4):** que o motor real (`piper-tts-web.js`) funciona ligado a este adaptador; o teste usa um Piper simulado, como o desenho prevê.
