@@ -1,6 +1,6 @@
 # 10 · R2 · Motor Narrador (mapa do que existe e desenho proposto)
 
-> **Estado: desenho APROVADO em 2026-11-22 (decisões na seção 6). Andamento: R2.1 FEITA (22/11/2026); R2.2, R2.3 e R2.4 FEITAS (23/11/2026, ver seções 8 e 9); próxima R2.5 (Leitor).** Itens **(?)** restantes são decisões do autor.
+> **Estado: desenho APROVADO em 2026-11-22 (decisões na seção 6). Andamento: R2.1 FEITA (22/11/2026); R2.2, R2.3 e R2.4 FEITAS (23/11/2026, ver seções 8 e 9); R2.5 (Leitor) EM ANDAMENTO: texto, Tradutor e Fonte feitos (seção 10); falta marcação na tela, posição estável, setas e alinhamento.** Itens **(?)** restantes são decisões do autor.
 > Contexto: `07-desenho-reconstrucao.md` (fase R2, motores), `08-paridade.md` (contrato: áreas `c5 c6 V X Y Z AR AL G`), `09-nucleo-novo.md` (núcleo pronto).
 > **Princípio da R2: mover sem mudar o comportamento.** Melhorias vêm depois da paridade, uma por vez, com teste.
 
@@ -157,3 +157,18 @@ Cada etapa termina com **testes verdes, documentação atualizada e CHANGELOG**,
 **R2.3, `voz-neural.js`:** `criarNeural({ preferencias, fabrica, Audio, relogio, velocidade, ... })` e `compor({ neural, navegador })`. Provas com **Piper e áudio simulados** (NN1–NN11): só ativa se ligada **e** com modelo baixado; modelo apagado do navegador não é baixado escondido (devolve `fallback` e avisa); falha de síntese, erro de áudio e reprodução bloqueada caem no navegador sem travar; preparar à frente com cache (1 síntese para 3 pedidos); cancelar durante a síntese; reinício que não gruda na frase seguinte; composição com queda no meio do caminho; ponta a ponta com o Narrador. O painel de baixar/ativar/remover fica para a R3 (tela de configuração).
 **R2.4, paridade:** o app de hoje (`../ingles.html`) roda numa moldura com o **mesmo motor de fala falso** do Narrador novo. Seis cenários, **todos idênticos**: leitura inteira com fila à frente · parar no meio com eventos de palavra · passo tocando · trocar velocidade no meio (retoma da palavra) · áudio em português com tradução · quatro erros. Compara texto, idioma, velocidade, entrada na fila, frases e palavras ouvidas. Uma verificação de sanidade (PA-sanidade) confirma que cada cenário exercita o que diz.
 **Total do teste do Narrador:** 58 verificações.
+
+---
+
+## 10. R2.5 · Leitor, parte 1 (2026-11-23): texto, Tradutor e Fonte
+
+**Entregue (sem DOM, provado contra o app de hoje):** `site/novo/assets/js/leitor/texto.js` (limpeza de PDF/TXT, versos, idioma, frases), `tradutor.js` (serviço Tradutor) e `fonte.js` (a Fonte do Narrador feita de documento + Tradutor). Teste: `site/tools/test_novo_leitor.ps1`, **24 verificações**, que rodam o app de hoje numa moldura e comparam resultado a resultado.
+
+| Peça | Prova |
+|---|---|
+| `texto` | idêntico ao de hoje em 200 PDFs (linhas), 200 documentos de 1–6 páginas (cabeçalho, rodapé, número de página, hifenização, título, frase partida entre páginas), 12 TXT, 300 textos (idioma e frases); casos legíveis 2a–2g da matriz |
+| `tradutor` | 40 parágrafos à frente da âncora, "traduzir tudo", mesmo resultado **e mesmo número de chamadas** que hoje; cache de frase; sem tradutor; falha; a narração espera o parágrafo |
+| `fonte` | Narrador + voz do navegador + Tradutor reais falam o **mesmo** que o app de hoje em 3 cenários (idioma do livro, português a partir do começo, português a partir do meio) |
+
+**Contrato da Fonte, como implementado:** `doDocumento({ doc, tradutor, idiomaAudio, aoOcupado, primeiraVisivel })`.
+**Falta da R2.5:** marcação na tela em 4 camadas, posição estável quando o layout muda, setas palavra a palavra, alinhamento entre idiomas, e a tela do Leitor (a importação por arquivo pela interface é da Estante, R3).

@@ -1,6 +1,14 @@
 # Registro de evolução (CHANGELOG)
 
 > Uma entrada por dia de trabalho, da mais nova para a mais antiga. Escreva **o que mudou, por quê e como conferir**. Mantém o autor e o Claude sem precisar reler conversas antigas.
+## 2026-11-23 · R2.5 (parte 1): Leitor sem tela: texto, Tradutor e Fonte, com paridade
+
+- **Autorização do autor:** "R2.5" (Leitor). **Feito até aqui (a R2.5 ainda NÃO está completa; ver pendências):** três módulos novos em `site/novo/assets/js/leitor/`, todos sem DOM e cada um provado contra o app de hoje (rodando numa moldura) por `site/tools/test_novo_leitor.ps1` (**24 verificações, todas passando**).
+  - **R2.5a `texto.js`:** limpeza do PDF e do TXT, versos, idioma e frases (port de `buildLines`, `buildParagraphs`, `looksVerse`, `extractTxt`, `detectLang`, `splitSentences`, miolo do `importFile`). Idêntico ao de hoje em 200 PDFs e 200 documentos de várias páginas aleatórios, 12 TXT (4 de mão e 8 aleatórios, pt e en) e 300 textos para idioma e frases. Cobre a matriz `c2` (2a–2g).
+  - **R2.5b `tradutor.js`:** serviço Tradutor (motor local do Chrome ou fábrica injetada): frase imediata com cache, parágrafo com frases em paralelo, bomba de 40 parágrafos à frente da âncora, "traduzir tudo", espera de parágrafo pela narração, falha e ausência de tradutor. Mesmo resultado e mesmo número de chamadas que o app de hoje (4a, 4b, 4d); 4e–4h cobrem cache, sem tradutor, falha e espera. Cobre a matriz `c4`.
+  - **R2.5c `fonte.js`:** a Fonte do Narrador feita de documento + Tradutor (port de `textFor`, `nextPiece` e dos ganchos de `runTts` que mantêm a tradução à frente). **Paridade de ponta a ponta** com Narrador, voz do navegador e Tradutor reais em 3 cenários (ouvir no idioma do livro, ouvir em português um livro em inglês, ouvir em português a partir do meio): mesmas falas, frases e palavras ouvidas.
+- **Totais:** `test_novo_narrador.ps1` 58 e `test_novo_leitor.ps1` 24; o núcleo conta **19 módulos** e segue "tudo certo".
+- **Pendente da R2.5 (nesta ordem):** marcação na tela em 4 camadas (parágrafo, linha, frase, palavra: `5c–5f`, `V4–V8`, `W`), posição estável quando o layout muda (`R1–R6`), setas palavra a palavra (`EX`), alinhamento de palavras entre idiomas (`AL`), tela do Leitor e importação pela interface (a importação por arquivo é da Estante, R3). Essas partes dependem de DOM e de decisões de tela; entram na próxima sessão.
 ## 2026-11-23 · R2.3 e R2.4: voz neural e PARIDADE do Narrador com o app de hoje
 
 - **Autorização do autor:** "1 SIM, R2.3 E R2.4 R2.5" (commit da R2.2, depois R2.3, R2.4 e R2.5). R2.2 commitada (`cb179cc`). Branch `feature/r2-narrador`, nada publicado.
