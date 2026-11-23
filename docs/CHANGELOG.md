@@ -1,6 +1,18 @@
 # Registro de evolução (CHANGELOG)
 
 > Uma entrada por dia de trabalho, da mais nova para a mais antiga. Escreva **o que mudou, por quê e como conferir**. Mantém o autor e o Claude sem precisar reler conversas antigas.
+## 2026-11-23 · R2.5 (parte 2): página, marcação em quatro camadas, alinhamento e setas
+
+- **Decisão do autor (proposta visual aprovada, "APROVADO PROPOSTA VISUAL"):** vale a opção A nas três escolhas: (1) notas em **folha que sobe** no celular e **coluna na margem** em tela larga; (2) retorno da escrita por **lista de regras na hora** (sem IA e sem internet; o "jeito natural de dizer" com modelo local fica como extra opcional futuro); (3) **gravar-se é opcional e local** em Comentar e Escrever. Quatro telas aprovadas: Ler e ouvir, Comentar o trecho (abas Nota, Comentar, Contexto), Escrever, Minhas notas. Registrado em `docs/07`, seção 11. A página da proposta está publicada como artefato privado (link no fim da sessão).
+- **Feito:** quatro módulos novos em `site/novo/assets/js/leitor/`, todos provados contra o app de hoje, rodando numa moldura, em `site/tools/test_novo_leitor.ps1` (agora **41 verificações, todas passando**):
+  - **`pagina.js`:** construir e pintar os parágrafos (texto corrido, estrofe, título, lado a lado, tradução frase a frase, documento grande pintado em partes). **O HTML gerado é igual ao do app de hoje** (M1, M3, M5, M6, M7), então o CSS de hoje vale sem mudança.
+  - **`marcacao.js`:** as quatro camadas (parágrafo `.speaking`, faixa de linha, frase `.w.seg`, palavra `.wd.w.now`), ligadas aos eventos `narracao-frase`, `narracao-palavra` e `narracao-estado` do Narrador. Passo a passo, o HTML é igual ao de hoje (M2, M4), inclusive tela em português com voz em inglês e lado a lado.
+  - **`alinhar.js` (matriz `AL`):** alinhamento de palavras entre idiomas, idêntico ao de hoje em 400 pares aleatórios; "laborious" cai em "laboriosa" e "diligence" em "diligência" (AL1, AL2); preparar palavras traduz cada uma uma vez e guarda no mesmo cache `dd-ingles-pal-tr` (AL5).
+  - **`explorar.js` (matriz `EX`):** setas palavra a palavra com a etiqueta da palavra equivalente. Em 41 passos para a frente e para trás, nos modos inglês, português e lado a lado, a palavra, a frase e a etiqueta são iguais às de hoje a cada passo (EX1, EX2, EX6); a exploração termina quando a narração toca uma frase (EX8).
+- **Narrador:** ganhou `posicionar(p, s)` (o ▶ continua de onde a seta parou).
+- **Totais:** `test_novo_narrador.ps1` 58, `test_novo_leitor.ps1` 41; o núcleo conta **23 módulos** e segue "tudo certo".
+- **Aprendizado de teste:** o app de hoje deixa a classe `speaking` no parágrafo quando a marca é zerada por fora; o teste a remove ao reiniciar o app de hoje. O cache de palavras do app de hoje grava com atraso de 1,5 s.
+- **Pendente da R2.5:** posição estável quando o layout muda (`R1–R6`: assentar o layout antes de gravar a posição); a tela do Leitor que junta tudo (cabeçalho, modos, barra de atividades); depois a folha de Comentar, a tela de Escrever e Minhas notas (decididas acima).
 ## 2026-11-23 · R2.5 (parte 1): Leitor sem tela: texto, Tradutor e Fonte, com paridade
 
 - **Autorização do autor:** "R2.5" (Leitor). **Feito até aqui (a R2.5 ainda NÃO está completa; ver pendências):** três módulos novos em `site/novo/assets/js/leitor/`, todos sem DOM e cada um provado contra o app de hoje (rodando numa moldura) por `site/tools/test_novo_leitor.ps1` (**24 verificações, todas passando**).

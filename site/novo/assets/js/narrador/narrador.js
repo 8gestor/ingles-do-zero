@@ -127,7 +127,9 @@ App.define('narrador', ['eventos'], function (deps) {
             if (tocando) tocar(p, s);
             else { cursor = { p, s }; marca = { p, s }; emitir.emit('narracao-frase', { p, s, texto: null, idioma: null }); }
         }
-        return { abrir, fechar, tocar, parar, reiniciar, passo, estado: () => ({ tocando, cursor: cursor && { p: cursor.p, s: cursor.s }, marca: marca && { p: marca.p, s: marca.s } }) };
+        // o Leitor (setas palavra a palavra) moveu a marca por fora: o ▶ continua dali
+        function posicionar(p, s) { cursor = { p, s }; marca = { p, s }; }
+        return { abrir, fechar, tocar, parar, reiniciar, passo, posicionar, estado: () => ({ tocando, cursor: cursor && { p: cursor.p, s: cursor.s }, marca: marca && { p: marca.p, s: marca.s } }) };
     }
     return { criar };
 });

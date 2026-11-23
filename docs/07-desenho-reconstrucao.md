@@ -322,6 +322,7 @@ Marcadas **(?)** até o autor decidir. As quatro primeiras mudam o desenho e for
 | 2026-11-22 | **Conversa** = roteiro + retorno por regras; IA local só opcional (Q2) | Autor |
 | 2026-11-22 | **Zero** = adaptações de domínio público como ponte para os originais (Q3) | Autor |
 | 2026-11-22 | **Reconstrução** ao lado, módulo a módulo, site atual no ar até a paridade (Q4) | Autor |
+| 2026-11-23 | **Telas do Leitor** (proposta visual aprovada): notas em **folha que sobe** no celular e **coluna na margem** em tela larga; retorno da escrita por **lista de regras na hora** (modelo local só como extra opcional); **gravar-se opcional e local** em Comentar e Escrever. Quatro telas: Ler e ouvir, Comentar o trecho (Nota, Comentar, Contexto), Escrever, Minhas notas | Autor |
 
 ---
 

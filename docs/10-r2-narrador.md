@@ -1,6 +1,6 @@
 # 10 · R2 · Motor Narrador (mapa do que existe e desenho proposto)
 
-> **Estado: desenho APROVADO em 2026-11-22 (decisões na seção 6). Andamento: R2.1 FEITA (22/11/2026); R2.2, R2.3 e R2.4 FEITAS (23/11/2026, ver seções 8 e 9); R2.5 (Leitor) EM ANDAMENTO: texto, Tradutor e Fonte feitos (seção 10); falta marcação na tela, posição estável, setas e alinhamento.** Itens **(?)** restantes são decisões do autor.
+> **Estado: desenho APROVADO em 2026-11-22 (decisões na seção 6). Andamento: R2.1 FEITA (22/11/2026); R2.2, R2.3 e R2.4 FEITAS (23/11/2026, ver seções 8 e 9); R2.5 (Leitor) EM ANDAMENTO: texto, Tradutor, Fonte, página, marcação, alinhamento e setas feitos (seções 10 e 11); falta a posição estável e a tela do Leitor com Comentar, Escrever e Minhas notas.** Itens **(?)** restantes são decisões do autor.
 > Contexto: `07-desenho-reconstrucao.md` (fase R2, motores), `08-paridade.md` (contrato: áreas `c5 c6 V X Y Z AR AL G`), `09-nucleo-novo.md` (núcleo pronto).
 > **Princípio da R2: mover sem mudar o comportamento.** Melhorias vêm depois da paridade, uma por vez, com teste.
 
@@ -172,3 +172,20 @@ Cada etapa termina com **testes verdes, documentação atualizada e CHANGELOG**,
 
 **Contrato da Fonte, como implementado:** `doDocumento({ doc, tradutor, idiomaAudio, aoOcupado, primeiraVisivel })`.
 **Falta da R2.5:** marcação na tela em 4 camadas, posição estável quando o layout muda, setas palavra a palavra, alinhamento entre idiomas, e a tela do Leitor (a importação por arquivo pela interface é da Estante, R3).
+
+---
+
+## 11. R2.5 · Leitor, parte 2 (2026-11-23): página, marcação, alinhamento e setas
+
+**Decisão do autor:** proposta visual aprovada com a opção A nas três escolhas (ver `07`, seção 11): notas em folha que sobe (margem em tela larga), retorno da escrita por regras na hora, gravar-se opcional e local.
+**Entregue, provado contra o app de hoje (`test_novo_leitor.ps1`, 41 verificações):**
+
+| Módulo | Prova |
+|---|---|
+| `pagina.js` | HTML **igual** ao de hoje: texto corrido, estrofe, lado a lado, tradução frase a frase, repintura com frase marcada, documento de 650 parágrafos pintado em partes |
+| `marcacao.js` | quatro camadas ligadas aos eventos do Narrador; HTML **igual** a cada passo (frase, palavra, mudar de parágrafo, parar); faixa de linha visível tocando e escondida ao parar; tela em português com voz em inglês |
+| `alinhar.js` | `mapPos` **idêntico** em 400 pares aleatórios; AL1 e AL2 (adjetivo e substantivo trocados); preparar palavras com cache compartilhado |
+| `explorar.js` | setas palavra a palavra: **igual** a hoje em 41 passos nos modos inglês, português e lado a lado; termina quando a narração toca |
+
+**Contrato do Leitor, como implementado:** `pagina.criar({ host, doc, lerIdioma, lado, aoPintar })`, `marcacao.criar({ pagina, faixa, envoltorio, modo, mapear }).ligar(eventos)`, `explorar.criar({ host, envoltorio, doc, lerIdioma, pagina, marcacao, narrador, tradutor, alinhar, eventos })`. O Narrador ganhou `posicionar(p, s)`.
+**Falta da R2.5:** posição estável quando o layout muda (`R1–R6`), a tela que junta tudo, e as telas de Comentar, Escrever e Minhas notas.
