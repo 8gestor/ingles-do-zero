@@ -1,6 +1,14 @@
 # Registro de evolução (CHANGELOG)
 
 > Uma entrada por dia de trabalho, da mais nova para a mais antiga. Escreva **o que mudou, por quê e como conferir**. Mantém o autor e o Claude sem precisar reler conversas antigas.
+## 2026-11-23 · R2.2: voz do navegador e laço do Narrador (app novo)
+
+- **Autorização do autor:** "continue" (seguir a ordem aprovada: Narrador primeiro, Leitor depois). Trabalho no worktree `ingles-r2`, branch `feature/r2-narrador` (nada publicado, nada commitado).
+- **Feito:** `site/novo/assets/js/narrador/voz-navegador.js` (port fiel de `newUtt`/`speakBrowser`/`canQueueAhead`/`restartCurrent`: fila à frente, estimativa por tempo, vigia de partida, vigia da voz muda, reinício; `speechSynthesis` e relógio **injetáveis**) e `narrador.js` (port de `runTts`/`startTts`/`stopTts`/`stepSentence`/`nextPiece`: token, retomar na palavra, pular sem letra, parar após erros, passo, gancho de treino). Eventos novos declarados: `narracao-estado`, `narracao-frase`, `narracao-palavra`, `narracao-parou`, `narracao-retomou`; `frase-ouvida {palavras,p,s}` reaproveitado (o registro já escuta).
+- **Testes:** `test_novo_narrador.ps1` foi de 13 para **45 verificações, todas passando** (NV1–NV5c: motor com `speechSynthesis` falsa e relógio simulado; NA1–NA10: laço com voz e fonte falsas, mais um teste de ponta a ponta Narrador + motor). `test_novo_nucleo.ps1` agora conta **15 módulos** (eram 13) e segue "tudo certo".
+- **Detalhe de fidelidade:** a parada por erros conta erros **no total** da sessão (como o app de hoje), não "3 seguidos" como dizia o texto do doc 10; mantido de propósito, é paridade.
+- **Ainda não coberto (R2.4):** a comparação direta de sequência de falas com o `ingles.js` de hoje, rodando os dois lado a lado; aqui a prova é por comportamento (itens 1–9 do doc 10), não por oráculo.
+- **Pendente:** autorização para commit; R2.3 (adaptador do Piper) e R2.4 (paridade com o app de hoje).
 ## 2026-11-22 · Degrau 0: fabula ouvida inteira passa a contar como lida
 
 - **Defeito (relatado pelo autor):** mesmo lendo/ouvindo a historia toda, ela nao ficava concluida. **Causa:** a fabula cabe numa tela, a pagina nao rola e `meta.pos` fica em 0; o Degrau 0 so marcava "lida" com `pos` no ultimo paragrafo.

@@ -1,6 +1,6 @@
 # 10 · R2 · Motor Narrador (mapa do que existe e desenho proposto)
 
-> **Estado: desenho APROVADO em 2026-11-22 (decisões na seção 6). Andamento: R2.1 FEITA (22/11/2026); próxima R2.2.** Itens **(?)** restantes são decisões do autor.
+> **Estado: desenho APROVADO em 2026-11-22 (decisões na seção 6). Andamento: R2.1 FEITA (22/11/2026); R2.2 FEITA (23/11/2026, ver seção 8); próxima R2.3.** Itens **(?)** restantes são decisões do autor.
 > Contexto: `07-desenho-reconstrucao.md` (fase R2, motores), `08-paridade.md` (contrato: áreas `c5 c6 V X Y Z AR AL G`), `09-nucleo-novo.md` (núcleo pronto).
 > **Princípio da R2: mover sem mudar o comportamento.** Melhorias vêm depois da paridade, uma por vez, com teste.
 
@@ -101,7 +101,7 @@ Os testes da área `c5`, `V`, `X`, `Z3–Z5` e `AL4` dependem da **marcação na
 | Etapa | Entrega | Saída verificável |
 |---|---|---|
 | **R2.1** — **FEITA 22/11/2026** | `ritmo.js` e `vozes.js` | cenários de sincronia determinísticos verdes; ranking de voz igual ao de hoje (**13 verificações `NR`, ver seção 7**) |
-| **R2.2** | `voz-navegador.js` e `narrador.js` com `speechSynthesis` falsa | comportamentos 1–10 verdes |
+| **R2.2** — **FEITA 23/11/2026** | `voz-navegador.js` e `narrador.js` com `speechSynthesis` falsa | comportamentos 1–9 verdes (45 verificações no total, ver seção 8) |
 | **R2.3** | `voz-neural.js` (adaptador do Piper) | com Piper simulado, cai no navegador se falhar (área `G`) |
 | **R2.4** | Teste de paridade com o `ingles.js` de hoje | sequências de falas idênticas |
 | **R2.5** | **Leitor**: texto, frases, marcação em 4 camadas, importação, tradução por frase | áreas `c2 c4 R W` e as de marcação (`5c–5f`, `V4–V8`) |
@@ -134,3 +134,18 @@ Cada etapa termina com **testes verdes, documentação atualizada e CHANGELOG**,
 
 **Método:** o teste carrega uma **cópia literal do código antigo** ("oráculo") ao lado do módulo novo e compara com entradas aleatórias de semente fixa. Como não usa fala nem relógio reais, **não sofre da instabilidade por carga da máquina** dos testes de hoje.
 **Observação honesta:** no pior caso (frase de aprendizado, sem calibração prévia) o erro máximo chegou a 5 palavras com voz lenta; depois da primeira frase o erro cai (p95 = 3). É o comportamento do algoritmo de hoje, preservado de propósito (a calibração guardada entre sessões é a melhoria decidida para depois da paridade).
+
+---
+
+## 8. R2.2 · resultado (2026-11-23)
+
+**Entregue:** `voz-navegador.js` (motor do navegador) e `narrador.js` (laço de reprodução) em `site/novo/assets/js/narrador/`, ligados em `site/novo/index.html`. `test_novo_narrador.ps1`: **45 verificações, todas passando** (13 da R2.1 + 32 novas).
+
+| Peça | O que se prova (sem fala nem relógio reais) |
+|---|---|
+| `voz-navegador` | voz e velocidade certas (NV1) · **fila à frente sem lacuna**, desligada nos modos de treino, limpa se o fluxo mudou (NV2) · **vigia de partida**: 1ª vez "restart", repetida "error" (NV3) · estimativa por tempo sem voltar atrás e evento de palavra que manda (NV4) · reinício e cancelamento (NV5) · vigia da voz muda (NV5c) |
+| `narrador` | sequência e eventos, palavras ouvidas só em "end" (NA1) · **token** que descarta evento atrasado (NA2) · **retoma da palavra** (NA3) · pula sem letra, para após 4 erros (NA4) · passo parado e tocando (NA5) · idioma do áudio ≠ do livro (NA6) · gancho de repetir (NA7) · tradução tardia após parar (NA8) · sem fonte (NA9) · de ponta a ponta com o motor (NA10) |
+
+**Contratos como implementados:** a Fonte tem `paragrafos()`, `frases(p)` (contagens), `idiomaAudio()`, `texto(p, s, idioma, ativo)`, `jaPronta(p, s, idioma)` e opcionais `primeiraVisivel()`, `antes(p, s, peca)`. A Voz tem `falar`, `cancelar`, `reiniciar`. O Narrador não conhece o motor; a voz neural (R2.3) entra atrás do mesmo contrato.
+**Fidelidade:** a parada por erros conta o **total** (como hoje), não "3 seguidos". O relógio (`agora`, timers) e a `speechSynthesis` são injetados, então os testes são determinísticos.
+**Falta (R2.4):** comparar a sequência de falas com o `ingles.js` de hoje, lado a lado.

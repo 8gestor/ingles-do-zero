@@ -44,7 +44,7 @@ $test = @'
     try {
       await until(function () { return window.__appPronto; });
       var rel = window.__appPronto;
-      ok('NR0 o app liga com os módulos ritmo e vozes prontos', rel.ok === true && App.tem('ritmo') && App.tem('vozes'), rel.modulos.filter(function (m) { return m.estado !== 'pronto'; }).map(function (m) { return m.nome + ':' + m.erro; }).join(' '));
+      ok('NR0 o app liga com os módulos ritmo e vozes prontos', rel.ok === true && App.tem('ritmo') && App.tem('vozes') && App.tem('voz-navegador') && App.tem('narrador'), rel.modulos.filter(function (m) { return m.estado !== 'pronto'; }).map(function (m) { return m.nome + ':' + m.erro; }).join(' '));
       var R = App.get('ritmo'), V = App.get('vozes'), r = rnd(20261122);
       function pick(a) { return a[Math.floor(r() * a.length)]; }
       var PALAVRAS = ['the', 'merchant', 'laborious', 'diligence', 'casa', 'grande', 'não', 'é', 'tempo', 'vida', 'a', 'of', 'Seneca', 'said'];
@@ -110,6 +110,149 @@ $test = @'
       ok('NR7b ao fim de cada frase o destaque chega perto da última palavra (a no máximo 1 palavra do fim) em todas as frases e cenários', Object.keys(res).every(function (k) { return res[k].fimOk === res[k].frases; }), Object.keys(res).map(function (k) { return k + '=' + res[k].fimOk + '/' + res[k].frases; }).join(' '));
       var l1 = simula('lenta', 1);
       ok('NR7c o erro máximo fica limitado: no máximo 5 palavras em 10 frases com voz lenta (o pior caso é a frase de aprendizado, sem calibração prévia; depois dela o erro cai)', l1.max <= 5, 'max=' + l1.max + ' p95=' + l1.p95);
+
+      // ===================== R2.2 · motor de voz do navegador e laço do Narrador (fala e relógio FALSOS) =====================
+      var VN = App.get('voz-navegador'), NA = App.get('narrador'), EV = App.get('eventos');
+      function relogioFalso() { var t = 0, id = 0, tm = []; return { agora: function () { return t; }, setInterval: function (f, ms) { tm.push({ id: ++id, f: f, ms: ms, prox: t + ms, rep: true }); return id; }, clearInterval: function (i) { tm = tm.filter(function (x) { return x.id !== i; }); }, setTimeout: function (f, ms) { tm.push({ id: ++id, f: f, ms: ms, prox: t + ms, rep: false }); return id; }, clearTimeout: function (i) { tm = tm.filter(function (x) { return x.id !== i; }); }, anda: function (ms) { var fim = t + ms; while (t < fim) { t += 10; tm.slice().forEach(function (x) { if (tm.indexOf(x) >= 0 && x.prox <= t) { if (x.rep) x.prox += x.ms; else tm = tm.filter(function (y) { return y !== x; }); x.f(); } }); } } }; }
+      // speechSynthesis falsa: o cancel() avisa DEPOIS (assíncrono), como os navegadores de verdade
+      function sintesFalsa() {
+        var s = { fila: [], falando: null, falas: [], cancelamentos: 0, voices: [{ name: 'Voz EN', lang: 'en-US', localService: true }, { name: 'Voz PT', lang: 'pt-BR', localService: true }] };
+        s.getVoices = function () { return s.voices; };
+        Object.defineProperty(s, 'speaking', { get: function () { return !!s.falando || s.fila.length > 0; } });
+        Object.defineProperty(s, 'pending', { get: function () { return s.fila.length > 0; } });
+        s.speak = function (u) { s.falas.push(u); s.fila.push(u); };
+        s.cancel = function () { s.cancelamentos++; var tudo = (s.falando ? [s.falando] : []).concat(s.fila); s.falando = null; s.fila = []; setTimeout(function () { tudo.forEach(function (u) { if (u.onerror) u.onerror({ error: 'canceled' }); }); }, 0); };
+        s.inicia = function () { if (!s.falando && s.fila.length) { s.falando = s.fila.shift(); if (s.falando.onstart) s.falando.onstart(); } };      // o motor começa a próxima da fila
+        s.palavra = function (ci) { if (s.falando && s.falando.onboundary) s.falando.onboundary({ name: 'word', charIndex: ci }); };
+        s.termina = function () { var u = s.falando; s.falando = null; if (u && u.onend) u.onend(); };
+        return s;
+      }
+      function Fala(texto) { this.text = texto; this.rate = 1; this.lang = ''; this.voice = null; }
+      var tique = function () { return new Promise(function (r) { setTimeout(r, 0); }); };
+      async function ate(fn) { for (var i = 0; i < 200; i++) { if (fn()) return true; await tique(); } return false; }
+      function motor(extra) { var c = relogioFalso(), s = sintesFalsa(), m = VN.criar(Object.assign({ synth: s, Utterance: Fala, relogio: c }, extra || {})); return { c: c, s: s, m: m }; }
+
+      // NV1 fala simples
+      var A = motor(), resA = null, pA = A.m.falar('Hello there, my friend.', 'en', {}).then(function (x) { resA = x; });
+      A.s.inicia(); A.c.anda(100); var uA = A.s.falas[0]; A.s.termina(); await pA;
+      ok('NV1 uma fala simples: usa a voz certa do idioma (Voz EN), a língua en-US e a velocidade pedida, e termina com "end"', resA === 'end' && uA.voice.name === 'Voz EN' && uA.lang === 'en-US' && uA.rate === 1 && uA.text === 'Hello there, my friend.', resA + ' ' + (uA.voice && uA.voice.name));
+      var Av = motor({ velocidade: function () { return 1.5; } }); Av.m.falar('Oi, tudo bem com você hoje?', 'pt', {}); Av.s.inicia();
+      ok('NV1b a velocidade efetiva (com a escala dos modos de treino) vai para a fala e o português usa a voz pt-BR', Av.s.falas[0].rate === 1.5 && Av.s.falas[0].voice.name === 'Voz PT' && Av.s.falas[0].lang === 'pt-BR');
+
+      // NV2 fila à frente sem lacuna
+      var B = motor(), prox = { text: 'Second sentence is here.', lang: 'en' }, resB = [];
+      var pB1 = B.m.falar('First sentence is here.', 'en', { proxima: function () { return prox; } }).then(function (x) { resB.push(x); });
+      B.s.inicia(); B.c.anda(100);
+      var enfileirou = B.s.falas.length === 2 && B.s.falas[1].text === 'Second sentence is here.';
+      B.s.termina(); await pB1; B.s.inicia();
+      var pB2 = B.m.falar('Second sentence is here.', 'en', {}).then(function (x) { resB.push(x); });
+      var semNovoSpeak = B.s.falas.length === 2, semCancelar = B.s.cancelamentos === 0; B.s.termina(); await pB2;
+      ok('NV2 FILA À FRENTE: com a frase 1 tocando, a frase 2 já entra na fila do motor; ao chegar a vez dela o motor só assume os ganchos (nenhum speak novo, nenhum cancelamento) e as duas terminam com "end"', enfileirou && semNovoSpeak && semCancelar && resB.join() === 'end,end', 'falas=' + B.s.falas.length);
+      var B2 = motor({ podeEnfileirar: function () { return false; } }); B2.m.falar('Training mode sentence one.', 'en', { proxima: function () { return prox; } }); B2.s.inicia(); B2.c.anda(100);
+      ok('NV2b nos modos de treino (podeEnfileirar falso) a fila à frente fica desligada', B2.s.falas.length === 1);
+      var B3 = motor(); B3.m.falar('Sentence A is long enough.', 'en', { proxima: function () { return prox; } }); B3.s.inicia(); B3.c.anda(100);
+      var antes3 = B3.s.cancelamentos; B3.m.falar('Another sentence entirely different.', 'en', {});
+      ok('NV2c se sobrou frase enfileirada que NÃO é a pedida (o fluxo mudou), a fila é limpa antes de falar', antes3 === 0 && B3.s.cancelamentos === 1);
+      await tique();
+
+      // NV3 vigia de partida
+      var C = motor(), resC = []; C.m.falar('The engine swallows this one.', 'en', {}).then(function (x) { resC.push(x); });
+      C.c.anda(7100); await tique(); await tique(); C.m.falar('The engine swallows this one.', 'en', {}).then(function (x) { resC.push(x); }); C.c.anda(7100); await tique(); await tique();
+      ok('NV3 VIGIA DE PARTIDA: o motor engoliu o speak(): a 1ª vez devolve "restart" (tenta de novo); se a mesma frase repetir, devolve "error" (pula)', resC.join() === 'restart,error', resC.join());
+
+      // NV4 estimativa de tempo sem evento de palavra, e evento de palavra
+      var D = motor(), tx4 = 'This is a rather long sentence, with commas, so the estimate has work to do.', pos4 = [];
+      D.m.falar(tx4, 'en', { aoProgresso: function (ci) { pos4.push(ci); } }); D.s.inicia(); D.c.anda(2500);
+      var cresce = pos4.length > 5 && pos4.every(function (x, i) { return i === 0 || x >= pos4[i - 1]; });
+      ok('NV4 sem evento de palavra, o destaque avança só por estimativa de tempo: muitas posições, nunca voltando atrás, dentro do texto', cresce && pos4[pos4.length - 1] < tx4.length && pos4[pos4.length - 1] > 10, pos4.length + ' posições, última ' + pos4[pos4.length - 1]);
+      var E = motor(), tx5 = 'Word one, word two, word three and then word four goes here.', pos5 = [];
+      E.m.falar(tx5, 'en', { aoProgresso: function (ci) { pos5.push(ci); } }); E.s.inicia(); E.s.palavra(5); E.c.anda(60); var n5 = pos5.length; E.s.palavra(10);
+      ok('NV4b quando a voz informa a palavra, o evento manda: vira posição na hora, e a estimativa não corre à frente dele enquanto o evento está em dia', pos5[0] === 5 && n5 === 1 && pos5[1] === 10, pos5.join());
+
+      // NV5 reiniciar e voz que emudece
+      var F = motor(), resF = null, pF = F.m.falar('Restart this sentence please.', 'en', {}).then(function (x) { resF = x; }); F.s.inicia(); F.m.reiniciar(); await pF;
+      ok('NV5 reiniciar() faz a fala em curso terminar com "restart"', resF === 'restart', String(resF));
+      var F2 = motor(), r2 = null; F2.m.falar('Another sentence for later.', 'en', {}); F2.m.reiniciar(); F2.m.cancelar(); await tique(); await tique();
+      F2.m.falar('Plain sentence after.', 'en', {}).then(function (x) { r2 = x; }); F2.s.inicia(); F2.s.termina(); await tique();
+      ok('NV5b cancelar() zera o pedido de reinício: a fala seguinte termina com "end", não com "restart"', r2 === 'end', String(r2));
+      var G = motor(), resG = null; G.m.falar('Short one that dies silently.', 'en', {}).then(function (x) { resG = x; }); G.s.inicia(); G.c.anda(20000); await tique(); await tique();
+      ok('NV5c VIGIA DA VOZ MUDA: a voz começou e emudeceu (sem evento): passado o limite o motor cancela sozinho e a frase termina como "cancel", para a leitura seguir', resG === 'cancel' && G.s.cancelamentos >= 1, String(resG));
+
+      // ----- Narrador, com voz e fonte falsas -----
+      function fonteFalsa(par, extra) {
+        var f = { audio: 'en', orig: 'en', idiomaOriginal: 'en', paragrafos: function () { return par.length; }, frases: function (p) { return par[p].length; }, idiomaAudio: function () { return f.audio; },
+          texto: async function (p, s, id, ativo) { await tique(); if (!ativo()) return null; var x = par[p][s]; return { text: x, lang: id === f.orig ? id : (f.traduz ? id : f.orig) }; },
+          jaPronta: function (p, s, id) { var x = par[p][s]; return x == null ? null : { text: x, lang: f.orig }; } };
+        return Object.assign(f, extra || {});
+      }
+      function vozFalsa() { var v = { chamadas: [], pendente: null, cancelamentos: 0, reinicios: 0, tipo: 'falsa' };
+        v.falar = function (t, id, op) { v.chamadas.push({ t: t, id: id, op: op }); return new Promise(function (res) { v.pendente = res; }); };
+        v.cancelar = function () { v.cancelamentos++; var p = v.pendente; v.pendente = null; if (p) p('cancel'); };
+        v.reiniciar = function () { v.reinicios++; var p = v.pendente; v.pendente = null; if (p) p('restart'); };
+        v.fim = function (r) { var p = v.pendente; v.pendente = null; if (p) p(r || 'end'); };
+        return v; }
+      function gravaEventos() { var lista = []; ['narracao-frase', 'narracao-palavra', 'narracao-estado', 'narracao-parou', 'narracao-retomou', 'frase-ouvida'].forEach(function (n) { EV.on(n, function (d) { lista.push(n + (d ? ':' + JSON.stringify(d) : '')); }); }); return lista; }
+      var P1 = [['One is here.', 'Two is here.'], ['Three is here.']];
+
+      // NA1 sequência, eventos, palavras ouvidas
+      var ev1 = gravaEventos(), v1 = vozFalsa(), n1 = NA.criar({ voz: v1 }); n1.abrir(fonteFalsa(P1)); n1.tocar(0, 0);
+      await ate(function () { return v1.chamadas.length === 1; }); v1.fim(); await ate(function () { return v1.chamadas.length === 2; }); v1.fim('cancel'); await ate(function () { return v1.chamadas.length === 3; }); v1.fim();
+      await ate(function () { return !n1.estado().tocando; });
+      var ouvidas1 = ev1.filter(function (e) { return e.indexOf('frase-ouvida') === 0; }), estados1 = ev1.filter(function (e) { return e.indexOf('narracao-estado') === 0; });
+      ok('NA1 SEQUÊNCIA: fala as 3 frases em ordem, atravessando o parágrafo; palavras ouvidas só contam quando a frase termina bem ("end", não "cancel"); ao fim a narração para sozinha avisando tocando:true e depois tocando:false', v1.chamadas.map(function (x) { return x.t; }).join('|') === 'One is here.|Two is here.|Three is here.' && ouvidas1.length === 2 && ouvidas1[0].indexOf('"palavras":3') > 0 && !n1.estado().tocando && estados1.join() === 'narracao-estado:{"tocando":true},narracao-estado:{"tocando":false}', ouvidas1.join(' '));
+      ok('NA1b cada frase avisa "narracao-frase" com o texto e o idioma falados, e a voz recebe a frase seguinte já pronta para a fila à frente (e nada depois da última)', ev1.indexOf('narracao-frase:{"p":0,"s":0,"texto":"One is here.","idioma":"en"}') >= 0 && v1.chamadas[0].op.proxima().text === 'Two is here.' && v1.chamadas[1].op.proxima().text === 'Three is here.' && v1.chamadas[2].op.proxima() === null);
+
+      // NA2 token: eventos atrasados de fala antiga não mexem na nova
+      var ev2 = gravaEventos(), v2 = vozFalsa(), n2 = NA.criar({ voz: v2 }); n2.abrir(fonteFalsa(P1)); n2.tocar(0, 0); await ate(function () { return v2.chamadas.length === 1; });
+      var op0 = v2.chamadas[0].op; n2.tocar(1, 0); await ate(function () { return v2.chamadas.length === 2; }); var antes2 = ev2.length; op0.aoProgresso(3); v2.chamadas[1].op.aoProgresso(4);
+      var palavras2 = ev2.slice(antes2).filter(function (e) { return e.indexOf('narracao-palavra') === 0; });
+      ok('NA2 TOKEN: depois de pular para outra frase, um evento de palavra atrasado da fala antiga é ignorado e o da nova passa', palavras2.length === 1 && palavras2[0].indexOf('"ci":4') > 0, palavras2.join());
+      n2.parar(); await tique();
+      ok('NA2b parar() cancela a voz e a narração fica parada, sem avançar para a próxima frase', !n2.estado().tocando && v2.cancelamentos >= 2 && v2.chamadas.length === 2);
+
+      // NA3 retomar da palavra
+      var v3 = vozFalsa(), n3 = NA.criar({ voz: v3 }); n3.abrir(fonteFalsa([['The merchant spoke about laborious diligence today.']])); n3.tocar(0, 0); await ate(function () { return v3.chamadas.length === 1; });
+      v3.chamadas[0].op.aoProgresso(17); n3.reiniciar(); await ate(function () { return v3.chamadas.length === 2; });
+      var ev3 = gravaEventos(); v3.chamadas[1].op.aoProgresso(5);
+      ok('NA3 RETOMA DA PALAVRA: trocar velocidade/voz no meio recomeça da palavra que estava sendo falada ("spoke about laborious…"), nunca do começo; a posição reportada continua contando no texto inteiro (5 na fala cortada = 18 no texto)', v3.reinicios === 1 && v3.chamadas[1].t === 'spoke about laborious diligence today.' && v3.chamadas[0].t.indexOf('The merchant') === 0 && ev3.some(function (e) { return e.indexOf('"ci":18') > 0; }), v3.chamadas[1].t + ' | ' + ev3.join());
+      n3.parar();
+
+      // NA4 pular sem letra e parar após erros
+      var v4 = vozFalsa(), n4 = NA.criar({ voz: v4 }); n4.abrir(fonteFalsa([['...', 'Real sentence here.', '123']])); n4.tocar(0, 0);
+      await ate(function () { return v4.chamadas.length === 1; }); v4.fim(); await ate(function () { return v4.chamadas.length === 2; }); v4.fim(); await ate(function () { return !n4.estado().tocando; });
+      ok('NA4 PULA O QUE NÃO É FALA: frase sem letra nem número ("...") é ignorada; número ("123") é falado', v4.chamadas.map(function (x) { return x.t; }).join('|') === 'Real sentence here.|123', v4.chamadas.map(function (x) { return x.t; }).join('|'));
+      var v5 = vozFalsa(), n5b = NA.criar({ voz: v5 }); n5b.abrir(fonteFalsa([['A one is here.', 'A two is here.', 'A three is here.', 'A four is here.', 'A five is here.', 'A six is here.']])); n5b.tocar(0, 0);
+      for (var e5 = 1; e5 <= 5; e5++) { await ate(function () { return v5.chamadas.length === e5 || !n5b.estado().tocando; }); if (v5.pendente) v5.fim('error'); }
+      await ate(function () { return !n5b.estado().tocando; });
+      ok('NA4b PARA APÓS OS ERROS: depois do 4º erro a narração para sozinha (não fica tentando para sempre)', !n5b.estado().tocando && v5.chamadas.length === 4, 'falas=' + v5.chamadas.length);
+
+      // NA5 passo
+      var m0b = NA.criar({ voz: vozFalsa() }); m0b.abrir(fonteFalsa(P1)); m0b.passo(1); var cb = m0b.estado().marca; m0b.passo(1); var cc = m0b.estado().marca; m0b.passo(1); var cd = m0b.estado().marca; m0b.passo(-1); m0b.passo(-1); m0b.passo(-1); var cf = m0b.estado().marca;
+      ok('NA5 PASSO PARADO: as setas só movem a marca (nada é falado): (0,0)→(0,1)→(1,0); no fim do livro fica onde estava; voltando atravessa o parágrafo e para no começo', cb.p === 0 && cb.s === 1 && cc.p === 1 && cc.s === 0 && cd.p === 1 && cd.s === 0 && cf.p === 0 && cf.s === 0, JSON.stringify([cb, cc, cd, cf]));
+      var v7 = vozFalsa(), n7 = NA.criar({ voz: v7 }); n7.abrir(fonteFalsa(P1)); n7.tocar(0, 0); await ate(function () { return v7.chamadas.length === 1; }); n7.passo(1); await ate(function () { return v7.chamadas.length === 2; });
+      ok('NA5b passo TOCANDO: a voz segue da nova frase (a anterior é cancelada)', v7.chamadas[1].t === 'Two is here.' && v7.cancelamentos >= 2);
+      n7.parar();
+
+      // NA6 idioma do áudio diferente do idioma do livro; sem tradução cai no original e a voz acompanha
+      var v8 = vozFalsa(), f8 = fonteFalsa([['The merchant works.']], { audio: 'pt', traduz: false }), n8 = NA.criar({ voz: v8 }); n8.abrir(f8); n8.tocar(0, 0); await ate(function () { return v8.chamadas.length === 1; });
+      ok('NA6 pedido de áudio em português SEM tradução disponível: fala o original e a voz acompanha o idioma do texto realmente falado (en), não o pedido (pt)', v8.chamadas[0].id === 'en' && v8.chamadas[0].t === 'The merchant works.', v8.chamadas[0].id); n8.parar();
+
+      // NA7 gancho de treino
+      var v9 = vozFalsa(), repeticoes = 0, n9 = NA.criar({ voz: v9, ganchos: { aoTerminarFrase: async function () { return (repeticoes++ < 1) ? 'repeat' : undefined; } } }); n9.abrir(fonteFalsa([['Only sentence here.', 'Next sentence here.']])); n9.tocar(0, 0);
+      await ate(function () { return v9.chamadas.length === 1; }); v9.fim(); await ate(function () { return v9.chamadas.length === 2; }); v9.fim(); await ate(function () { return v9.chamadas.length === 3; });
+      ok('NA7 GANCHO DE TREINO: depois da frase o gancho pode pedir "repetir": a mesma frase é falada de novo antes de seguir', v9.chamadas.map(function (x) { return x.t; }).join('|') === 'Only sentence here.|Only sentence here.|Next sentence here.', v9.chamadas.map(function (x) { return x.t; }).join('|')); n9.parar();
+
+      // NA8 tradução que chega depois de parar não fala; NA9 sem fonte
+      var v10 = vozFalsa(), lenta = null, f10 = fonteFalsa([['Slow translation here.']], { texto: function (p, s, id, ativo) { return new Promise(function (res) { lenta = function () { res(ativo() ? { text: 'Slow translation here.', lang: 'en' } : null); }; }); } }), n10 = NA.criar({ voz: v10 });
+      n10.abrir(f10); n10.tocar(0, 0); await tique(); n10.parar(); lenta(); await tique(); await tique();
+      ok('NA8 TOKEN NA TRADUÇÃO: se o aluno parou enquanto a tradução da frase ainda chegava, a frase não é falada depois', v10.chamadas.length === 0 && !n10.estado().tocando);
+      ok('NA9 sem fonte aberta, tocar(), passo() e parar() não fazem nada nem quebram', (function () { var nn = NA.criar({ voz: vozFalsa() }); nn.tocar(); nn.passo(1); nn.parar(); return !nn.estado().tocando; })());
+
+      // NA10 de ponta a ponta: Narrador + motor do navegador + synth falsa
+      var K = motor(), n11 = NA.criar({ voz: K.m }); n11.abrir(fonteFalsa([['Frase um completa.', 'Frase dois completa.']])); n11.tocar(0, 0);
+      await ate(function () { return K.s.falas.length >= 1; }); K.s.inicia(); await ate(function () { return K.s.falas.length === 2; }); var fila2 = K.s.falas[1] && K.s.falas[1].text; K.s.termina();
+      await ate(function () { return K.s.falando === null && K.s.falas.length >= 2; }); K.s.inicia(); K.s.termina(); await ate(function () { return !n11.estado().tocando; });
+      ok('NA10 DE PONTA A PONTA: o Narrador com o motor do navegador fala as duas frases, a 2ª já enfileirada enquanto a 1ª tocava (só 2 speak) e para sozinho no fim', fila2 === 'Frase dois completa.' && K.s.falas.length === 2 && !n11.estado().tocando, 'falas=' + K.s.falas.length + ' cancel=' + K.s.cancelamentos + ' tocando=' + n11.estado().tocando);
     } catch (e) { fails++; out.push('FAIL exceção: ' + e + ' ' + (e && e.stack ? e.stack.split('\n')[1] : '')); }
     out.push('RESULTADO: ' + (fails ? fails + ' falha(s)' : 'tudo certo'));
     live(); clearInterval(hb);
