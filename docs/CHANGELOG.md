@@ -1,6 +1,12 @@
 # Registro de evolução (CHANGELOG)
 
 > Uma entrada por dia de trabalho, da mais nova para a mais antiga. Escreva **o que mudou, por quê e como conferir**. Mantém o autor e o Claude sem precisar reler conversas antigas.
+## 2026-11-22 · Degrau 0: fabula ouvida inteira passa a contar como lida
+
+- **Defeito (relatado pelo autor):** mesmo lendo/ouvindo a historia toda, ela nao ficava concluida. **Causa:** a fabula cabe numa tela, a pagina nao rola e `meta.pos` fica em 0; o Degrau 0 so marcava "lida" com `pos` no ultimo paragrafo.
+- **Correcao** (`ingles-degrau0.js`): lida = chegou ao ultimo paragrafo OU ouviu 80% das palavras (`meta.heard`); "em andamento" tambem considera palavras ouvidas.
+- **Teste:** DG7 em `test_ingles_modulos.ps1`. Rodadas completas tiveram falhas intermitentes diferentes (G6, L7, A18, TC5), nenhuma ligada ao Degrau 0.
+
 ## 2026-11-22 · Manual reescrito (explica o sistema inteiro)
 
 - **Pedido do autor:** reescrever todo o manual explicando como funciona todo o sistema.

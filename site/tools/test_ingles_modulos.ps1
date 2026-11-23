@@ -464,6 +464,17 @@ $test = @'
       var dgAll = (await D().db.all('meta')).filter(function (m) { return m.x && m.x.degrau0 === 1; });
       ok('DG6 reabrir a historia nao duplica o documento', dgAll.length === 1 && D().doc && D().doc.id === dgId, dgAll.length + ' docs');
       D().$('lb-back').click(); await wait(400);
+      // DG7: fabula curta cabe na tela, a pagina nao rola e pos fica em 0; ouvir a historia toda tambem a marca como lida
+      var dg7 = await D().db.get('meta', dgId); var dg7Pos = dg7.pos, dg7Heard = dg7.heard || 0;
+      dg7.pos = 0; dg7.heard = dgDoc.words; await D().db.put('meta', dg7);
+      post({ type: 'readlang', value: 'en' }); await wait(300); post({ type: 'readlang', value: 'pt' }); await wait(600);
+      var dg7a = /done/.test(dgRows()[0].className);
+      dg7 = await D().db.get('meta', dgId); dg7.heard = 10; await D().db.put('meta', dg7);
+      post({ type: 'readlang', value: 'en' }); await wait(300); post({ type: 'readlang', value: 'pt' }); await wait(600);
+      var dg7b = /done/.test(dgRows()[0].className);
+      ok('DG7 ouvir a fabula toda (sem rolar a pagina) marca como lida; ouvir so um pouco, nao', dg7a === true && dg7b === false, 'toda=' + dg7a + ' pouco=' + dg7b);
+      dg7 = await D().db.get('meta', dgId); dg7.pos = dg7Pos; dg7.heard = dg7Heard; await D().db.put('meta', dg7);
+      post({ type: 'readlang', value: 'en' }); await wait(300); post({ type: 'readlang', value: 'pt' }); await wait(600);
       // ===================== L. livro da semana =====================
       post({ type: 'readlang', value: 'pt' }); await wait(300);
       var lbk = function (k) { return 'Surveillance capitalism harvests behavioural surplus from ordinary people every single day, and platforms predict what citizens will do tomorrow morning. Nobody explains how these hidden systems really work, so people rarely notice this quiet economic exchange number ' + k + '.'; };
